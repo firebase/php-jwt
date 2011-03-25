@@ -14,7 +14,7 @@
   <active>yes</active>
  </lead>
  <date>2011-03-25</date>
- <time>16:09:40</time>
+ <time>16:47:26</time>
  <version>
   <release>0.0.0</release>
   <api>0.0.0</api>
@@ -50,7 +50,7 @@ No release notes.
     <name>json</name>
    </extension>
    <extension>
-    <name>hash_hmac</name>
+    <name>hash</name>
    </extension>
   </required>
  </dependencies>

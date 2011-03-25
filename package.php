@@ -56,7 +56,7 @@ $package->addMaintainer(
 );
 
 $package->addExtensionDep('required', 'json');
-$package->addExtensionDep('required', 'hash_hmac');
+$package->addExtensionDep('required', 'hash');
 
 $package->setPhpDep('5.1');
 
