@@ -127,8 +127,11 @@ class JWT
      */
     public static function urlsafeB64Decode($input)
     {
-        $padlen = 4 - strlen($input) % 4;
-        $input .= str_repeat('=', $padlen);
+        $remainder = strlen($input) % 4;
+        if ($remainder) {
+            $padlen = 4 - $remainder;
+            $input .= str_repeat('=', $padlen);
+        }
         return base64_decode(strtr($input, '-_', '+/'));
     }
 
