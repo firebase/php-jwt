@@ -1,21 +1,25 @@
 <?php
 
 /**
- * JSON Web Token implementation
- *
- * Minimum implementation used by Realtime auth, based on this spec:
- * http://self-issued.info/docs/draft-jones-json-web-token-01.html.
+ * JSON Web Token implementation, based on this spec:
+ * http://tools.ietf.org/html/draft-ietf-oauth-json-web-token-06
  *
  * @author Neuman Vong <neuman@twilio.com>
+ * @author Anant Narayanan <anant@kix.in>
  */
 class JWT
 {
     /**
-     * @param string      $jwt    The JWT
-     * @param string|null $key    The secret key
-     * @param bool        $verify Don't skip verification process 
+     * Decodes a JWT string into a PHP object.
      *
-     * @return object The JWT's payload as a PHP object
+     * @access  public
+     * @param   string       $jwt      The JWT
+     * @param   string|null  $key      The secret key
+     * @param   bool         $verify   Don't skip verification process 
+     *
+     * @return  object       The JWT's payload as a PHP object
+     * @uses    jsonDecode
+     * @uses    urlsafeB64Decode
      */
     public static function decode($jwt, $key = null, $verify = true)
     {
@@ -24,12 +28,10 @@ class JWT
             throw new UnexpectedValueException('Wrong number of segments');
         }
         list($headb64, $payloadb64, $cryptob64) = $tks;
-        if (null === ($header = JWT::jsonDecode(JWT::urlsafeB64Decode($headb64)))
-        ) {
+        if (null === ($header = JWT::jsonDecode(JWT::urlsafeB64Decode($headb64)))) {
             throw new UnexpectedValueException('Invalid segment encoding');
         }
-        if (null === $payload = JWT::jsonDecode(JWT::urlsafeB64Decode($payloadb64))
-        ) {
+        if (null === $payload = JWT::jsonDecode(JWT::urlsafeB64Decode($payloadb64))) {
             throw new UnexpectedValueException('Invalid segment encoding');
         }
         $sig = JWT::urlsafeB64Decode($cryptob64);
@@ -45,11 +47,16 @@ class JWT
     }
 
     /**
-     * @param object|array $payload PHP object or array
-     * @param string       $key     The secret key
-     * @param string       $algo    The signing algorithm
+     * Converts and signs a PHP object or array into a JWT string.
      *
-     * @return string A JWT
+     * @access  public
+     * @param   object|array $payload  PHP object or array
+     * @param   string       $key      The secret key
+     * @param   string       $algo     The signing algorithm
+     *
+     * @return  string       A signed JWT
+     * @uses    jsonEncode
+     * @uses    urlsafeB64Encode
      */
     public static function encode($payload, $key, $algo = 'HS256')
     {
@@ -67,11 +74,14 @@ class JWT
     }
 
     /**
-     * @param string $msg    The message to sign
-     * @param string $key    The secret key
-     * @param string $method The signing algorithm
+     * Sign a string with a given key and algorithm.
      *
-     * @return string An encrypted message
+     * @access  public
+     * @param   string       $msg      The message to sign
+     * @param   string       $key      The secret key
+     * @param   string       $method   The signing algorithm
+     *
+     * @return  string       An encrypted message
      */
     public static function sign($msg, $key, $method = 'HS256')
     {
@@ -87,43 +97,50 @@ class JWT
     }
 
     /**
-     * @param string $input JSON string
+     * Decode a JSON string into a PHP object.
      *
-     * @return object Object representation of JSON string
+     * @access  public
+     * @param   string       $input    JSON string
+     *
+     * @return  object       Object representation of JSON string
      */
     public static function jsonDecode($input)
     {
         $obj = json_decode($input);
         if (function_exists('json_last_error') && $errno = json_last_error()) {
             JWT::handleJsonError($errno);
-        }
-        else if ($obj === null && $input !== 'null') {
+        } else if ($obj === null && $input !== 'null') {
             throw new DomainException('Null result with non-null input');
         }
         return $obj;
     }
 
     /**
-     * @param object|array $input A PHP object or array
+     * Encode a PHP object into a JSON string.
      *
-     * @return string JSON representation of the PHP object or array
+     * @access  public
+     * @param   object|array $input    A PHP object or array
+     *
+     * @return  string       JSON representation of the PHP object or array
      */
     public static function jsonEncode($input)
     {
         $json = json_encode($input);
         if (function_exists('json_last_error') && $errno = json_last_error()) {
             JWT::handleJsonError($errno);
-        }
-        else if ($json === 'null' && $input !== null) {
+        } else if ($json === 'null' && $input !== null) {
             throw new DomainException('Null result with non-null input');
         }
         return $json;
     }
 
     /**
-     * @param string $input A base64 encoded string
+     * Decode a string with URL-safe Base64.
      *
-     * @return string A decoded string
+     * @access  public
+     * @param   string       $input    A Base64 encoded string
+     *
+     * @return  string       A decoded string
      */
     public static function urlsafeB64Decode($input)
     {
@@ -136,9 +153,12 @@ class JWT
     }
 
     /**
-     * @param string $input Anything really
+     * Encode a string with URL-safe Base64.
      *
-     * @return string The base64 encode of what you passed in
+     * @access  public
+     * @param   string       $input    The string you want encoded
+     *
+     * @return  string       The base64 encode of what you passed in
      */
     public static function urlsafeB64Encode($input)
     {
@@ -146,9 +166,10 @@ class JWT
     }
 
     /**
-     * @param int $errno An error number from json_last_error()
+     * @access  private
+     * @param   int          $errno    An error number from json_last_error()
      *
-     * @return void
+     * @return  void
      */
     private static function handleJsonError($errno)
     {
