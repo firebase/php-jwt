@@ -1,6 +1,8 @@
 <?php
 
-class JWTTests extends PHPUnit_Framework_TestCase {
+include_once 'JWT.php';
+
+class JWTTest extends PHPUnit_Framework_TestCase {
 	function testEncodeDecode() {
 		$msg = JWT::encode('abc', 'my_key');
 		$this->assertEquals(JWT::decode($msg, 'my_key'), 'abc');
@@ -29,3 +31,5 @@ class JWTTests extends PHPUnit_Framework_TestCase {
 		JWT::jsonDecode('this is not valid JSON string');
 	}
 }
+
+?>
