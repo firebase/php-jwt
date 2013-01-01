@@ -5,7 +5,7 @@
  * http://tools.ietf.org/html/draft-ietf-oauth-json-web-token-06
  *
  * @author Neuman Vong <neuman@twilio.com>
- * @author Anant Narayanan <anant@kix.in>
+ * @author Anant Narayanan <anant@php.net>
  */
 class JWT
 {

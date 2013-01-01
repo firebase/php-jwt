@@ -6,37 +6,39 @@
  <name>JWT</name>
  <channel>pear.php.net</channel>
  <summary>A JWT encoder/decoder.</summary>
- <description>A JWT encoder/decoder.</description>
+ <description>A JWT encoder/decoder library for PHP.</description>
  <lead>
   <name>Neuman Vong</name>
   <user>lcfrs</user>
   <email>neuman+pear@twilio.com</email>
   <active>yes</active>
  </lead>
- <date>2011-03-25</date>
- <time>16:47:26</time>
+ <lead>
+  <name>Anant Narayanan</name>
+  <user>anant</usr>
+  <email>anant@php.net</email>
+  <active>yes</active>
+ </lead>
+ <date>2012-12-31</date>
  <version>
-  <release>0.0.0</release>
-  <api>0.0.0</api>
+  <release>0.1.0</release>
+  <api>0.1.0</api>
  </version>
  <stability>
-  <release>alpha</release>
-  <api>alpha</api>
+  <release>beta</release>
+  <api>beta</api>
  </stability>
- <license uri="http://creativecommons.org/licenses/MIT/">MIT License</license>
+ <license uri="http://opensource.org/licenses/BSD-3-Clause">BSD 3-Clause License</license>
  <notes>
-No release notes.
+Initial release with basic support for JWT encoding, decoding and signature verification.
  </notes>
  <contents>
   <dir baseinstalldir="/" name="/">
    <dir name="tests">
-    <file name="Bootstrap.php" role="test" />
     <file name="JWTTest.php" role="test" />
-    <file name="phpunit.xml" role="test" />
-   </dir> <!-- //tests -->
+   </dir>
    <file name="JWT.php" role="php" />
-   <file name="Makefile" role="data" />
-  </dir> <!-- / -->
+  </dir>
  </contents>
  <dependencies>
   <required>
@@ -58,17 +60,17 @@ No release notes.
  <changelog>
   <release>
    <version>
-    <release>0.0.0</release>
-    <api>0.0.0</api>
+    <release>0.1.0</release>
+    <api>0.1.0</api>
    </version>
    <stability>
-    <release>alpha</release>
-    <api>alpha</api>
+    <release>beta</release>
+    <api>beta</api>
    </stability>
-   <date>2011-03-25</date>
-   <license uri="http://creativecommons.org/licenses/MIT/">MIT License</license>
+   <date>2012-12-31</date>
+   <license uri="http://opensource.org/licenses/BSD-3-Clause">BSD 3-Clause License</license>
    <notes>
-No release notes.
+Initial release with basic support for JWT encoding, decoding and signature verification.
    </notes>
   </release>
  </changelog>
