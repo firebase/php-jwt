@@ -8,7 +8,7 @@ Example
 -------
 ```php
 <?php
-  include_once 'JWT.php';
+  include_once 'Authentication/JWT.php';
 
   $key = "example_key";
   $token = array(
@@ -23,6 +23,19 @@ Example
 
   print_r($decoded);
 ?>
+```
+
+Tests
+-----
+Run the tests using phpunit:
+
+```bash
+    $ pear install PHPUnit
+    $ phpunit tests/
+    PHPUnit 3.7.10 by Sebastian Bergmann.
+    .....
+    Time: 0 seconds, Memory: 2.50Mb
+    OK (5 tests, 5 assertions)
 ```
 
 License
