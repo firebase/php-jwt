@@ -1,6 +1,6 @@
 <?php
 
-include_once 'JWT.php';
+include_once 'Authentication/JWT.php';
 
 class JWTTest extends PHPUnit_Framework_TestCase {
 	function testEncodeDecode() {
