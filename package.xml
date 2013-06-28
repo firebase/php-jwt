@@ -37,7 +37,7 @@ Initial release with basic support for JWT encoding, decoding and signature veri
    <dir name="tests">
     <file name="JWTTest.php" role="test" />
    </dir>
-   <file name="JWT.php" role="php" />
+   <file name="Authentication/JWT.php" role="php" />
   </dir>
  </contents>
  <dependencies>
