@@ -1,7 +1,5 @@
 <?php
 
-include_once 'Authentication/JWT.php';
-
 class JWTTest extends PHPUnit_Framework_TestCase {
 	function testEncodeDecode() {
 		$msg = JWT::encode('abc', 'my_key');
