@@ -1,4 +1,4 @@
-
+[![Build Status](https://travis-ci.org/phansys/php-jwt.png?branch=master)](https://travis-ci.org/phansys/php-jwt)
 PHP-JWT
 =======
 A simple library to encode and decode JSON Web Tokens (JWT) in PHP. Should
