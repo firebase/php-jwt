@@ -61,6 +61,11 @@ class JWT
             if ($sig != JWT::sign("$headb64.$bodyb64", $key, $header->alg)) {
                 throw new UnexpectedValueException('Signature verification failed');
             }
+            // Check token expiry time if defined.
+            if (isset($payload->exp) && time() >= $payload->exp){
+                throw new UnexpectedValueException('Expired Token');
+            }
+
         }
         return $payload;
     }
