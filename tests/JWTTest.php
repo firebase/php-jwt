@@ -28,6 +28,25 @@ class JWTTest extends PHPUnit_Framework_TestCase {
 		$this->setExpectedException('DomainException');
 		JWT::jsonDecode('this is not valid JSON string');
 	}
+
+	function testExpiredToken(){
+		$this->setExpectedException('UnexpectedValueException');
+		$payload = array(
+			"message"=> "abc",
+			"exp"=> time()-20); // time in the past
+		$encoded = JWT::encode($payload, 'my_key');
+		JWT::decode($encoded);
+	}
+
+	function testValidToken(){
+		$payload = array(
+			"message"=> "abc",
+			"exp"=> time()+20); // time in the future
+		$encoded = JWT::encode($payload, 'my_key');
+		$decoded = JWT::decode($encoded, 'my_key');
+		$this->assertEquals($decoded->message, 'abc');
+	}
+	
 }
 
 ?>
