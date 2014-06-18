@@ -141,7 +141,7 @@ class JWT
              */
             $max_int_length = strlen((string) PHP_INT_MAX) - 1;
             $json_without_bigints = preg_replace('/:\s*(\d{'.$max_int_length.',})/', ': "$1"', $input);
-            $obj = json_decode($json_without_bigints, true);
+            $obj = json_decode($json_without_bigints);
         }
 
         if (function_exists('json_last_error') && $errno = json_last_error()) {
