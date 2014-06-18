@@ -65,7 +65,6 @@ class JWT
             if (isset($payload->exp) && time() >= $payload->exp){
                 throw new UnexpectedValueException('Expired Token');
             }
-
         }
         return $payload;
     }
