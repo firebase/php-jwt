@@ -154,7 +154,7 @@ class JWT
         }
     }
     
-    public static function verify($msg, $signature $key, $method = 'HS256') {
+    public static function verify($msg, $signature, $key, $method = 'HS256') {
         if (empty(self::$methods[$method])) {
             throw new DomainException('Algorithm not supported');
         }
