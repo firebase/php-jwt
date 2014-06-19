@@ -26,7 +26,12 @@
  */
 class JWT
 {
-    
+    static $methods = array(
+        'HS256' => array('hash_hmac', 'SHA256'),
+        'HS512' => array('hash_hmac', 'SHA512'),
+        'HS384' => array('hash_hmac', 'SHA384'),
+        'RS256' => array('openssl', 'SHA256'),
+    );
     /**
      * Returns just the header portion of the jwt. This allows
      * you to determine which key should be used to verify
@@ -80,7 +85,7 @@ class JWT
             if (empty($header->alg)) {
                 throw new DomainException('Empty algorithm');
             }
-            if ($sig != JWT::sign("$headb64.$bodyb64", $key, $header->alg)) {
+            if (!JWT::verify("$headb64.$bodyb64", $sig, $key, $header->alg)) {
                 throw new UnexpectedValueException('Signature verification failed');
             }
             // Check token expiry time if defined.
@@ -131,16 +136,41 @@ class JWT
      */
     public static function sign($msg, $key, $method = 'HS256')
     {
-        $methods = array(
-            'HS256' => 'sha256',
-            'HS384' => 'sha384',
-            'HS512' => 'sha512',
-        );
-        if (empty($methods[$method])) {
+        if (empty(self::$methods[$method])) {
             throw new DomainException('Algorithm not supported');
         }
-        
-        return hash_hmac($methods[$method], $msg, $key, true);
+        list($function, $algo) = self::$methods[$method];
+        switch($function) {
+            case 'hash_hmac':
+                return hash_hmac($algo, $msg, $key, true);
+            case 'openssl':
+                $signature = '';
+                $success = openssl_sign($msg, $signature, $key, $algo);
+                if(!$success) {
+                    throw new DomainException("OpenSSL unable to sign data");
+                } else {
+                    return $signature;
+                }
+        }
+    }
+    
+    public static function verify($msg, $signature $key, $method = 'HS256') {
+        if (empty(self::$methods[$method])) {
+            throw new DomainException('Algorithm not supported');
+        }
+        list($function, $algo) = self::$methods[$method];
+        switch($function) {
+            case 'openssl':
+                $success = openssl_verify($msg, $signature, $key, $algo);
+                if(!$success) {
+                    throw new DomainException("OpenSSL unable to sign data");
+                } else {
+                    return $signature;
+                }
+            case 'hash_hmac':
+            default:
+                return $signature === hash_hmac($algo, $msg, $key, true);
+        }
     }
 
     /**
