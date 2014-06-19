@@ -26,6 +26,28 @@
  */
 class JWT
 {
+    
+    /**
+     * Returns just the header portion of the jwt. This allows
+     * you to determine which key should be used to verify
+     * the jwt, using the "kid" field
+     * 
+     * @param string      $jwt
+     * 
+     * @return object     The JWT's header object, with fields "typ","alg", and optionally "kid"
+     */
+    public static function decodeHeader($jwt) {
+        $tks = explode('.', $jwt);
+        if (count($tks) != 3) {
+            throw new UnexpectedValueException('Wrong number of segments');
+        }
+        list($headb64, $bodyb64, $cryptob64) = $tks;
+        if (null === ($header = JWT::jsonDecode(JWT::urlsafeB64Decode($headb64)))) {
+            throw new UnexpectedValueException('Invalid segment encoding');
+        }
+        return $header;
+    }
+    
     /**
      * Decodes a JWT string into a PHP object.
      *
@@ -117,6 +139,7 @@ class JWT
         if (empty($methods[$method])) {
             throw new DomainException('Algorithm not supported');
         }
+        
         return hash_hmac($methods[$method], $msg, $key, true);
     }
 
