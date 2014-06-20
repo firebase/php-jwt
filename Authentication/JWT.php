@@ -130,7 +130,7 @@ class JWT
      */
     public static function jsonDecode($input)
     {
-        if (version_compare(PHP_VERSION, '5.4.0', '>=') and defined('JSON_BIGINT_AS_STRING')) {
+        if (version_compare(PHP_VERSION, '5.4.0', '>=') && defined('JSON_BIGINT_AS_STRING')) {
             /* In PHP >=5.4.0, json_decode() accepts an options parameter, that allows you to specify that large ints (like Steam
              * Transaction IDs) should be treated as strings, rather than the PHP default behaviour of converting them to floats.
              */
