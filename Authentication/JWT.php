@@ -32,32 +32,12 @@ class JWT
         'HS384' => array('hash_hmac', 'SHA384'),
         'RS256' => array('openssl', 'SHA256'),
     );
-    /**
-     * Returns just the header portion of the jwt. This allows
-     * you to determine which key should be used to verify
-     * the jwt, using the "kid" field
-     * 
-     * @param string      $jwt
-     * 
-     * @return object     The JWT's header object, with fields "typ","alg", and optionally "kid"
-     */
-    public static function decodeHeader($jwt) {
-        $tks = explode('.', $jwt);
-        if (count($tks) != 3) {
-            throw new UnexpectedValueException('Wrong number of segments');
-        }
-        list($headb64, $bodyb64, $cryptob64) = $tks;
-        if (null === ($header = JWT::jsonDecode(JWT::urlsafeB64Decode($headb64)))) {
-            throw new UnexpectedValueException('Invalid segment encoding');
-        }
-        return $header;
-    }
     
     /**
      * Decodes a JWT string into a PHP object.
      *
      * @param string      $jwt    The JWT
-     * @param string|null $key    The secret key
+     * @param string|Array|null $key    The secret key, or map of keys
      * @param bool        $verify Don't skip verification process 
      *
      * @return object      The JWT's payload as a PHP object
@@ -85,6 +65,11 @@ class JWT
             if (empty($header->alg)) {
                 throw new DomainException('Empty algorithm');
             }
+            if (is_array($key) && !isset($header->kid)) {
+		throw new DomainException('"kid" empty, unable to lookup correct key');
+	    } elseif(is_array($key) && isset($header->kid)) {
+		$key = $key[$header->kid];
+	    }
             if (!JWT::verify("$headb64.$bodyb64", $sig, $key, $header->alg)) {
                 throw new UnexpectedValueException('Signature verification failed');
             }
@@ -108,10 +93,12 @@ class JWT
      * @uses jsonEncode
      * @uses urlsafeB64Encode
      */
-    public static function encode($payload, $key, $algo = 'HS256')
+    public static function encode($payload, $key, $algo = 'HS256', $keyId = null)
     {
         $header = array('typ' => 'JWT', 'alg' => $algo);
-
+	if($keyId !== null) {
+		$header['kid'] = $keyId;
+	}
         $segments = array();
         $segments[] = JWT::urlsafeB64Encode(JWT::jsonEncode($header));
         $segments[] = JWT::urlsafeB64Encode(JWT::jsonEncode($payload));
@@ -127,7 +114,7 @@ class JWT
      * Sign a string with a given key and algorithm.
      *
      * @param string $msg    The message to sign
-     * @param string $key    The secret key
+     * @param string|resource $key    The secret key
      * @param string $method The signing algorithm. Supported
      *                       algorithms are 'HS256', 'HS384' and 'HS512'
      *
@@ -154,6 +141,16 @@ class JWT
         }
     }
     
+    /**
+     * Verify a signature with the mesage, key and method. Not all methods
+     * are symmetric, so we must have a separate verify and sign method.
+     * @param string $msg the original message
+     * @param string $signature
+     * @param string|resource $key for HS*, a string key works. for RS*, must be a resource of an openssl public key
+     * @param string $method
+     * @return bool
+     * @throws DomainException Invalid Algorithm or OpenSSL failure
+     */
     public static function verify($msg, $signature, $key, $method = 'HS256') {
         if (empty(self::$methods[$method])) {
             throw new DomainException('Algorithm not supported');
@@ -163,7 +160,7 @@ class JWT
             case 'openssl':
                 $success = openssl_verify($msg, $signature, $key, $algo);
                 if(!$success) {
-                    throw new DomainException("OpenSSL unable to sign data");
+                    throw new DomainException("OpenSSL unable to verify data: " . openssl_error_string());
                 } else {
                     return $signature;
                 }
