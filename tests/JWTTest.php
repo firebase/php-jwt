@@ -47,8 +47,8 @@ class JWTTest extends PHPUnit_Framework_TestCase {
 		$this->assertEquals($decoded->message, 'abc');
 	}
 
-	function testRSEncodeDecode() {
-		$privKey = openssl_pkey_new(array('digest_alg' => 'sha256', 
+	function testRSEncodeDecode(){
+		$privKey = openssl_pkey_new(array('digest_alg' => 'sha256',
 			'private_key_bits' => 1024,
 			'private_key_type' => OPENSSL_KEYTYPE_RSA));
 		$msg = JWT::encode('abc',$privKey, 'RS256');
@@ -58,7 +58,7 @@ class JWTTest extends PHPUnit_Framework_TestCase {
 		$this->assertEquals($decoded, 'abc');
 	}
 
-	function testKIDChooser() {
+	function testKIDChooser(){
 		$keys = array('1' => 'my_key', '2' => 'my_key2');
 		$msg = JWT::encode('abc', $keys['1'], 'HS256', '1');
 		$decoded = JWT::decode($msg, $keys, true);

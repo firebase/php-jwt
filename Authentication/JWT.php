@@ -65,10 +65,12 @@ class JWT
             if (empty($header->alg)) {
                 throw new DomainException('Empty algorithm');
             }
-            if (is_array($key) && !isset($header->kid)) {
-		throw new DomainException('"kid" empty, unable to lookup correct key');
-	    } elseif(is_array($key) && isset($header->kid)) {
-		$key = $key[$header->kid];
+            if (is_array($key)) {
+                if(isset($header->kid)) {
+                    $key = $key[$header->kid];
+                } else {
+                    throw new DomainException('"kid" empty, unable to lookup correct key');
+                }
 	    }
             if (!JWT::verify("$headb64.$bodyb64", $sig, $key, $header->alg)) {
                 throw new UnexpectedValueException('Signature verification failed');
@@ -116,7 +118,7 @@ class JWT
      * @param string $msg    The message to sign
      * @param string|resource $key    The secret key
      * @param string $method The signing algorithm. Supported
-     *                       algorithms are 'HS256', 'HS384' and 'HS512'
+     *                       algorithms are 'HS256', 'HS384', 'HS512' and 'RS256'
      *
      * @return string          An encrypted message
      * @throws DomainException Unsupported algorithm was specified
