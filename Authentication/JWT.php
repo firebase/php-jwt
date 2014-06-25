@@ -171,7 +171,7 @@ class JWT
      */
     public static function jsonDecode($input)
     {
-        if (version_compare(PHP_VERSION, '5.4.0', '>=') && defined('JSON_BIGINT_AS_STRING')) {
+        if (version_compare(PHP_VERSION, '5.4.0', '>=') && !(defined('JSON_C_VERSION') && PHP_INT_SIZE > 4)) {
             /* In PHP >=5.4.0, json_decode() accepts an options parameter, that allows you to specify that large ints (like Steam
              * Transaction IDs) should be treated as strings, rather than the PHP default behaviour of converting them to floats.
              */
@@ -181,7 +181,7 @@ class JWT
              * string and quote them (thus converting them to strings) before decoding, hence the preg_replace() call.
              */
             $max_int_length = strlen((string) PHP_INT_MAX) - 1;
-            $json_without_bigints = preg_replace('/:\s*(\d{'.$max_int_length.',})/', ': "$1"', $input);
+            $json_without_bigints = preg_replace('/:\s*(-?\d{'.$max_int_length.',})/', ': "$1"', $input);
             $obj = json_decode($json_without_bigints);
         }
 
