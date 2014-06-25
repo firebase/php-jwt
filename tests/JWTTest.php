@@ -29,43 +29,42 @@ class JWTTest extends PHPUnit_Framework_TestCase {
 		JWT::jsonDecode('this is not valid JSON string');
 	}
 
-	function testExpiredToken(){
+	function testExpiredToken() {
 		$this->setExpectedException('UnexpectedValueException');
 		$payload = array(
-			"message"=> "abc",
-			"exp"=> time()-20); // time in the past
+			"message" => "abc",
+			"exp" => time() - 20); // time in the past
 		$encoded = JWT::encode($payload, 'my_key');
 		JWT::decode($encoded);
 	}
 
-	function testValidToken(){
+	function testValidToken() {
 		$payload = array(
-			"message"=> "abc",
-			"exp"=> time()+20); // time in the future
+			"message" => "abc",
+			"exp" => time() + 20); // time in the future
 		$encoded = JWT::encode($payload, 'my_key');
 		$decoded = JWT::decode($encoded, 'my_key');
 		$this->assertEquals($decoded->message, 'abc');
 	}
 
-	function testRSEncodeDecode(){
+	function testRSEncodeDecode() {
 		$privKey = openssl_pkey_new(array('digest_alg' => 'sha256',
 			'private_key_bits' => 1024,
 			'private_key_type' => OPENSSL_KEYTYPE_RSA));
-		$msg = JWT::encode('abc',$privKey, 'RS256');
+		$msg = JWT::encode('abc', $privKey, 'RS256');
 		$pubKey = openssl_pkey_get_details($privKey);
 		$pubKey = $pubKey['key'];
 		$decoded = JWT::decode($msg, $pubKey, true);
 		$this->assertEquals($decoded, 'abc');
 	}
 
-	function testKIDChooser(){
+	function testKIDChooser() {
 		$keys = array('1' => 'my_key', '2' => 'my_key2');
 		$msg = JWT::encode('abc', $keys['1'], 'HS256', '1');
 		$decoded = JWT::decode($msg, $keys, true);
 		$this->assertEquals($decoded, 'abc');
 	}
 
-	
 }
 
 ?>

@@ -13,17 +13,6 @@
  * @license  http://opensource.org/licenses/BSD-3-Clause 3-clause BSD
  * @link     https://github.com/firebase/php-jwt
  */
-/**
- * JSON Web Token implementation, based on this spec:
- * http://tools.ietf.org/html/draft-ietf-oauth-json-web-token-06
- *
- * @category Authentication
- * @package  Authentication_JWT
- * @author   Neuman Vong <neuman@twilio.com>
- * @author   Anant Narayanan <anant@php.net>
- * @license  http://opensource.org/licenses/BSD-3-Clause 3-clause BSD
- * @link     https://github.com/firebase/php-jwt
- */
 class JWT
 {
     static $methods = array(
@@ -32,13 +21,13 @@ class JWT
         'HS384' => array('hash_hmac', 'SHA384'),
         'RS256' => array('openssl', 'SHA256'),
     );
-    
+
     /**
      * Decodes a JWT string into a PHP object.
      *
-     * @param string      $jwt    The JWT
-     * @param string|Array|null $key    The secret key, or map of keys
-     * @param bool        $verify Don't skip verification process 
+     * @param string      $jwt       The JWT
+     * @param string|Array|null $key The secret key, or map of keys
+     * @param bool        $verify    Don't skip verification process
      *
      * @return object      The JWT's payload as a PHP object
      * @throws UnexpectedValueException Provided JWT was invalid
@@ -71,7 +60,7 @@ class JWT
                 } else {
                     throw new DomainException('"kid" empty, unable to lookup correct key');
                 }
-	    }
+            }
             if (!JWT::verify("$headb64.$bodyb64", $sig, $key, $header->alg)) {
                 throw new UnexpectedValueException('Signature verification failed');
             }
@@ -98,9 +87,9 @@ class JWT
     public static function encode($payload, $key, $algo = 'HS256', $keyId = null)
     {
         $header = array('typ' => 'JWT', 'alg' => $algo);
-	if($keyId !== null) {
-		$header['kid'] = $keyId;
-	}
+        if($keyId !== null) {
+            $header['kid'] = $keyId;
+        }
         $segments = array();
         $segments[] = JWT::urlsafeB64Encode(JWT::jsonEncode($header));
         $segments[] = JWT::urlsafeB64Encode(JWT::jsonEncode($payload));
@@ -115,10 +104,10 @@ class JWT
     /**
      * Sign a string with a given key and algorithm.
      *
-     * @param string $msg    The message to sign
-     * @param string|resource $key    The secret key
-     * @param string $method The signing algorithm. Supported
-     *                       algorithms are 'HS256', 'HS384', 'HS512' and 'RS256'
+     * @param string $msg          The message to sign
+     * @param string|resource $key The secret key
+     * @param string $method       The signing algorithm. Supported algorithms
+     *                               are 'HS256', 'HS384', 'HS512' and 'RS256'
      *
      * @return string          An encrypted message
      * @throws DomainException Unsupported algorithm was specified
@@ -142,7 +131,7 @@ class JWT
                 }
         }
     }
-    
+
     /**
      * Verify a signature with the mesage, key and method. Not all methods
      * are symmetric, so we must have a separate verify and sign method.
