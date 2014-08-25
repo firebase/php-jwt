@@ -31,6 +31,14 @@ $jwt = JWT::encode($token, $key);
 $decoded = JWT::decode($jwt, $key);
 
 print_r($decoded);
+
+/*
+ NOTE: This will now be an object instead of an associative array. To get
+ an associative array, you will need to cast it as such:
+*/
+
+$decoded_array = (array) $decoded;
+
 ?>
 ```
 
