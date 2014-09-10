@@ -157,7 +157,16 @@ class JWT
                 }
             case 'hash_hmac':
             default:
-                return $signature === hash_hmac($algo, $msg, $key, true);
+                $hash = hash_hmac($algo, $msg, $key, true);
+                $len = min(strlen($signature), strlen($hash));
+
+                $status = 0;
+                for ($i = 0; $i < $len; $i++) {
+                    $status |= (ord($signature[$i]) ^ ord($hash[$i]));
+                }
+                $status |= (strlen($signature) ^ strlen($hash));
+
+                return ($status === 0);
         }
     }
 
