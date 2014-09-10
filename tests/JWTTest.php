@@ -47,6 +47,15 @@ class JWTTest extends PHPUnit_Framework_TestCase {
 		$this->assertEquals($decoded->message, 'abc');
 	}
 
+	function testInvalidToken() {
+		$payload = array(
+			"message" => "abc",
+			"exp" => time() + 20); // time in the future
+		$encoded = JWT::encode($payload, 'my_key');
+		$this->setExpectedException('UnexpectedValueException');
+		$decoded = JWT::decode($encoded, 'my_key2');
+	}
+
 	function testRSEncodeDecode() {
 		$privKey = openssl_pkey_new(array('digest_alg' => 'sha256',
 			'private_key_bits' => 1024,
