@@ -37,22 +37,22 @@ class JWTTest extends PHPUnit_Framework_TestCase
 
     public function testExpiredToken()
     {
-        $this->setExpectedException('UnexpectedValueException');
+        $this->setExpectedException('ExpiredException');
         $payload = array(
             "message" => "abc",
             "exp" => time() - 20); // time in the past
         $encoded = JWT::encode($payload, 'my_key');
-        JWT::decode($encoded);
+        JWT::decode($encoded, 'my_key');
     }
 
     public function testTooEarlyToken()
     {
-        $this->setExpectedException('UnexpectedValueException');
+        $this->setExpectedException('TooEarlyException');
         $payload = array(
             "message" => "abc",
             "nbf" => time() + 20); // time in the past
         $encoded = JWT::encode($payload, 'my_key');
-        JWT::decode($encoded);
+        JWT::decode($encoded, 'my_key');
     }
 
     public function testValidToken()
@@ -82,7 +82,7 @@ class JWTTest extends PHPUnit_Framework_TestCase
             "message" => "abc",
             "exp" => time() + 20); // time in the future
         $encoded = JWT::encode($payload, 'my_key');
-        $this->setExpectedException('UnexpectedValueException');
+        $this->setExpectedException('SignatureInvalidException');
         $decoded = JWT::decode($encoded, 'my_key2');
     }
 

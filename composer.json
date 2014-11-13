@@ -19,7 +19,7 @@
         "php": ">=5.2.0"
     },
     "autoload": {
-        "classmap": ["Authentication/"]
+        "classmap": ["Authentication/", "Exceptions/"]
     },
     "target-dir": "Firebase/PHP-JWT",
     "minimum-stability": "dev"
