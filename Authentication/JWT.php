@@ -61,12 +61,22 @@ class JWT
                     throw new DomainException('"kid" empty, unable to lookup correct key');
                 }
             }
+
+            // Check the signature
             if (!JWT::verify("$headb64.$bodyb64", $sig, $key, $header->alg)) {
                 throw new UnexpectedValueException('Signature verification failed');
             }
+
             // Check token expiry time if defined.
             if (isset($payload->exp) && time() >= $payload->exp) {
-                throw new UnexpectedValueException('Expired Token');
+                throw new UnexpectedValueException('Expired token');
+            }
+
+            // Check if the nbf if it is defined.
+            if (isset($payload->nbf) && $payload->nbf > time()) {
+                throw new UnexpectedValueException(
+                    'Cannot handle token prior to ' . date(DateTime::ISO8601, $payload->nbf)
+                );
             }
         }
         return $payload;

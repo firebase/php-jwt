@@ -45,11 +45,32 @@ class JWTTest extends PHPUnit_Framework_TestCase
         JWT::decode($encoded);
     }
 
+    public function testTooEarlyToken()
+    {
+        $this->setExpectedException('UnexpectedValueException');
+        $payload = array(
+            "message" => "abc",
+            "nbf" => time() + 20); // time in the past
+        $encoded = JWT::encode($payload, 'my_key');
+        JWT::decode($encoded);
+    }
+
     public function testValidToken()
     {
         $payload = array(
             "message" => "abc",
             "exp" => time() + 20); // time in the future
+        $encoded = JWT::encode($payload, 'my_key');
+        $decoded = JWT::decode($encoded, 'my_key');
+        $this->assertEquals($decoded->message, 'abc');
+    }
+
+    public function testValidTokenWithNbf()
+    {
+        $payload = array(
+            "message" => "abc",
+            "exp" => time() + 20, // time in the future
+            "nbf" => time() - 20);
         $encoded = JWT::encode($payload, 'my_key');
         $decoded = JWT::decode($encoded, 'my_key');
         $this->assertEquals($decoded->message, 'abc');
