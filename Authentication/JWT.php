@@ -74,7 +74,7 @@ class JWT
 
             // Check if the nbf if it is defined.
             if (isset($payload->nbf) && $payload->nbf > time()) {
-                throw new TooEarlyException(
+                throw new BeforeValidException(
                     'Cannot handle token prior to ' . date(DateTime::ISO8601, $payload->nbf)
                 );
             }
