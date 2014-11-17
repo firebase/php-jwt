@@ -30,8 +30,11 @@ class JWT
      * @param bool        $verify    Don't skip verification process
      *
      * @return object      The JWT's payload as a PHP object
-     * @throws UnexpectedValueException Provided JWT was invalid
      * @throws DomainException          Algorithm was not provided
+     * @throws UnexpectedValueException Provided JWT was invalid
+     * @throws BeforeValidException     Provided JWT is trying to be used before it's eligible as defined by 'nbf'
+     * @throws BeforeValidException     Provided JWT is trying to be used before it's been created as defined by 'iat'
+     * @throws ExpiredException         Provided JWT has since expired, as defined by the 'exp' claim
      *
      * @uses jsonDecode
      * @uses urlsafeB64Decode
@@ -67,16 +70,26 @@ class JWT
                 throw new SignatureInvalidException('Signature verification failed');
             }
 
-            // Check token expiry time if defined.
-            if (isset($payload->exp) && time() >= $payload->exp) {
-                throw new ExpiredException('Expired token');
-            }
-
-            // Check if the nbf if it is defined.
+            // Check if the nbf if it is defined. This is the time that the
+            // token can actually be used. If it's not yet that time, abort.
             if (isset($payload->nbf) && $payload->nbf > time()) {
                 throw new BeforeValidException(
                     'Cannot handle token prior to ' . date(DateTime::ISO8601, $payload->nbf)
                 );
+            }
+
+            // Check that this token has been created before 'now'. This prevents
+            // using tokens that have been created for later use (and haven't
+            // correctly used the nbf claim).
+            if (isset($payload->iat) && $payload->iat > time()) {
+                throw new BeforeValidException(
+                    'Cannot handle token prior to ' . date(DateTime::ISO8601, $payload->iat)
+                );
+            }
+
+            // Check if this token has expired.
+            if (isset($payload->exp) && time() >= $payload->exp) {
+                throw new ExpiredException('Expired token');
             }
         }
 

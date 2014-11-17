@@ -45,12 +45,22 @@ class JWTTest extends PHPUnit_Framework_TestCase
         JWT::decode($encoded, 'my_key');
     }
 
-    public function testBeforeValidToken()
+    public function testBeforeValidTokenWithNbf()
     {
         $this->setExpectedException('BeforeValidException');
         $payload = array(
             "message" => "abc",
             "nbf" => time() + 20); // time in the future
+        $encoded = JWT::encode($payload, 'my_key');
+        JWT::decode($encoded, 'my_key');
+    }
+
+    public function testBeforeValidTokenWithIat()
+    {
+        $this->setExpectedException('BeforeValidException');
+        $payload = array(
+            "message" => "abc",
+            "iat" => time() + 20); // time in the future
         $encoded = JWT::encode($payload, 'my_key');
         JWT::decode($encoded, 'my_key');
     }
@@ -69,6 +79,7 @@ class JWTTest extends PHPUnit_Framework_TestCase
     {
         $payload = array(
             "message" => "abc",
+            "iat" => time(),
             "exp" => time() + 20, // time in the future
             "nbf" => time() - 20);
         $encoded = JWT::encode($payload, 'my_key');
