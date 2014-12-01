@@ -41,7 +41,7 @@ class JWT
      * @uses jsonDecode
      * @uses urlsafeB64Decode
      */
-    public static function decode($jwt, $key = null, $verify = true)
+    public static function decode($jwt, $key = null, $verify = true, $validate = true)
     {
         $tks = explode('.', $jwt);
         if (count($tks) != 3) {
@@ -71,7 +71,9 @@ class JWT
             if (!JWT::verify("$headb64.$bodyb64", $sig, $key, $header->alg)) {
                 throw new SignatureInvalidException('Signature verification failed');
             }
-
+        }
+        
+        if ($validate) {
             // Check if the nbf if it is defined. This is the time that the
             // token can actually be used. If it's not yet that time, abort.
             if (isset($payload->nbf) && $payload->nbf > time()) {
