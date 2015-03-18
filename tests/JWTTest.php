@@ -116,4 +116,14 @@ class JWTTest extends PHPUnit_Framework_TestCase
         $decoded = JWT::decode($msg, $keys, true);
         $this->assertEquals($decoded, 'abc');
     }
+    public function testValidTokenAsArray()
+    {
+        $payload = array(
+            "message" => "abc",
+            "scopes"  => array("view","vote"),
+            );
+        $encoded = JWT::encode($payload, 'my_key');
+        $decoded = JWT::decode($encoded, 'my_key',true,true);
+        $this->assertEquals($decoded['scopes'][1], 'vote');
+    }
 }
