@@ -40,11 +40,12 @@ $decoded = JWT::decode($jwt, $key);
 print_r($decoded);
 
 /*
- NOTE: This will now be an object instead of an associative array. To get
- an associative array, you will need to cast it as such:
+ NOTE: This will be an object instead of an associative array. To get
+ an associative array, set the fourth parameter to decode() to true.
+ (The third parameter is the verify switch)
 */
 
-$decoded_array = (array) $decoded;
+$decoded_array = = JWT::decode($jwt, $key, true, true);
 
 ?>
 ```
