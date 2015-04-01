@@ -26,6 +26,7 @@ if [ $? -eq 0 ]; then
     echo
     echo -e "\033[33mBegin Unit Testing\033[0m"
     # Run the testing suite
+    php --version
     php phpunit.phar --configuration phpunit.xml.dist
 else
     echo
