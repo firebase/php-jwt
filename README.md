@@ -48,6 +48,17 @@ $decoded_array = (array) $decoded;
 ?>
 ```
 
+Changelog
+---------
+
+#### 2.0.0 / 2015-04-01
+- **Note**: It is strongly recommended that you update to > v2.0.0 to address
+  known security vulnerabilities in prior versions when both symmetric and
+  asymmetric keys are used together.
+- Update signature for `JWT::decode(...)` to require an array of supported
+  algorithms to use when verifying token signatures.
+
+
 Tests
 -----
 Run the tests using phpunit:
