@@ -27,15 +27,14 @@ $token = array(
     "nbf" => 1357000000
 );
 
-/*
- IMPORTANT
- HS256 is actually the default, but you should set it explicitly
- if you intend to use another strategy (e.g. RS256):
-*/
-JWT::setOnlyMethodAllowed('HS256');
-
+/**
+ * IMPORTANT:
+ * You must specify supported algorithms for your application. See
+ * https://tools.ietf.org/html/draft-ietf-jose-json-web-algorithms-40
+ * for a list of spec-compliant algorithms.
+ */
 $jwt = JWT::encode($token, $key);
-$decoded = JWT::decode($jwt, $key);
+$decoded = JWT::decode($jwt, $key, array('HS256'));
 
 print_r($decoded);
 
