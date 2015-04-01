@@ -116,4 +116,18 @@ class JWTTest extends PHPUnit_Framework_TestCase
         $decoded = JWT::decode($msg, $keys, array('HS256'));
         $this->assertEquals($decoded, 'abc');
     }
+
+    public function testNoneToken()
+    {
+        $msg = JWT::encode('abc', 'my_key');
+        $this->setExpectedException('DomainException');
+        JWT::decode($msg, 'my_key', array('none'));
+    }
+
+    public function testIncorrectAlgorithm()
+    {
+        $msg = JWT::encode('abc', 'my_key');
+        $this->setExpectedException('DomainException');
+        JWT::decode($msg, 'my_key', array('RS256'));
+    }
 }
