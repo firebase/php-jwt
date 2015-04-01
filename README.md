@@ -27,6 +27,13 @@ $token = array(
     "nbf" => 1357000000
 );
 
+/*
+ IMPORTANT
+ HS256 is actually the default, but you should set it explicitly
+ if you intend to use another strategy (e.g. RS256):
+*/
+JWT::setOnlyMethodAllowed('HS256');
+
 $jwt = JWT::encode($token, $key);
 $decoded = JWT::decode($jwt, $key);
 
