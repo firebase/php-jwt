@@ -192,6 +192,9 @@ class JWT
             case 'hash_hmac':
             default:
                 $hash = hash_hmac($algo, $msg, $key, true);
+                if (function_exists('hash_equals')) {
+                    return hash_equals($signature, $hash);
+                }
                 $len = min(self::safeStrlen($signature), self::safeStrlen($hash));
 
                 $status = 0;
