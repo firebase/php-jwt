@@ -25,9 +25,9 @@ class JWT
     /**
      * Decodes a JWT string into a PHP object.
      *
-     * @param string      $jwt         The JWT
-     * @param string|Array|null $key   The secret key, or map of keys
-     * @param bool        $algs        List of supported verification algorithms
+     * @param string      $jwt           The JWT
+     * @param string|Array|null $key     The secret key, or map of keys
+     * @param Array       $allowed_algs  List of supported verification algorithms
      *
      * @return object      The JWT's payload as a PHP object
      *
@@ -41,7 +41,7 @@ class JWT
      * @uses jsonDecode
      * @uses urlsafeB64Decode
      */
-    public static function decode($jwt, $key = null, $algs = array())
+    public static function decode($jwt, $key = null, $allowed_algs = array())
     {
         $tks = explode('.', $jwt);
         if (count($tks) != 3) {
@@ -55,12 +55,15 @@ class JWT
             throw new UnexpectedValueException('Invalid claims encoding');
         }
         $sig = JWT::urlsafeB64Decode($cryptob64);
-        if (!empty($key)) {
+        if (isset($key)) {
             if (empty($header->alg)) {
                 throw new DomainException('Empty algorithm');
             }
             if (empty(self::$supported_algs[$header->alg])) {
                 throw new DomainException('Algorithm not supported');
+            }
+            if (!is_array($allowed_algs) || !in_array($header->alg, $allowed_algs)) {
+                throw new DomainException('Algorithm not allowed');
             }
             if (is_array($key)) {
                 if (isset($header->kid)) {
