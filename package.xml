@@ -19,10 +19,10 @@
   <email>anant@php.net</email>
   <active>yes</active>
  </lead>
- <date>2012-12-31</date>
+ <date>2015-04-01</date>
  <version>
-  <release>0.1.0</release>
-  <api>0.1.0</api>
+  <release>2.0.0</release>
+  <api>2.0.0</api>
  </version>
  <stability>
   <release>beta</release>
@@ -67,7 +67,7 @@ Initial release with basic support for JWT encoding, decoding and signature veri
     <release>beta</release>
     <api>beta</api>
    </stability>
-   <date>2012-12-31</date>
+   <date>2015-04-01</date>
    <license uri="http://opensource.org/licenses/BSD-3-Clause">BSD 3-Clause License</license>
    <notes>
 Initial release with basic support for JWT encoding, decoding and signature verification.
