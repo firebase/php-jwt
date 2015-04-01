@@ -1,6 +1,5 @@
 
 #!/usr/bin/env bash
-clean=1 # Delete phpunit.phar after the tests are complete?
 gpg --fingerprint D8406D0D82947747293778314AA394086372C20A
 if [ $? -ne 0 ]; then
     echo -e "\033[33mDownloading PGP Public Key...\033[0m"
@@ -10,16 +9,6 @@ if [ $? -ne 0 ]; then
     if [ $? -ne 0 ]; then
         echo -e "\033[31mCould not download PGP public key for verification\033[0m"
         exit
-    fi
-fi
-
-if [ "$clean" -eq 1 ]; then
-    # Let's clean them up, if they exist
-    if [ -f phpunit.phar ]; then
-        rm -f phpunit.phar
-    fi
-    if [ -f phpunit.phar.asc ]; then
-        rm -f phpunit.phar.asc
     fi
 fi
 
@@ -37,7 +26,7 @@ if [ $? -eq 0 ]; then
     echo
     echo -e "\033[33mBegin Unit Testing\033[0m"
     # Run the testing suite
-    phpunit --configuration phpunit.xml.dist
+    php phpunit --configuration phpunit.xml.dist
     # Cleanup
     if [ "$clean" -eq 1 ]; then
         echo -e "\033[32mCleaning Up!\033[0m"
