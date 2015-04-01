@@ -15,6 +15,8 @@
  */
 class JWT
 {
+    public static $only_method = 'HS256';
+    
     public static $methods = array(
         'HS256' => array('hash_hmac', 'SHA256'),
         'HS512' => array('hash_hmac', 'SHA512'),
@@ -173,6 +175,11 @@ class JWT
         if (empty(self::$methods[$method])) {
             throw new DomainException('Algorithm not supported');
         }
+        if (self::$only_method === null) {
+            throw new DomainException('Algorithm not specified');
+        } elseif ($method !== self::$only_method) {
+            throw new DomainException('Incorrect algorithm error');
+        }
         list($function, $algo) = self::$methods[$method];
         switch($function) {
             case 'openssl':
@@ -298,5 +305,23 @@ class JWT
             ? $messages[$errno]
             : 'Unknown JSON error: ' . $errno
         );
+    }
+    
+    /**
+     * Set the only allowed method for this server.
+     * 
+     * @ref https://auth0.com/blog/2015/03/31/critical-vulnerabilities-in-json-web-token-libraries/
+     * 
+     * @param string $method array index in self::$methods
+     * 
+     * @return boolean
+     */
+    public static function setOnlyAllowedMethod($method)
+    {
+        if (!empty(self::$methods[$method])) {
+            self::$only_method = $method;
+            return true;
+        }
+        return false;
     }
 }
