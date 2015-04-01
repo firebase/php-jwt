@@ -192,13 +192,13 @@ class JWT
             case 'hash_hmac':
             default:
                 $hash = hash_hmac($algo, $msg, $key, true);
-                $len = min(strlen($signature), strlen($hash));
+                $len = min(self::safeStrlen($signature), self::safeStrlen($hash));
 
                 $status = 0;
                 for ($i = 0; $i < $len; $i++) {
                     $status |= (ord($signature[$i]) ^ ord($hash[$i]));
                 }
-                $status |= (strlen($signature) ^ strlen($hash));
+                $status |= (self::safeStrlen($signature) ^ self::safeStrlen($hash));
 
                 return ($status === 0);
         }
@@ -307,6 +307,20 @@ class JWT
         );
     }
     
+    /**
+     * Get the number of bytes in cryptographic strings.
+     *
+     * @param string
+     * @return int
+     */
+    private static function safeStrlen($str)
+    {
+        if (function_exists('mb_strlen')) {
+            return mb_strlen($str, '8bit');
+        }
+        return strlen($str);
+    }
+
     /**
      * Set the only allowed method for this server.
      * 
