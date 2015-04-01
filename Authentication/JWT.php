@@ -170,7 +170,7 @@ class JWT
      * @param string $msg the original message
      * @param string $signature
      * @param string|resource $key for HS*, a string key works. for RS*, must be a resource of an openssl public key
-     * @param string $algorithms
+     * @param string $alg
      * @return bool
      * @throws DomainException Invalid Algorithm or OpenSSL failure
      */
