@@ -21,6 +21,5 @@
     "autoload": {
         "classmap": ["Authentication/", "Exceptions/"]
     },
-    "target-dir": "Firebase/PHP-JWT",
     "minimum-stability": "dev"
 }
