@@ -28,7 +28,6 @@ class JWT
      * @param string      $jwt           The JWT
      * @param string|Array|null $key     The secret key, or map of keys
      * @param Array       $allowed_algs  List of supported verification algorithms
-     * @param boolean     $decryptPayload   Defines if the payload should be decrypted before decode it as json
      *
      * @return object      The JWT's payload as a PHP object
      *
@@ -42,7 +41,7 @@ class JWT
      * @uses jsonDecode
      * @uses urlsafeB64Decode
      */
-    public static function decode($jwt, $key = null, $allowed_algs = array(), $decryptPayload = false)
+    public static function decode($jwt, $key = null, $allowed_algs = array())
     {
         $tks = explode('.', $jwt);
         if (count($tks) != 3) {
@@ -52,7 +51,12 @@ class JWT
         if (null === ($header = JWT::jsonDecode(JWT::urlsafeB64Decode($headb64)))) {
             throw new UnexpectedValueException('Invalid header encoding');
         }
-        if (null === ($payload = JWT::jsonDecode(JWT::urlsafeB64Decode($bodyb64), $decryptPayload === true ? $key : null))) {
+        if (property_exists($header, "pea")) {
+            $payload = JWT::jsonDecode(JWT::urlsafeB64Decode($bodyb64), $key, $header->pea);
+        } else {
+            $payload = JWT::jsonDecode(JWT::urlsafeB64Decode($bodyb64));
+        }
+        if (null === $payload) {
             throw new UnexpectedValueException('Invalid claims encoding');
         }
         $sig = JWT::urlsafeB64Decode($cryptob64);
@@ -112,20 +116,28 @@ class JWT
      * @param string       $key     The secret key
      * @param string       $alg     The signing algorithm. Supported
      *                              algorithms are 'HS256', 'HS384' and 'HS512'
+     * @param string       $encryptPayloadAlgorithm  The algorithm to be used to encrypt the payload
+     *                                               Supported: 'Rijndael128', 'Rijndael256'
      *
      * @return string      A signed JWT
      * @uses jsonEncode
      * @uses urlsafeB64Encode
      */
-    public static function encode($payload, $key, $alg = 'HS256', $keyId = null, $encrypt = false)
+    public static function encode($payload, $key, $alg = 'HS256', $keyId = null, $encryptPayloadAlgorithm = null)
     {
         $header = array('typ' => 'JWT', 'alg' => $alg);
         if ($keyId !== null) {
             $header['kid'] = $keyId;
         }
+        if ($encryptPayloadAlgorithm !== null) {
+            $header["pea"] = $encryptPayloadAlgorithm;
+        }
         $segments = array();
         $segments[] = JWT::urlsafeB64Encode(JWT::jsonEncode($header));
-        $segments[] = JWT::urlsafeB64Encode(JWT::jsonEncode($payload, $encrypt === true ? $key : null));
+        if ($encryptPayloadAlgorithm === null)
+            $segments[] = JWT::urlsafeB64Encode(JWT::jsonEncode($payload));
+        else
+            $segments[] = JWT::urlsafeB64Encode(JWT::jsonEncode($payload, $key, $encryptPayloadAlgorithm));
         $signing_input = implode('.', $segments);
 
         $signature = JWT::sign($signing_input, $key, $alg);
@@ -211,16 +223,17 @@ class JWT
     /**
      * Decode a JSON string into a PHP object.
      *
-     * @param string $input JSON string
-     * @param boolean $decrypt To define if the string should first be decrypted
+     * @param string $input      JSON string
+     * @param string $key        Key to be used to decrypt the payload
+     * @param string $algorithm  Algorithm to be used to decrypt the payload
      *
      * @return object          Object representation of JSON string
      * @throws DomainException Provided string was invalid JSON
      */
-    public static function jsonDecode($input, $decryptKey = null)
+    public static function jsonDecode($input, $key = null, $algorithm = null)
     {
-        if ($decryptKey !== null) {
-            $aes = self::initMbCrypt($decryptKey);
+        if ($key !== null && $algorithm !== null) {
+            $aes = self::initMbCrypt($key, $algorithm);
             $ret = mdecrypt_generic($aes, $input);
             mcrypt_generic_deinit($aes);
             list($length, $padded_data) = explode('|', $ret, 2);
@@ -253,13 +266,14 @@ class JWT
     /**
      * Encode a PHP object into a JSON string.
      *
-     * @param object|array $input A PHP object or array
-     * @param string $key The key to be used to crypt the payload
+     * @param object|array $input  A PHP object or array
+     * @param string $key          The key to be used to crypt the payload
+     * @param string $algorithm    The algorithm to encrypt the payload
      *
      * @return string          JSON representation of the PHP object or array
      * @throws DomainException Provided object could not be encoded to valid JSON
      */
-    public static function jsonEncode($input, $key = null)
+    public static function jsonEncode($input, $key = null, $algorithm = null)
     {
         $json = json_encode($input);
         if (function_exists('json_last_error') && $errno = json_last_error()) {
@@ -268,7 +282,7 @@ class JWT
             throw new DomainException('Null result with non-null input');
         }
         if ($key !== null) {
-            $aes = self::initMbCrypt($key);
+            $aes = self::initMbCrypt($key, $algorithm);
             $json = self::safeStrlen($json) . '|' . $json;
             $json = mcrypt_generic($aes, $json);
             mcrypt_generic_deinit($aes);
@@ -346,11 +360,12 @@ class JWT
      *
      * @author Abraham Cruz <abraham.sustaita@gmail.com>
      *
-     * @param  string $key
+     * @param string $key
+     * @param string $algorithm The name of the algorithm to be used to encrypt the data
      *
      * @return resource
      */
-    private static function initMbCrypt($key)
+    private static function initMbCrypt($key, $algorithm)
     {
         /*
         First, we need to turn the key into a hexadecimal string and limit its length
@@ -369,8 +384,19 @@ class JWT
             $key32length = substr($key, 0, 32);
 
         $key = pack("H*", $key32length);
-        $iv = pack("H*", "0123456789ABCDEFFEDBCA654789123");
-        $aes = mcrypt_module_open(MCRYPT_RIJNDAEL_128, '', MCRYPT_MODE_CBC, '');
+
+        switch ($algorithm) {
+            case "Rijndael128":
+                $iv = pack("H*", "0123456789ABCDEFFEDBCA654789123");
+                $aes = mcrypt_module_open(MCRYPT_RIJNDAEL_128, '', MCRYPT_MODE_CBC, '');
+                break;
+            case "Rijndael256":
+                $iv = pack("H*", "0123456789ABCDEFFEDBCA6547891230123456789ABCDEFFEDBCA6547891233");
+                $aes = mcrypt_module_open(MCRYPT_RIJNDAEL_256, '', MCRYPT_MODE_CBC, '');
+                break;
+            default:
+                throw new CryptAlgorithmInvalidException("Invalid algorithm to encrypt/decrypt the payload: {$algorithm}");
+        }
         mcrypt_generic_init($aes, $key, $iv);
 
         return $aes;
