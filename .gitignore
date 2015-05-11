@@ -1,3 +1,6 @@
 vendor
 phpunit.phar
 phpunit.phar.asc
+composer.lock
+composer.phar
+php-jwt.sublime-*
