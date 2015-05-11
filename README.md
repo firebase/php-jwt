@@ -45,6 +45,16 @@ print_r($decoded);
 
 $decoded_array = (array) $decoded;
 
+/**
+ * You can add a leeway to account for when there is a clock skew times between
+ * the signing and verifying servers. It is recomended this leeway should not
+ * be bigger than a few minutes.
+ * Source: http://self-issued.info/docs/draft-ietf-oauth-json-web-token.html#nbfDef
+ */
+
+JWT::$leeway = 60;
+$decoded = JWT::decode($jwt, $key, array('HS256'));
+
 ?>
 ```
 

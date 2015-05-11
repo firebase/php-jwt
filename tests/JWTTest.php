@@ -38,7 +38,7 @@ class JWTTest extends PHPUnit_Framework_TestCase
     public function testExpiredToken()
     {
         $this->setExpectedException('ExpiredException');
-        $timeInPast = time() - JWT::LEEWAYTIME - 20;
+        $timeInPast = time() - 20;
         $payload = array(
             "message" => "abc",
             "exp" => $timeInPast // time in the past
@@ -50,7 +50,7 @@ class JWTTest extends PHPUnit_Framework_TestCase
     public function testBeforeValidTokenWithNbf()
     {
         $this->setExpectedException('BeforeValidException');
-        $timeInFuture = time() + JWT::LEEWAYTIME + 20;
+        $timeInFuture = time() + 20;
         $payload = array(
             "message" => "abc",
             "nbf" => $timeInFuture // time in the future
@@ -62,7 +62,7 @@ class JWTTest extends PHPUnit_Framework_TestCase
     public function testBeforeValidTokenWithIat()
     {
         $this->setExpectedException('BeforeValidException');
-        $timeInFuture = time() + JWT::LEEWAYTIME + 20;
+        $timeInFuture = time() + 20;
         $payload = array(
             "message" => "abc",
             "iat" => $timeInFuture // time in the future
@@ -75,7 +75,30 @@ class JWTTest extends PHPUnit_Framework_TestCase
     {
         $payload = array(
             "message" => "abc",
-            "exp" => time() + 20); // time in the future
+            "exp" => time() + JWT::$leeway + 20); // time in the future
+        $encoded = JWT::encode($payload, 'my_key');
+        $decoded = JWT::decode($encoded, 'my_key', array('HS256'));
+        $this->assertEquals($decoded->message, 'abc');
+    }
+
+    public function testValidTokenWithLeeway()
+    {
+        JWT::$leeway = 60;
+        $payload = array(
+            "message" => "abc",
+            "exp" => time() - 20); // time in the past
+        $encoded = JWT::encode($payload, 'my_key');
+        $decoded = JWT::decode($encoded, 'my_key', array('HS256'));
+        $this->assertEquals($decoded->message, 'abc');
+    }
+
+    public function testExpiredTokenWithLeeway()
+    {
+        JWT::$leeway = 60;
+        $payload = array(
+            "message" => "abc",
+            "exp" => time() - 70); // time far in the past
+        $this->setExpectedException('ExpiredException');
         $encoded = JWT::encode($payload, 'my_key');
         $decoded = JWT::decode($encoded, 'my_key', array('HS256'));
         $this->assertEquals($decoded->message, 'abc');
