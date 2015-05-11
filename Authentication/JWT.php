@@ -51,8 +51,8 @@ class JWT
         if (null === ($header = JWT::jsonDecode(JWT::urlsafeB64Decode($headb64)))) {
             throw new UnexpectedValueException('Invalid header encoding');
         }
-        if (property_exists($header, "pea")) {
-            $payload = JWT::jsonDecode(JWT::urlsafeB64Decode($bodyb64), $key, $header->pea);
+        if (property_exists($header, "enc")) {
+            $payload = JWT::jsonDecode(JWT::urlsafeB64Decode($bodyb64), $key, $header->enc);
         } else {
             $payload = JWT::jsonDecode(JWT::urlsafeB64Decode($bodyb64));
         }
@@ -130,7 +130,7 @@ class JWT
             $header['kid'] = $keyId;
         }
         if ($encryptPayloadAlgorithm !== null) {
-            $header["pea"] = $encryptPayloadAlgorithm;
+            $header["enc"] = $encryptPayloadAlgorithm;
         }
         $segments = array();
         $segments[] = JWT::urlsafeB64Encode(JWT::jsonEncode($header));
