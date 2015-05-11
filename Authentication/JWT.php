@@ -28,6 +28,7 @@ class JWT
      * @param string      $jwt           The JWT
      * @param string|Array|null $key     The secret key, or map of keys
      * @param Array       $allowed_algs  List of supported verification algorithms
+     * @param boolean     $decryptPayload   Defines if the payload should be decrypted before decode it as json
      *
      * @return object      The JWT's payload as a PHP object
      *
@@ -41,7 +42,7 @@ class JWT
      * @uses jsonDecode
      * @uses urlsafeB64Decode
      */
-    public static function decode($jwt, $key = null, $allowed_algs = array())
+    public static function decode($jwt, $key = null, $allowed_algs = array(), $decryptPayload = false)
     {
         $tks = explode('.', $jwt);
         if (count($tks) != 3) {
@@ -51,7 +52,7 @@ class JWT
         if (null === ($header = JWT::jsonDecode(JWT::urlsafeB64Decode($headb64)))) {
             throw new UnexpectedValueException('Invalid header encoding');
         }
-        if (null === $payload = JWT::jsonDecode(JWT::urlsafeB64Decode($bodyb64))) {
+        if (null === ($payload = JWT::jsonDecode(JWT::urlsafeB64Decode($bodyb64), $decryptPayload === true ? $key : null))) {
             throw new UnexpectedValueException('Invalid claims encoding');
         }
         $sig = JWT::urlsafeB64Decode($cryptob64);
@@ -116,7 +117,7 @@ class JWT
      * @uses jsonEncode
      * @uses urlsafeB64Encode
      */
-    public static function encode($payload, $key, $alg = 'HS256', $keyId = null)
+    public static function encode($payload, $key, $alg = 'HS256', $keyId = null, $encrypt = false)
     {
         $header = array('typ' => 'JWT', 'alg' => $alg);
         if ($keyId !== null) {
@@ -124,7 +125,7 @@ class JWT
         }
         $segments = array();
         $segments[] = JWT::urlsafeB64Encode(JWT::jsonEncode($header));
-        $segments[] = JWT::urlsafeB64Encode(JWT::jsonEncode($payload));
+        $segments[] = JWT::urlsafeB64Encode(JWT::jsonEncode($payload, $encrypt === true ? $key : null));
         $signing_input = implode('.', $segments);
 
         $signature = JWT::sign($signing_input, $key, $alg);
@@ -211,12 +212,20 @@ class JWT
      * Decode a JSON string into a PHP object.
      *
      * @param string $input JSON string
+     * @param boolean $decrypt To define if the string should first be decrypted
      *
      * @return object          Object representation of JSON string
      * @throws DomainException Provided string was invalid JSON
      */
-    public static function jsonDecode($input)
+    public static function jsonDecode($input, $decryptKey = null)
     {
+        if ($decryptKey !== null) {
+            $aes = self::initMbCrypt($decryptKey);
+            $ret = mdecrypt_generic($aes, $input);
+            mcrypt_generic_deinit($aes);
+            list($length, $padded_data) = explode('|', $ret, 2);
+            $input = substr($padded_data, 0, $length);
+        }
         if (version_compare(PHP_VERSION, '5.4.0', '>=') && !(defined('JSON_C_VERSION') && PHP_INT_SIZE > 4)) {
             /** In PHP >=5.4.0, json_decode() accepts an options parameter, that allows you
              * to specify that large ints (like Steam Transaction IDs) should be treated as
@@ -249,13 +258,19 @@ class JWT
      * @return string          JSON representation of the PHP object or array
      * @throws DomainException Provided object could not be encoded to valid JSON
      */
-    public static function jsonEncode($input)
+    public static function jsonEncode($input, $key = null)
     {
         $json = json_encode($input);
         if (function_exists('json_last_error') && $errno = json_last_error()) {
             JWT::handleJsonError($errno);
         } elseif ($json === 'null' && $input !== null) {
             throw new DomainException('Null result with non-null input');
+        }
+        if ($key !== null) {
+            $aes = self::initMbCrypt($key);
+            $json = self::safeStrlen($json) . '|' . $json;
+            $json = mcrypt_generic($aes, $json);
+            mcrypt_generic_deinit($aes);
         }
         return $json;
     }
@@ -323,4 +338,34 @@ class JWT
         }
         return strlen($str);
     }
+
+    /**
+     * Initialize the encrypt module to crypt the data using the Rijndael 128 bits
+     * algorithm. This is to add a little bit of security to the payload.
+     *
+     * @param  string $key
+     * @return resource
+     */
+    private static function initMbCrypt($key)
+    {
+        $hex = '';
+        for ($i=0; $i<strlen($key); $i++){
+            $ord = ord($key[$i]);
+            $hexCode = dechex($ord);
+            $hex .= substr('0'.$hexCode, -2);
+        }
+        $key = strToUpper($hex);
+        if (self::safeStrlen($key) < 32)
+            $key32length = str_pad($key, 32, $key);
+        else if (self::safeStrlen($key) > 32)
+            $key32length = substr($key, 0, 32);
+
+        $key = pack("H*", $key);
+        $iv = pack("H*", "0123456789ABCDEFFEDBCA654789123");
+        $aes = mcrypt_module_open(MCRYPT_RIJNDAEL_128, '', MCRYPT_MODE_CBC, '');
+        mcrypt_generic_init($aes, $key, $iv);
+
+        return $aes;
+    }
+
 }
