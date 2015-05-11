@@ -254,6 +254,7 @@ class JWT
      * Encode a PHP object into a JSON string.
      *
      * @param object|array $input A PHP object or array
+     * @param string $key The key to be used to crypt the payload
      *
      * @return string          JSON representation of the PHP object or array
      * @throws DomainException Provided object could not be encoded to valid JSON
@@ -343,11 +344,18 @@ class JWT
      * Initialize the encrypt module to crypt the data using the Rijndael 128 bits
      * algorithm. This is to add a little bit of security to the payload.
      *
+     * @author Abraham Cruz <abraham.sustaita@gmail.com>
+     *
      * @param  string $key
+     *
      * @return resource
      */
     private static function initMbCrypt($key)
     {
+        /*
+        First, we need to turn the key into a hexadecimal string and limit its length
+        to 32 bits.
+         */
         $hex = '';
         for ($i=0; $i<strlen($key); $i++){
             $ord = ord($key[$i]);
