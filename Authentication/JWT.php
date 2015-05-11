@@ -368,7 +368,7 @@ class JWT
         else if (self::safeStrlen($key) > 32)
             $key32length = substr($key, 0, 32);
 
-        $key = pack("H*", $key);
+        $key = pack("H*", $key32length);
         $iv = pack("H*", "0123456789ABCDEFFEDBCA654789123");
         $aes = mcrypt_module_open(MCRYPT_RIJNDAEL_128, '', MCRYPT_MODE_CBC, '');
         mcrypt_generic_init($aes, $key, $iv);
