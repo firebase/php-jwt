@@ -120,6 +120,50 @@ class JWTTest extends PHPUnit_Framework_TestCase
         $this->assertEquals($decoded->message, 'abc');
     }
 
+    public function testValidTokenWithNbfLeeway()
+    {
+        JWT::$leeway = 60;
+        $payload = array(
+            "message" => "abc",
+            "nbf"     => time() + 20); // not before in near (leeway) future
+        $encoded = JWT::encode($payload, 'my_key');
+        $decoded = JWT::decode($encoded, 'my_key', array('HS256'));
+        $this->assertEquals($decoded->message, 'abc');
+    }
+
+    public function testInvalidTokenWithNbfLeeway()
+    {
+        JWT::$leeway = 60;
+        $payload = array(
+            "message" => "abc",
+            "nbf"     => time() + 65); // not before too far in future
+        $encoded = JWT::encode($payload, 'my_key');
+        $this->setExpectedException('BeforeValidException');
+        $decoded = JWT::decode($encoded, 'my_key', array('HS256'));
+    }
+
+    public function testValidTokenWithIatLeeway()
+    {
+        JWT::$leeway = 60;
+        $payload = array(
+            "message" => "abc",
+            "iat"     => time() + 20); // issued in near (leeway) future
+        $encoded = JWT::encode($payload, 'my_key');
+        $decoded = JWT::decode($encoded, 'my_key', array('HS256'));
+        $this->assertEquals($decoded->message, 'abc');
+    }
+
+    public function testInvalidTokenWithIatLeeway()
+    {
+        JWT::$leeway = 60;
+        $payload = array(
+            "message" => "abc",
+            "iat"     => time() + 65); // issued too far in future
+        $encoded = JWT::encode($payload, 'my_key');
+        $this->setExpectedException('BeforeValidException');
+        $decoded = JWT::decode($encoded, 'my_key', array('HS256'));
+    }
+
     public function testInvalidToken()
     {
         $payload = array(
