@@ -84,6 +84,7 @@ class JWTTest extends PHPUnit_Framework_TestCase
         $encoded = JWT::encode($payload, 'my_key');
         $decoded = JWT::decode($encoded, 'my_key', array('HS256'));
         $this->assertEquals($decoded->message, 'abc');
+        JWT::$leeway = 0;
     }
 
     public function testExpiredTokenWithLeeway()
@@ -96,6 +97,7 @@ class JWTTest extends PHPUnit_Framework_TestCase
         $encoded = JWT::encode($payload, 'my_key');
         $decoded = JWT::decode($encoded, 'my_key', array('HS256'));
         $this->assertEquals($decoded->message, 'abc');
+        JWT::$leeway = 0;
     }
 
     public function testValidTokenWithList()
@@ -129,6 +131,7 @@ class JWTTest extends PHPUnit_Framework_TestCase
         $encoded = JWT::encode($payload, 'my_key');
         $decoded = JWT::decode($encoded, 'my_key', array('HS256'));
         $this->assertEquals($decoded->message, 'abc');
+        JWT::$leeway = 0;
     }
 
     public function testInvalidTokenWithNbfLeeway()
@@ -140,6 +143,7 @@ class JWTTest extends PHPUnit_Framework_TestCase
         $encoded = JWT::encode($payload, 'my_key');
         $this->setExpectedException('BeforeValidException');
         $decoded = JWT::decode($encoded, 'my_key', array('HS256'));
+        JWT::$leeway = 0;
     }
 
     public function testValidTokenWithIatLeeway()
@@ -151,6 +155,7 @@ class JWTTest extends PHPUnit_Framework_TestCase
         $encoded = JWT::encode($payload, 'my_key');
         $decoded = JWT::decode($encoded, 'my_key', array('HS256'));
         $this->assertEquals($decoded->message, 'abc');
+        JWT::$leeway = 0;
     }
 
     public function testInvalidTokenWithIatLeeway()
@@ -162,6 +167,7 @@ class JWTTest extends PHPUnit_Framework_TestCase
         $encoded = JWT::encode($payload, 'my_key');
         $this->setExpectedException('BeforeValidException');
         $decoded = JWT::decode($encoded, 'my_key', array('HS256'));
+        JWT::$leeway = 0;
     }
 
     public function testInvalidToken()
