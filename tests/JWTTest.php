@@ -8,6 +8,18 @@ class JWTTest extends PHPUnit_Framework_TestCase
         $this->assertEquals(JWT::decode($msg, 'my_key', array('HS256')), 'abc');
     }
 
+    public function testEncodeDecodeCryptedRijndael128()
+    {
+        $msg = JWT::encode('abc', 'my_key', 'HS256', null, "Rijndael128");
+        $this->assertEquals(JWT::decode($msg, 'my_key', array('HS256')), 'abc');
+    }
+
+    public function testEncodeDecodeCryptedRijndael256()
+    {
+        $msg = JWT::encode('abc', 'my_key', 'HS256', null, "Rijndael256");
+        $this->assertEquals(JWT::decode($msg, 'my_key', array('HS256')), 'abc');
+    }
+
     public function testDecodeFromPython()
     {
         $msg = 'eyJhbGciOiAiSFMyNTYiLCAidHlwIjogIkpXVCJ9.Iio6aHR0cDovL2FwcGxpY2F0aW9uL2NsaWNreT9ibGFoPTEuMjMmZi5vbz00NTYgQUMwMDAgMTIzIg.E_U8X2YpMT5K1cEiT_3-IvBYfrdIFIeVYeOqre_Z5Cg';
