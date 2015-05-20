@@ -61,6 +61,12 @@ $decoded = JWT::decode($jwt, $key, array('HS256'));
 Changelog
 ---------
 
+#### 2.1.0 / 2015-05-20
+- Add support for adding a leeway to `JWT:decode()` that accounts for clock skew
+between signing and verifying entities. Thanks to [@lcabral](https://github.com/lcabral)!
+- Add support for passing an object implementing the `ArrayAccess` interface for
+`$keys` argument in `JWT::decode()`. Thanks to [@aztech-dev](https://github.com/aztech-dev)!
+
 #### 2.0.0 / 2015-04-01
 - **Note**: It is strongly recommended that you update to > v2.0.0 to address
   known security vulnerabilities in prior versions when both symmetric and
