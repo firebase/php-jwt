@@ -14,15 +14,15 @@
   <active>yes</active>
  </lead>
  <lead>
-  <name>Anant Narayanan</name>
-  <user>anant</user>
-  <email>anant@php.net</email>
+  <name>Firebase Operations</name>
+  <user>firebase</user>
+  <email>operations@firebase.com</email>
   <active>yes</active>
  </lead>
- <date>2015-04-01</date>
+ <date>2015-05-20</date>
  <version>
-  <release>2.0.0</release>
-  <api>2.0.0</api>
+  <release>2.1.0</release>
+  <api>2.1.0</api>
  </version>
  <stability>
   <release>beta</release>
