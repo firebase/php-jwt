@@ -132,7 +132,7 @@ class JWT
             $header['kid'] = $keyId;
         }
         if ( isset($head) && is_array($head) ) {
-            array_push($header, $head);
+            array_push($header, array_values($head));
         }
         $segments = array();
         $segments[] = JWT::urlsafeB64Encode(JWT::jsonEncode($header));
