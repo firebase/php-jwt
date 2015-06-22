@@ -64,6 +64,11 @@ $decoded = JWT::decode($jwt, $key, array('HS256'));
 Changelog
 ---------
 
+#### 2.2.0 / 2015-06-22
+- Add support for adding custom, optional JWT headers to `JWT::encode()`. See
+[#53](https://github.com/firebase/php-jwt/pull/53/files) for details. Thanks to
+[@mcocaro](https://github.com/mcocaro)!
+
 #### 2.1.0 / 2015-05-20
 - Add support for adding a leeway to `JWT:decode()` that accounts for clock skew
 between signing and verifying entities. Thanks to [@lcabral](https://github.com/lcabral)!
