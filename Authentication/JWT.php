@@ -250,6 +250,10 @@ class JWT
         } elseif ($obj === null && $input !== 'null') {
             throw new DomainException('Null result with non-null input');
         }
+
+        if ($obj instanceof StdClass) {
+            return new ArrayObject($obj, ArrayObject::ARRAY_AS_PROPS);
+        }
         return $obj;
     }
 
