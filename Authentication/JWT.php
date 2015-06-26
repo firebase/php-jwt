@@ -136,8 +136,8 @@ class JWT
                     throw new InvalidAudienceException('Invalid audience');
                 }
                 
-                $target = is_array($payload->aud) ? $payload->aud : [$payload->aud];
-                $audiences = is_array($options['audience']) ? $options['audience'] : [$options['audience']];
+                $target = is_array($payload->aud) ? $payload->aud : array($payload->aud);
+                $audiences = is_array($options['audience']) ? $options['audience'] : array($options['audience']);
                 
                 $audienceFound = false;
                 foreach ($audiences as $audience) {
@@ -181,9 +181,9 @@ class JWT
         }
         if (isset($options['audience']) && (is_string($options['audience']) || is_array($options['audience']))) {
             if (is_array($payload)) {
-                $payload['aud'] = is_array($options['audience']) ? $options['audience'] : [$options['audience']];
+                $payload['aud'] = is_array($options['audience']) ? $options['audience'] : array($options['audience']);
             } else if (is_object($payload)) {
-                $payload->aud = is_array($options['audience']) ? $options['audience'] : [$options['audience']];
+                $payload->aud = is_array($options['audience']) ? $options['audience'] : array($options['audience']);
             }
         }
         if (isset($options['issuer']) && is_string($options['issuer'])) {
