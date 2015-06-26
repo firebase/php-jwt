@@ -36,6 +36,7 @@ class JWT
      * @param string      $jwt           The JWT
      * @param string|Array|null $key     The secret key, or map of keys
      * @param Array       $allowed_algs  List of supported verification algorithms
+     * @param Array       $options      Extra options (issuer, subject)
      *
      * @return object      The JWT's payload as a PHP object
      *
@@ -49,7 +50,7 @@ class JWT
      * @uses jsonDecode
      * @uses urlsafeB64Decode
      */
-    public static function decode($jwt, $key = null, $allowed_algs = array())
+    public static function decode($jwt, $key = null, $allowed_algs = array(), $options = array())
     {
         $tks = explode('.', $jwt);
         if (count($tks) != 3) {
@@ -107,6 +108,18 @@ class JWT
             if (isset($payload->exp) && (time() - self::$leeway) >= $payload->exp) {
                 throw new ExpiredException('Expired token');
             }
+
+            if (isset($options['issuer']) || isset($payload->iss)) {
+                if (!isset($options['issuer']) || !isset($payload->iss) || !is_string($options['issuer']) || !is_string($payload->iss) || (isset($payload->iss) && $payload->iss !== $options['issuer'])) {
+                    throw new InvalidIssuerException('Invalid issuer');
+                }
+            }
+
+            if (isset($options['subject']) || isset($payload->sub)) {
+                if (!isset($options['subject']) || !isset($payload->sub) || !is_string($options['subject']) || !is_string($payload->sub) || (isset($payload->sub) && $payload->sub !== $options['subject'])) {
+                    throw new InvalidSubjectException('Invalid subject');
+                }
+            }
         }
 
         return $payload;
@@ -120,12 +133,13 @@ class JWT
      * @param string       $alg     The signing algorithm. Supported
      *                              algorithms are 'HS256', 'HS384' and 'HS512'
      * @param array        $head    An array with header elements to attach
+     * @param array        $options Extra options (issuer, subject)
      *
      * @return string      A signed JWT
      * @uses jsonEncode
      * @uses urlsafeB64Encode
      */
-    public static function encode($payload, $key, $alg = 'HS256', $keyId = null, $head = null)
+    public static function encode($payload, $key, $alg = 'HS256', $keyId = null, $head = null, $options = array())
     {
         $header = array('typ' => 'JWT', 'alg' => $alg);
         if ($keyId !== null) {
@@ -133,6 +147,20 @@ class JWT
         }
         if ( isset($head) && is_array($head) ) {
             $header = array_merge($head, $header);
+        }
+        if (isset($options['issuer'])) {
+            if (is_array($payload)) {
+                $payload['iss'] = $options['issuer'];
+            } else if (is_object($payload)) {
+                $payload->iss = $options['issuer'];
+            }
+        }
+        if (isset($options['subject'])) {
+            if (is_array($payload)) {
+                $payload['sub'] = $options['subject'];
+            } else if (is_object($payload)) {
+                $payload->sub = $options['subject'];
+            }
         }
         $segments = array();
         $segments[] = JWT::urlsafeB64Encode(JWT::jsonEncode($header));
