@@ -79,7 +79,7 @@ class JWT
 
             //Default the allowed algorithms to decode's default value.
             if (empty($allowed_algs)) {
-                $allowed_algs = [self::DEFAULT_ALGORITHM];
+                $allowed_algs = array(self::DEFAULT_ALGORITHM);
             } elseif (!is_array($allowed_algs) || !in_array($header->alg, $allowed_algs)) {
                 throw new DomainException('Algorithm not allowed');
             }
