@@ -4,9 +4,16 @@ class JWTTest extends PHPUnit_Framework_TestCase
 {
     public function testEncodeDecode()
     {
+        //Defaults
         $msg = JWT::encode('abc', 'my_key');
-        $this->assertEquals(JWT::decode($msg, 'my_key', array('HS256')), 'abc');
+        $this->assertEquals(JWT::decode($msg, 'my_key'), 'abc');
+
+        //Custom
+        $msg = JWT::encode('abc', 'my_key', Jwt::HS512);
+        $this->assertEquals(JWT::decode($msg, 'my_key', [Jwt::HS512]), 'abc');
     }
+
+
 
     public function testDecodeFromPython()
     {
@@ -222,16 +229,16 @@ class JWTTest extends PHPUnit_Framework_TestCase
         JWT::decode($msg, 'my_key', array('RS256'));
     }
 
-    public function testMissingAlgorithm()
+    public function testMatchingAlgorithm()
     {
         $msg = JWT::encode('abc', 'my_key');
         $this->setExpectedException('DomainException');
-        JWT::decode($msg, 'my_key');
+        JWT::decode($msg, 'my_key', [JWT::HS512]);
     }
 
     public function testAdditionalHeaders()
     {
         $msg = JWT::encode('abc', 'my_key', 'HS256', null, array('cty' => 'test-eit;v=1'));
-        $this->assertEquals(JWT::decode($msg, 'my_key', array('HS256')), 'abc');        
+        $this->assertEquals(JWT::decode($msg, 'my_key', array('HS256')), 'abc');
     }
 }
