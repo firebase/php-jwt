@@ -255,4 +255,10 @@ class JWTTest extends PHPUnit_Framework_TestCase
         $msg = JWT::encode('abc', 'my_key', 'HS256', null, array('cty' => 'test-eit;v=1'));
         $this->assertEquals(JWT::decode($msg, 'my_key', array('HS256')), 'abc');        
     }
+
+    public function testInvalidSegmentCount()
+    {
+        $this->setExpectedException('UnexpectedValueException');
+        JWT::decode('brokenheader.brokenbody', 'my_key', array('HS256'));
+    }
 }

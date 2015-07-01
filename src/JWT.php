@@ -2,6 +2,7 @@
 
 namespace Firebase\JWT;
 use \DomainException;
+use \UnexpectedValueException;
 use \DateTime;
 
 /**
