@@ -21,6 +21,7 @@ Example
 -------
 ```php
 <?php
+use \Firebase\JWT\JWT;
 
 $key = "example_key";
 $token = array(
