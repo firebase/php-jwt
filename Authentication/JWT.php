@@ -16,6 +16,12 @@
 class JWT
 {
 
+    const DEFAULT_ALGORITHM = 'HS256';
+    const HS256 = 'HS256';
+    const HS512 = 'HS512';
+    const HS384 = 'HS384';
+    const RS256 = 'RS256';
+
     /**
      * When checking nbf, iat or expiration times,
      * we want to provide some extra leeway time to
@@ -24,10 +30,10 @@ class JWT
     public static $leeway = 0;
 
     public static $supported_algs = array(
-        'HS256' => array('hash_hmac', 'SHA256'),
-        'HS512' => array('hash_hmac', 'SHA512'),
-        'HS384' => array('hash_hmac', 'SHA384'),
-        'RS256' => array('openssl', 'SHA256'),
+        self::HS256 => array('hash_hmac', 'SHA256'),
+        self::HS512 => array('hash_hmac', 'SHA512'),
+        self::HS384 => array('hash_hmac', 'SHA384'),
+        self::RS256 => array('openssl', 'SHA256')
     );
 
     /**
@@ -35,7 +41,7 @@ class JWT
      *
      * @param string      $jwt           The JWT
      * @param string|Array|null $key     The secret key, or map of keys
-     * @param Array       $allowed_algs  List of supported verification algorithms
+     * @param Array       $allowed_algs  List of supported verification algorithms. Defaults to HS256.
      *
      * @return object      The JWT's payload as a PHP object
      *
@@ -70,7 +76,11 @@ class JWT
             if (empty(self::$supported_algs[$header->alg])) {
                 throw new DomainException('Algorithm not supported');
             }
-            if (!is_array($allowed_algs) || !in_array($header->alg, $allowed_algs)) {
+
+            //Default the allowed algorithms to decode's default value.
+            if (empty($allowed_algs)) {
+                $allowed_algs = array(self::DEFAULT_ALGORITHM);
+            } elseif (!is_array($allowed_algs) || !in_array($header->alg, $allowed_algs)) {
                 throw new DomainException('Algorithm not allowed');
             }
             if (is_array($key) || $key instanceof \ArrayAccess) {
@@ -118,14 +128,15 @@ class JWT
      * @param object|array $payload PHP object or array
      * @param string       $key     The secret key
      * @param string       $alg     The signing algorithm. Supported
-     *                              algorithms are 'HS256', 'HS384' and 'HS512'
+     *                              algorithms are 'HS256', 'HS384' and 'HS512'.
+     *                              Defaults to HS256.
      * @param array        $head    An array with header elements to attach
      *
      * @return string      A signed JWT
      * @uses jsonEncode
      * @uses urlsafeB64Encode
      */
-    public static function encode($payload, $key, $alg = 'HS256', $keyId = null, $head = null)
+    public static function encode($payload, $key, $alg = self::DEFAULT_ALGORITHM, $keyId = null, $head = null)
     {
         $header = array('typ' => 'JWT', 'alg' => $alg);
         if ($keyId !== null) {
@@ -156,7 +167,7 @@ class JWT
      * @return string          An encrypted message
      * @throws DomainException Unsupported algorithm was specified
      */
-    public static function sign($msg, $key, $alg = 'HS256')
+    public static function sign($msg, $key, $alg = self::DEFAULT_ALGORITHM)
     {
         if (empty(self::$supported_algs[$alg])) {
             throw new DomainException('Algorithm not supported');
