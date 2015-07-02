@@ -32,12 +32,15 @@ $token = array(
 
 /**
  * IMPORTANT:
- * You must specify supported algorithms for your application. See
+ * Both operations will default to HS256 if no algorithm is specified
+ * as third optional parameter e.g. `array(JWT::HS256)`.
+ * See :
  * https://tools.ietf.org/html/draft-ietf-jose-json-web-algorithms-40
  * for a list of spec-compliant algorithms.
- */
+ **/
+
 $jwt = JWT::encode($token, $key);
-$decoded = JWT::decode($jwt, $key, array('HS256'));
+$decoded = JWT::decode($jwt, $key);
 
 print_r($decoded);
 
@@ -56,7 +59,7 @@ $decoded_array = (array) $decoded;
  * Source: http://self-issued.info/docs/draft-ietf-oauth-json-web-token.html#nbfDef
  */
 JWT::$leeway = 60; // $leeway in seconds
-$decoded = JWT::decode($jwt, $key, array('HS256'));
+$decoded = JWT::decode($jwt, $key);
 
 ?>
 ```
