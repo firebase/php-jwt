@@ -232,6 +232,118 @@ class JWTTest extends PHPUnit_Framework_TestCase
     public function testAdditionalHeaders()
     {
         $msg = JWT::encode('abc', 'my_key', 'HS256', null, array('cty' => 'test-eit;v=1'));
-        $this->assertEquals(JWT::decode($msg, 'my_key', array('HS256')), 'abc');        
+        $this->assertEquals(JWT::decode($msg, 'my_key', array('HS256')), 'abc');
+    }
+
+    public function testInvalidEmptyIssuerDecode()
+    {
+        $msg = JWT::encode(array('message' => 'abc'), 'my_key', 'HS256', NULL, array('cty' => 'test-eit;v=1'));
+        $this->setExpectedException('InvalidIssuerException');
+        JWT::decode($msg, 'my_key', array('HS256'), array('issuer' => ''));
+    }
+
+    public function testInvalidIssuer()
+    {
+        $msg = JWT::encode(array('message' => 'abc'), 'my_key', 'HS256', NULL, array('cty' => 'test-eit;v=1'), array('issuer' => 'another.example.com'));
+        $this->setExpectedException('InvalidIssuerException');
+        JWT::decode($msg, 'my_key', array('HS256'), array('issuer' => 'example.com'));
+    }
+
+    public function testValidEmptyIssuerPayload()
+    {
+        $msg = JWT::encode(array('message' => 'abc'), 'my_key', 'HS256', NULL, array('cty' => 'test-eit;v=1'), array('issuer' => ''));
+        $decoded = JWT::decode($msg, 'my_key', array('HS256'));
+        $this->assertEquals($decoded->message, 'abc');
+    }
+
+    public function testValidIssuer()
+    {
+        $msg = JWT::encode(array('message' => 'abc'), 'my_key', 'HS256', NULL, array('cty' => 'test-eit;v=1'), array('issuer' => 'example.com'));
+        $decoded = JWT::decode($msg, 'my_key', array('HS256'), array('issuer' => 'example.com'));
+        $this->assertEquals($decoded->message, 'abc');
+    }
+
+    public function testInvalidEmptySubjectDecode()
+    {
+        $msg = JWT::encode(array('message' => 'abc'), 'my_key', 'HS256', NULL, array('cty' => 'test-eit;v=1'));
+        $this->setExpectedException('InvalidSubjectException');
+        JWT::decode($msg, 'my_key', array('HS256'), array('subject' => ''));
+    }
+
+    public function testInvalidSubject()
+    {
+        $msg = JWT::encode(array('message' => 'abc'), 'my_key', 'HS256', NULL, array('cty' => 'test-eit;v=1'), array('subject' => 'NotSubject'));
+        $this->setExpectedException('InvalidSubjectException');
+        JWT::decode($msg, 'my_key', array('HS256'), array('subject' => 'Subject'));
+    }
+
+    public function testValidEmptySubjectPayload()
+    {
+        $msg = JWT::encode(array('message' => 'abc'), 'my_key', 'HS256', NULL, array('cty' => 'test-eit;v=1'), array('subject' => ''));
+        $decoded = JWT::decode($msg, 'my_key', array('HS256'));
+        $this->assertEquals($decoded->message, 'abc');
+    }
+
+    public function testValidSubject()
+    {
+        $msg = JWT::encode(array('message' => 'abc'), 'my_key', 'HS256', NULL, array('cty' => 'test-eit;v=1'), array('subject' => 'Subject'));
+        $decoded = JWT::decode($msg, 'my_key', array('HS256'), array('subject' => 'Subject'));
+        $this->assertEquals($decoded->message, 'abc');
+    }
+
+    public function testInvalidEmptyAudienceDecode()
+    {
+        $msg = JWT::encode(array('message' => 'abc'), 'my_key', 'HS256', NULL, array('cty' => 'test-eit;v=1'));
+        $this->setExpectedException('InvalidAudienceException');
+        JWT::decode($msg, 'my_key', array('HS256'), array('audience' => array('audience')));
+    }
+
+    public function testInvalidAudience()
+    {
+        $msg = JWT::encode(array('message' => 'abc'), 'my_key', 'HS256', NULL, array('cty' => 'test-eit;v=1'), array('audience' => array('Audience1', 'Audience2')));
+        $this->setExpectedException('InvalidAudienceException');
+        JWT::decode($msg, 'my_key', array('HS256'), array('audience' => 'Audience3'));
+    }
+
+    public function testValidEmptyAudiencePayload()
+    {
+        $msg = JWT::encode(array('message' => 'abc'), 'my_key', 'HS256', NULL, array('cty' => 'test-eit;v=1'), array('audience' => array('audience')));
+        $decoded = JWT::decode($msg, 'my_key', array('HS256'));
+        $this->assertEquals($decoded->message, 'abc');
+    }
+
+    public function testValidAudience()
+    {
+        $msg = JWT::encode(array('message' => 'abc'), 'my_key', 'HS256', NULL, array('cty' => 'test-eit;v=1'), array('audience' => array('Audience1', 'Audience2')));
+        $decoded = JWT::decode($msg, 'my_key', array('HS256'), array('audience' => 'Audience2'));
+        $this->assertEquals($decoded->message, 'abc');
+    }
+
+    public function testInvalidEmptyJWTIdDecode()
+    {
+        $msg = JWT::encode(array('message' => 'abc'), 'my_key', 'HS256', NULL, array('cty' => 'test-eit;v=1'));
+        $this->setExpectedException('InvalidJWTIdException');
+        JWT::decode($msg, 'my_key', array('HS256'), array('jwtid' => 'userID'));
+    }
+
+    public function testInvalidJWTId()
+    {
+        $msg = JWT::encode(array('message' => 'abc'), 'my_key', 'HS256', NULL, array('cty' => 'test-eit;v=1'), array('jwtid' => 'userID'));
+        $this->setExpectedException('InvalidJWTIdException');
+        JWT::decode($msg, 'my_key', array('HS256'), array('jwtid' => 'notMyUserID'));
+    }
+
+    public function testValidEmptyJWTIdPayload()
+    {
+        $msg = JWT::encode(array('message' => 'abc'), 'my_key', 'HS256', NULL, array('cty' => 'test-eit;v=1'), array('jwtid' => 'userID'));
+        $decoded = JWT::decode($msg, 'my_key', array('HS256'));
+        $this->assertEquals($decoded->message, 'abc');
+    }
+
+    public function testValidJWTId()
+    {
+        $msg = JWT::encode(array('message' => 'abc'), 'my_key', 'HS256', NULL, array('cty' => 'test-eit;v=1'), array('jwtid' => 'userID'));
+        $decoded = JWT::decode($msg, 'my_key', array('HS256'), array('jwtid' => 'userID'));
+        $this->assertEquals($decoded->message, 'abc');
     }
 }

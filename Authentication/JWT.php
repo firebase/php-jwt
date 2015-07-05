@@ -36,6 +36,7 @@ class JWT
      * @param string      $jwt           The JWT
      * @param string|Array|null $key     The secret key, or map of keys
      * @param Array       $allowed_algs  List of supported verification algorithms
+     * @param Array       $options       Extra options (audience, issuer, jwtid, subject)
      *
      * @return object      The JWT's payload as a PHP object
      *
@@ -45,11 +46,15 @@ class JWT
      * @throws BeforeValidException         Provided JWT is trying to be used before it's eligible as defined by 'nbf'
      * @throws BeforeValidException         Provided JWT is trying to be used before it's been created as defined by 'iat'
      * @throws ExpiredException             Provided JWT has since expired, as defined by the 'exp' claim
+     * @throws InvalidAudienceException     Provided JWT is having a 'aud' value other than audience option
+     * @throws InvalidIssuerException       Provided JWT is having a 'iss' value other than issuer option
+     * @throws InvalidJWTIdException        Provided JWT is having a 'jit' value other than jwtid option
+     * @throws InvalidSubjectException      Provided JWT is having a 'sub' value other than subject option
      *
      * @uses jsonDecode
      * @uses urlsafeB64Decode
      */
-    public static function decode($jwt, $key = null, $allowed_algs = array())
+    public static function decode($jwt, $key = null, $allowed_algs = array(), $options = array())
     {
         $tks = explode('.', $jwt);
         if (count($tks) != 3) {
@@ -107,6 +112,45 @@ class JWT
             if (isset($payload->exp) && (time() - self::$leeway) >= $payload->exp) {
                 throw new ExpiredException('Expired token');
             }
+
+            if (isset($options['issuer']) && is_string($options['issuer'])) {
+                if (!isset($payload->iss) || !is_string($payload->iss) || $payload->iss !== $options['issuer']) {
+                    throw new InvalidIssuerException('Invalid issuer');
+                }
+            }
+
+            if (isset($options['subject']) && is_string($options['subject'])) {
+                if (!isset($payload->sub) || !is_string($payload->sub) || $payload->sub !== $options['subject']) {
+                    throw new InvalidSubjectException('Invalid subject');
+                }
+            }
+
+            if (isset($options['jwtid']) && is_string($options['jwtid'])) {
+                if (!isset($payload->jti) || !is_string($payload->jti) || $payload->jti !== $options['jwtid']) {
+                    throw new InvalidJWTIdException('Invalid JWT ID');
+                }
+            }
+
+            if (isset($options['audience']) && (is_string($options['audience']) || is_array($options['audience']))) {
+                if (!isset($payload->aud)) {
+                    throw new InvalidAudienceException('Invalid audience');
+                }
+                
+                $target = is_array($payload->aud) ? $payload->aud : array($payload->aud);
+                $audiences = is_array($options['audience']) ? $options['audience'] : array($options['audience']);
+                
+                $audienceFound = false;
+                foreach ($audiences as $audience) {
+                    if (is_string($audience) && array_search($audience, $payload->aud) !== false) {
+                        $audienceFound = true;
+                        break;
+                    }
+                }
+                
+                if (!$audienceFound) {
+                    throw new InvalidAudienceException('Invalid audience');
+                }
+            }
         }
 
         return $payload;
@@ -120,12 +164,13 @@ class JWT
      * @param string       $alg     The signing algorithm. Supported
      *                              algorithms are 'HS256', 'HS384' and 'HS512'
      * @param array        $head    An array with header elements to attach
+     * @param array        $options Extra options (audience, issuer, jwtid, subject)
      *
      * @return string      A signed JWT
      * @uses jsonEncode
      * @uses urlsafeB64Encode
      */
-    public static function encode($payload, $key, $alg = 'HS256', $keyId = null, $head = null)
+    public static function encode($payload, $key, $alg = 'HS256', $keyId = null, $head = null, $options = array())
     {
         $header = array('typ' => 'JWT', 'alg' => $alg);
         if ($keyId !== null) {
@@ -133,6 +178,34 @@ class JWT
         }
         if ( isset($head) && is_array($head) ) {
             $header = array_merge($head, $header);
+        }
+        if (isset($options['audience']) && (is_string($options['audience']) || is_array($options['audience']))) {
+            if (is_array($payload)) {
+                $payload['aud'] = is_array($options['audience']) ? $options['audience'] : array($options['audience']);
+            } else if (is_object($payload)) {
+                $payload->aud = is_array($options['audience']) ? $options['audience'] : array($options['audience']);
+            }
+        }
+        if (isset($options['issuer']) && is_string($options['issuer'])) {
+            if (is_array($payload)) {
+                $payload['iss'] = $options['issuer'];
+            } else if (is_object($payload)) {
+                $payload->iss = $options['issuer'];
+            }
+        }
+        if (isset($options['subject']) && is_string($options['subject'])) {
+            if (is_array($payload)) {
+                $payload['sub'] = $options['subject'];
+            } else if (is_object($payload)) {
+                $payload->sub = $options['subject'];
+            }
+        }
+        if (isset($options['jwtid']) && is_string($options['jwtid'])) {
+            if (is_array($payload)) {
+                $payload['jti'] = $options['jwtid'];
+            } else if (is_object($payload)) {
+                $payload->jti = $options['jwtid'];
+            }
         }
         $segments = array();
         $segments[] = JWT::urlsafeB64Encode(JWT::jsonEncode($header));
