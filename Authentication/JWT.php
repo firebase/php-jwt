@@ -49,8 +49,11 @@ class JWT
      * @uses jsonDecode
      * @uses urlsafeB64Decode
      */
-    public static function decode($jwt, $key = null, $allowed_algs = array())
+    public static function decode($jwt, $key, $allowed_algs = array())
     {
+        if (empty($key)) {
+            throw new InvalidArgumentException('Key may not be empty');
+        }
         $tks = explode('.', $jwt);
         if (count($tks) != 3) {
             throw new UnexpectedValueException('Wrong number of segments');
@@ -63,50 +66,49 @@ class JWT
             throw new UnexpectedValueException('Invalid claims encoding');
         }
         $sig = JWT::urlsafeB64Decode($cryptob64);
-        if (isset($key)) {
-            if (empty($header->alg)) {
-                throw new DomainException('Empty algorithm');
+        
+        if (empty($header->alg)) {
+            throw new DomainException('Empty algorithm');
+        }
+        if (empty(self::$supported_algs[$header->alg])) {
+            throw new DomainException('Algorithm not supported');
+        }
+        if (!is_array($allowed_algs) || !in_array($header->alg, $allowed_algs)) {
+            throw new DomainException('Algorithm not allowed');
+        }
+        if (is_array($key) || $key instanceof \ArrayAccess) {
+            if (isset($header->kid)) {
+                $key = $key[$header->kid];
+            } else {
+                throw new DomainException('"kid" empty, unable to lookup correct key');
             }
-            if (empty(self::$supported_algs[$header->alg])) {
-                throw new DomainException('Algorithm not supported');
-            }
-            if (!is_array($allowed_algs) || !in_array($header->alg, $allowed_algs)) {
-                throw new DomainException('Algorithm not allowed');
-            }
-            if (is_array($key) || $key instanceof \ArrayAccess) {
-                if (isset($header->kid)) {
-                    $key = $key[$header->kid];
-                } else {
-                    throw new DomainException('"kid" empty, unable to lookup correct key');
-                }
-            }
+        }
 
-            // Check the signature
-            if (!JWT::verify("$headb64.$bodyb64", $sig, $key, $header->alg)) {
-                throw new SignatureInvalidException('Signature verification failed');
-            }
+        // Check the signature
+        if (!JWT::verify("$headb64.$bodyb64", $sig, $key, $header->alg)) {
+            throw new SignatureInvalidException('Signature verification failed');
+        }
 
-            // Check if the nbf if it is defined. This is the time that the
-            // token can actually be used. If it's not yet that time, abort.
-            if (isset($payload->nbf) && $payload->nbf > (time() + self::$leeway)) {
-                throw new BeforeValidException(
-                    'Cannot handle token prior to ' . date(DateTime::ISO8601, $payload->nbf)
-                );
-            }
+        // Check if the nbf if it is defined. This is the time that the
+        // token can actually be used. If it's not yet that time, abort.
+        if (isset($payload->nbf) && $payload->nbf > (time() + self::$leeway)) {
+            throw new BeforeValidException(
+                'Cannot handle token prior to ' . date(DateTime::ISO8601, $payload->nbf)
+            );
+        }
 
-            // Check that this token has been created before 'now'. This prevents
-            // using tokens that have been created for later use (and haven't
-            // correctly used the nbf claim).
-            if (isset($payload->iat) && $payload->iat > (time() + self::$leeway)) {
-                throw new BeforeValidException(
-                    'Cannot handle token prior to ' . date(DateTime::ISO8601, $payload->iat)
-                );
-            }
+        // Check that this token has been created before 'now'. This prevents
+        // using tokens that have been created for later use (and haven't
+        // correctly used the nbf claim).
+        if (isset($payload->iat) && $payload->iat > (time() + self::$leeway)) {
+            throw new BeforeValidException(
+                'Cannot handle token prior to ' . date(DateTime::ISO8601, $payload->iat)
+            );
+        }
 
-            // Check if this token has expired.
-            if (isset($payload->exp) && (time() - self::$leeway) >= $payload->exp) {
-                throw new ExpiredException('Expired token');
-            }
+        // Check if this token has expired.
+        if (isset($payload->exp) && (time() - self::$leeway) >= $payload->exp) {
+            throw new ExpiredException('Expired token');
         }
 
         return $payload;
