@@ -241,4 +241,35 @@ class JWTTest extends PHPUnit_Framework_TestCase
         $this->setExpectedException('UnexpectedValueException');
         JWT::decode('brokenheader.brokenbody', 'my_key', array('HS256'));
     }
+    
+     /**
+     * Encodes and decodes a plain text JWT
+     * @link https://tools.ietf.org/html/draft-ietf-oauth-json-web-token-06#section-6
+     */
+    public function testPlainTextJWTEncodeDecode()
+    {
+        $msg = JWT::encode('abc', null, 'none');
+        $this->assertEquals(JWT::decode($msg, null), 'abc');
+    }
+
+    /**
+     * Checks the encoding format (output) of a plain text JWT
+     * @link https://tools.ietf.org/html/draft-ietf-oauth-json-web-token-06#section-6
+     */
+    public function testPlainTextJWTEncodingFormat()
+    {
+        $msg = JWT::encode('abc', null, 'none');
+        $this->assertEquals('eyJ0eXAiOiJKV1QiLCJhbGciOiJub25lIn0.ImFiYyI.', $msg, 'signature should be empty after second . seperator');
+    }
+
+    /**
+     * Checks that using a secret key has no impact for the plain text JWT
+     * @link https://tools.ietf.org/html/draft-ietf-oauth-json-web-token-06#section-6
+     */
+    public function testPlainTextJWTEncodeWithNonUsedKeyDecode()
+    {
+        $msg = JWT::encode('abc', 'foo', 'none');
+        $this->assertEquals(JWT::decode($msg), 'abc');
+    }
+
 }

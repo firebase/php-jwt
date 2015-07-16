@@ -28,11 +28,17 @@ class JWT
      */
     public static $leeway = 0;
 
+    /**
+     * An associative array with the keys being the supported algorithms.
+     * The values are mappings to input data for creating the signature.
+     * @var array
+     */
     public static $supported_algs = array(
         'HS256' => array('hash_hmac', 'SHA256'),
         'HS512' => array('hash_hmac', 'SHA512'),
         'HS384' => array('hash_hmac', 'SHA384'),
         'RS256' => array('openssl', 'SHA256'),
+        'none'  => array(null, null),
     );
 
     /**
@@ -173,6 +179,8 @@ class JWT
         }
         list($function, $algorithm) = self::$supported_algs[$alg];
         switch($function) {
+            case 'none' :
+                return '';
             case 'hash_hmac':
                 return hash_hmac($algorithm, $msg, $key, true);
             case 'openssl':
@@ -207,6 +215,10 @@ class JWT
 
         list($function, $algorithm) = self::$supported_algs[$alg];
         switch($function) {
+            case 'none' :
+                return true;
+                break;
+
             case 'openssl':
                 $success = openssl_verify($msg, $signature, $key, $algorithm);
                 if (!$success) {
