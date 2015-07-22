@@ -208,11 +208,11 @@ class JWT
         list($function, $algorithm) = self::$supported_algs[$alg];
         switch($function) {
             case 'openssl':
-                while ($msg = openssl_error_string()) {}
+                while ($err = openssl_error_string()) {}
                 $success = openssl_verify($msg, $signature, $key, $algorithm);
-                while ($msg = openssl_error_string()) {$msglist[] = $msg;}
+                while ($err = openssl_error_string()) {$errors[] = $err;}
                 if (!$success) {
-                    throw new DomainException("OpenSSL unable to verify data: " . implode(',', $msglist));
+                    throw new DomainException("OpenSSL unable to verify data: " . implode(',', $errors));
                 } else {
                     return $signature;
                 }
