@@ -57,7 +57,7 @@ class JWT
      * @uses jsonDecode
      * @uses urlsafeB64Decode
      */
-    public static function decode($jwt, $key, $allowed_algs = array())
+    public static function decode($jwt, $key, $allowed_algs = array('HS256'))
     {
         if (empty($key)) {
             throw new InvalidArgumentException('Key may not be empty');
