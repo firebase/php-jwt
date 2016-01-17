@@ -47,7 +47,6 @@ class JWT
      *
      * @return object The JWT's payload as a PHP object
      *
-     * @throws DomainException              Algorithm was not provided
      * @throws UnexpectedValueException     Provided JWT was invalid
      * @throws SignatureInvalidException    Provided JWT was invalid because the signature verification failed
      * @throws BeforeValidException         Provided JWT is trying to be used before it's eligible as defined by 'nbf'
@@ -61,6 +60,9 @@ class JWT
     {
         if (empty($key)) {
             throw new InvalidArgumentException('Key may not be empty');
+        }
+        if (!is_array($allowed_algs)) {
+            throw new InvalidArgumentException('Algorithm not allowed');
         }
         $tks = explode('.', $jwt);
         if (count($tks) != 3) {
@@ -81,7 +83,7 @@ class JWT
         if (empty(self::$supported_algs[$header->alg])) {
             throw new DomainException('Algorithm not supported');
         }
-        if (!is_array($allowed_algs) || !in_array($header->alg, $allowed_algs)) {
+        if (!in_array($header->alg, $allowed_algs)) {
             throw new DomainException('Algorithm not allowed');
         }
         if (is_array($key) || $key instanceof \ArrayAccess) {
