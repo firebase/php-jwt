@@ -232,21 +232,21 @@ class JWTTest extends PHPUnit_Framework_TestCase
     public function testNoneAlgorithm()
     {
         $msg = JWT::encode('abc', 'my_key');
-        $this->setExpectedException('DomainException');
+        $this->setExpectedException('UnexpectedValueException');
         JWT::decode($msg, 'my_key', array('none'));
     }
 
     public function testIncorrectAlgorithm()
     {
         $msg = JWT::encode('abc', 'my_key');
-        $this->setExpectedException('DomainException');
+        $this->setExpectedException('UnexpectedValueException');
         JWT::decode($msg, 'my_key', array('RS256'));
     }
 
     public function testMissingAlgorithm()
     {
         $msg = JWT::encode('abc', 'my_key');
-        $this->setExpectedException('DomainException');
+        $this->setExpectedException('UnexpectedValueException');
         JWT::decode($msg, 'my_key');
     }
 

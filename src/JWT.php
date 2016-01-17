@@ -78,19 +78,19 @@ class JWT
         $sig = JWT::urlsafeB64Decode($cryptob64);
         
         if (empty($header->alg)) {
-            throw new DomainException('Empty algorithm');
+            throw new UnexpectedValueException('Empty algorithm');
         }
         if (empty(self::$supported_algs[$header->alg])) {
-            throw new DomainException('Algorithm not supported');
+            throw new UnexpectedValueException('Algorithm not supported');
         }
         if (!in_array($header->alg, $allowed_algs)) {
-            throw new DomainException('Algorithm not allowed');
+            throw new UnexpectedValueException('Algorithm not allowed');
         }
         if (is_array($key) || $key instanceof \ArrayAccess) {
             if (isset($header->kid)) {
                 $key = $key[$header->kid];
             } else {
-                throw new DomainException('"kid" empty, unable to lookup correct key');
+                throw new UnexpectedValueException('"kid" empty, unable to lookup correct key');
             }
         }
 
