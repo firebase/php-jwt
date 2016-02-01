@@ -140,6 +140,7 @@ class JWT
      *                                  If the algorithm used is asymmetric, this is the private key
      * @param string        $alg        The signing algorithm.
      *                                  Supported algorithms are 'HS256', 'HS384', 'HS512' and 'RS256'
+     * @param mixed         $keyId
      * @param array         $head       An array with header elements to attach
      *
      * @return string A signed JWT
