@@ -29,6 +29,13 @@ class JWT
      */
     public static $leeway = 0;
 
+    /**
+     * Allow the current timestamp to be specified.
+     * Useful for fixing a value within unit testing.
+     * Will default to PHP time() value if null.
+     */
+    public static $timestamp = null;
+
     public static $supported_algs = array(
         'HS256' => array('hash_hmac', 'SHA256'),
         'HS512' => array('hash_hmac', 'SHA512'),
@@ -59,6 +66,8 @@ class JWT
      */
     public static function decode($jwt, $key, $allowed_algs = array())
     {
+        $timestamp = is_null(self::$timestamp) ? time() : self::$timestamp;
+
         if (empty($key)) {
             throw new InvalidArgumentException('Key may not be empty');
         }
@@ -99,7 +108,7 @@ class JWT
 
         // Check if the nbf if it is defined. This is the time that the
         // token can actually be used. If it's not yet that time, abort.
-        if (isset($payload->nbf) && $payload->nbf > (time() + self::$leeway)) {
+        if (isset($payload->nbf) && $payload->nbf > ($timestamp + self::$leeway)) {
             throw new BeforeValidException(
                 'Cannot handle token prior to ' . date(DateTime::ISO8601, $payload->nbf)
             );
@@ -108,14 +117,14 @@ class JWT
         // Check that this token has been created before 'now'. This prevents
         // using tokens that have been created for later use (and haven't
         // correctly used the nbf claim).
-        if (isset($payload->iat) && $payload->iat > (time() + self::$leeway)) {
+        if (isset($payload->iat) && $payload->iat > ($timestamp + self::$leeway)) {
             throw new BeforeValidException(
                 'Cannot handle token prior to ' . date(DateTime::ISO8601, $payload->iat)
             );
         }
 
         // Check if this token has expired.
-        if (isset($payload->exp) && (time() - self::$leeway) >= $payload->exp) {
+        if (isset($payload->exp) && ($timestamp - self::$leeway) >= $payload->exp) {
             throw new ExpiredException('Expired token');
         }
 
