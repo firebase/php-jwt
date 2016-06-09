@@ -1,4 +1,3 @@
-
 #!/usr/bin/env bash
 gpg --fingerprint D8406D0D82947747293778314AA394086372C20A
 if [ $? -ne 0 ]; then
