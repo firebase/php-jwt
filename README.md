@@ -64,6 +64,12 @@ $decoded = JWT::decode($jwt, $key, array('HS256'));
 Changelog
 ---------
 
+#### 4.0.0 / 2016-07-17
+- Add support for late static binding. See [#88](https://github.com/firebase/php-jwt/pull/88) for details. Thanks to [@chappy84](https://github.com/chappy84)!
+- Use static `$timestamp` instead of `time()` to improve unit testing. See [#93](https://github.com/firebase/php-jwt/pull/93) for details. Thanks to [@josephmcdermott](https://github.com/josephmcdermott)!
+- Fixes to exceptions classes. See [#81](https://github.com/firebase/php-jwt/pull/81) for details. Thanks to [@Maks3w](https://github.com/Maks3w)!
+- Fixes to PHPDoc. See [#76](https://github.com/firebase/php-jwt/pull/76) for details. Thanks to [@akeeman](https://github.com/akeeman)!
+
 #### 3.0.0 / 2015-07-22
 - Minimum PHP version updated from `5.2.0` to `5.3.0`.
 - Add `\Firebase\JWT` namespace. See
