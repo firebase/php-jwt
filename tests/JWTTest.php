@@ -181,6 +181,26 @@ class JWTTest extends PHPUnit_Framework_TestCase
         $decoded = JWT::decode($encoded, 'my_key2', array('HS256'));
     }
 
+    public function testNullKeyFails()
+    {
+        $payload = array(
+            "message" => "abc",
+            "exp" => time() + JWT::$leeway + 20); // time in the future
+        $encoded = JWT::encode($payload, 'my_key');
+        $this->setExpectedException('InvalidArgumentException');
+        $decoded = JWT::decode($encoded, null, array('HS256'));
+    }
+
+    public function testEmptyKeyFails()
+    {
+        $payload = array(
+            "message" => "abc",
+            "exp" => time() + JWT::$leeway + 20); // time in the future
+        $encoded = JWT::encode($payload, 'my_key');
+        $this->setExpectedException('InvalidArgumentException');
+        $decoded = JWT::decode($encoded, '', array('HS256'));
+    }
+
     public function testRSEncodeDecode()
     {
         $privKey = openssl_pkey_new(array('digest_alg' => 'sha256',
@@ -212,21 +232,21 @@ class JWTTest extends PHPUnit_Framework_TestCase
     public function testNoneAlgorithm()
     {
         $msg = JWT::encode('abc', 'my_key');
-        $this->setExpectedException('DomainException');
+        $this->setExpectedException('UnexpectedValueException');
         JWT::decode($msg, 'my_key', array('none'));
     }
 
     public function testIncorrectAlgorithm()
     {
         $msg = JWT::encode('abc', 'my_key');
-        $this->setExpectedException('DomainException');
+        $this->setExpectedException('UnexpectedValueException');
         JWT::decode($msg, 'my_key', array('RS256'));
     }
 
     public function testMissingAlgorithm()
     {
         $msg = JWT::encode('abc', 'my_key');
-        $this->setExpectedException('DomainException');
+        $this->setExpectedException('UnexpectedValueException');
         JWT::decode($msg, 'my_key');
     }
 

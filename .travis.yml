@@ -6,6 +6,8 @@ php:
   - 5.5
   - hhvm
 
+sudo: false
+
 before_script:
   - wget -nc http://getcomposer.org/composer.phar
   - php composer.phar install

@@ -5,8 +5,7 @@
 
 PHP-JWT
 =======
-A simple library to encode and decode JSON Web Tokens (JWT) in PHP. Should
-conform to the [current spec](http://tools.ietf.org/html/draft-ietf-oauth-json-web-token-06)
+A simple library to encode and decode JSON Web Tokens (JWT) in PHP, conforming to [RFC 7519](https://tools.ietf.org/html/rfc7519).
 
 Installation
 ------------
@@ -64,6 +63,24 @@ $decoded = JWT::decode($jwt, $key, array('HS256'));
 
 Changelog
 ---------
+
+#### 4.0.0 / 2016-07-17
+- Add support for late static binding. See [#88](https://github.com/firebase/php-jwt/pull/88) for details. Thanks to [@chappy84](https://github.com/chappy84)!
+- Use static `$timestamp` instead of `time()` to improve unit testing. See [#93](https://github.com/firebase/php-jwt/pull/93) for details. Thanks to [@josephmcdermott](https://github.com/josephmcdermott)!
+- Fixes to exceptions classes. See [#81](https://github.com/firebase/php-jwt/pull/81) for details. Thanks to [@Maks3w](https://github.com/Maks3w)!
+- Fixes to PHPDoc. See [#76](https://github.com/firebase/php-jwt/pull/76) for details. Thanks to [@akeeman](https://github.com/akeeman)!
+
+#### 3.0.0 / 2015-07-22
+- Minimum PHP version updated from `5.2.0` to `5.3.0`.
+- Add `\Firebase\JWT` namespace. See
+[#59](https://github.com/firebase/php-jwt/pull/59) for details. Thanks to
+[@Dashron](https://github.com/Dashron)!
+- Require a non-empty key to decode and verify a JWT. See
+[#60](https://github.com/firebase/php-jwt/pull/60) for details. Thanks to
+[@sjones608](https://github.com/sjones608)!
+- Cleaner documentation blocks in the code. See
+[#62](https://github.com/firebase/php-jwt/pull/62) for details. Thanks to
+[@johanderuijter](https://github.com/johanderuijter)!
 
 #### 2.2.0 / 2015-06-22
 - Add support for adding custom, optional JWT headers to `JWT::encode()`. See
