@@ -8,7 +8,7 @@ use \DateTime;
 
 /**
  * JSON Web Token implementation, based on this spec:
- * http://tools.ietf.org/html/draft-ietf-oauth-json-web-token-06
+ * https://tools.ietf.org/html/rfc7519
  *
  * PHP version 5
  *
