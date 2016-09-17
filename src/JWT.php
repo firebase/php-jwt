@@ -86,7 +86,7 @@ class JWT
             throw new UnexpectedValueException('Invalid claims encoding');
         }
         $sig = static::urlsafeB64Decode($cryptob64);
-        
+
         if (empty($header->alg)) {
             throw new UnexpectedValueException('Empty algorithm');
         }
@@ -343,8 +343,13 @@ class JWT
     {
         $messages = array(
             JSON_ERROR_DEPTH => 'Maximum stack depth exceeded',
+            JSON_ERROR_STATE_MISMATCH => 'Invalid or malformed JSON',
             JSON_ERROR_CTRL_CHAR => 'Unexpected control character found',
-            JSON_ERROR_SYNTAX => 'Syntax error, malformed JSON'
+            JSON_ERROR_SYNTAX => 'Syntax error, malformed JSON',
+            JSON_ERROR_UTF8 => 'Malformed UTF-8 characters', //PHP >= 5.3.3
+            JSON_ERROR_RECURSION => 'One or more recursive references in the value to be encoded', //PHP >= 5.5.0
+            JSON_ERROR_INF_OR_NAN => 'One or more NAN or INF values in the value to be encoded', //PHP >= 5.5.0
+            JSON_ERROR_UNSUPPORTED_TYPE => 'A value of a type that cannot be encoded was given' //PHP >= 5.5.0
         );
         throw new DomainException(
             isset($messages[$errno])
