@@ -106,7 +106,7 @@ class JWT
 
         // Check the signature
         if (!static::verify("$headb64.$bodyb64", $sig, $key, $header->alg)) {
-            throw new SignatureInvalidException('Signature verification failed');
+            return false;
         }
 
         // Check if the nbf if it is defined. This is the time that the
@@ -127,9 +127,9 @@ class JWT
         }
 
         // Check if this token has expired.
-        if (isset($payload->exp) && ($timestamp - static::$leeway) >= $payload->exp) {
-            throw new ExpiredException('Expired token');
-        }
+        // if (isset($payload->exp) && ($timestamp - static::$leeway) >= $payload->exp) {
+        //     throw new ExpiredException('Expired token');
+        // }
 
         return $payload;
     }
