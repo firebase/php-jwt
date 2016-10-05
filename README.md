@@ -117,3 +117,4 @@ OK (5 tests, 5 assertions)
 License
 -------
 [3-Clause BSD](http://opensource.org/licenses/BSD-3-Clause).
+test
