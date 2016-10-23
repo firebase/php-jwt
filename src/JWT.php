@@ -41,7 +41,7 @@ class JWT
         'HS256' => array('hash_hmac', 'SHA256'),
         'HS512' => array('hash_hmac', 'SHA512'),
         'HS384' => array('hash_hmac', 'SHA384'),
-        'RS256' => array('openssl', 'SHA256'),
+        'RS256' => array('openssl', OPENSSL_ALGO_SHA1),
     );
 
     /**
