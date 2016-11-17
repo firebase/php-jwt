@@ -144,13 +144,14 @@ class JWT
      *                                  Supported algorithms are 'HS256', 'HS384', 'HS512' and 'RS256'
      * @param mixed         $keyId
      * @param array         $head       An array with header elements to attach
-     *
+     * @param int           $payloadEncodingOptions Mask of encoding flags to apply to encoding of payload
+     *                                  Header encoding is not affected. See http://php.net/manual/en/json.constants.php
      * @return string A signed JWT
      *
      * @uses jsonEncode
      * @uses urlsafeB64Encode
      */
-    public static function encode($payload, $key, $alg = 'HS256', $keyId = null, $head = null)
+    public static function encode($payload, $key, $alg = 'HS256', $keyId = null, $head = null, $payloadEncodingOptions = JSON_NUMERIC_CHECK)
     {
         $header = array('typ' => 'JWT', 'alg' => $alg);
         if ($keyId !== null) {
@@ -161,7 +162,7 @@ class JWT
         }
         $segments = array();
         $segments[] = static::urlsafeB64Encode(static::jsonEncode($header));
-        $segments[] = static::urlsafeB64Encode(static::jsonEncode($payload));
+        $segments[] = static::urlsafeB64Encode(static::jsonEncode($payload, $payloadEncodingOptions));
         $signing_input = implode('.', $segments);
 
         $signature = static::sign($signing_input, $key, $alg);
@@ -287,14 +288,15 @@ class JWT
      * Encode a PHP object into a JSON string.
      *
      * @param object|array $input A PHP object or array
+     * @param int|null     $encodingOptions See http://php.net/manual/en/json.constants.php
      *
      * @return string JSON representation of the PHP object or array
      *
      * @throws DomainException Provided object could not be encoded to valid JSON
      */
-    public static function jsonEncode($input)
+    public static function jsonEncode($input, $encodingOptions = 0)
     {
-        $json = json_encode($input);
+        $json = json_encode($input, $encodingOptions);
         if (function_exists('json_last_error') && $errno = json_last_error()) {
             static::handleJsonError($errno);
         } elseif ($json === 'null' && $input !== null) {
