@@ -1,7 +1,7 @@
 {
-    "name": "firebase/php-jwt",
+    "name": "dremie/php-jwt",
     "description": "A simple library to encode and decode JSON Web Tokens (JWT) in PHP. Should conform to the current spec.",
-    "homepage": "https://github.com/firebase/php-jwt",
+    "homepage": "https://github.com/dremie/php-jwt",
     "authors": [
         {
             "name": "Neuman Vong",
@@ -19,9 +19,10 @@
         "php": ">=5.3.0"
     },
     "autoload": {
-        "psr-4": {
-            "Firebase\\JWT\\": "src"
-        }
+        "psr-0": {
+            "Dremie\\JWT\\": "src/"
+        },
+        "classmap": ["src/"]
     },
     "minimum-stability": "dev"
 }

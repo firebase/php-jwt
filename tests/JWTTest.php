@@ -1,5 +1,5 @@
 <?php
-use \Firebase\JWT\JWT;
+use \Dremie\JWT\JWT;
 
 class JWTTest extends PHPUnit_Framework_TestCase
 {
@@ -38,7 +38,7 @@ class JWTTest extends PHPUnit_Framework_TestCase
 
     public function testExpiredToken()
     {
-        $this->setExpectedException('Firebase\JWT\ExpiredException');
+        $this->setExpectedException('Dremie\JWT\ExpiredException');
         $payload = array(
             "message" => "abc",
             "exp" => time() - 20); // time in the past
@@ -48,7 +48,7 @@ class JWTTest extends PHPUnit_Framework_TestCase
 
     public function testBeforeValidTokenWithNbf()
     {
-        $this->setExpectedException('Firebase\JWT\BeforeValidException');
+        $this->setExpectedException('Dremie\JWT\BeforeValidException');
         $payload = array(
             "message" => "abc",
             "nbf" => time() + 20); // time in the future
@@ -58,7 +58,7 @@ class JWTTest extends PHPUnit_Framework_TestCase
 
     public function testBeforeValidTokenWithIat()
     {
-        $this->setExpectedException('Firebase\JWT\BeforeValidException');
+        $this->setExpectedException('Dremie\JWT\BeforeValidException');
         $payload = array(
             "message" => "abc",
             "iat" => time() + 20); // time in the future
@@ -94,7 +94,7 @@ class JWTTest extends PHPUnit_Framework_TestCase
         $payload = array(
             "message" => "abc",
             "exp" => time() - 70); // time far in the past
-        $this->setExpectedException('Firebase\JWT\ExpiredException');
+        $this->setExpectedException('Dremie\JWT\ExpiredException');
         $encoded = JWT::encode($payload, 'my_key');
         $decoded = JWT::decode($encoded, 'my_key', array('HS256'));
         $this->assertEquals($decoded->message, 'abc');
@@ -142,7 +142,7 @@ class JWTTest extends PHPUnit_Framework_TestCase
             "message" => "abc",
             "nbf"     => time() + 65); // not before too far in future
         $encoded = JWT::encode($payload, 'my_key');
-        $this->setExpectedException('Firebase\JWT\BeforeValidException');
+        $this->setExpectedException('Dremie\JWT\BeforeValidException');
         $decoded = JWT::decode($encoded, 'my_key', array('HS256'));
         JWT::$leeway = 0;
     }
@@ -166,7 +166,7 @@ class JWTTest extends PHPUnit_Framework_TestCase
             "message" => "abc",
             "iat"     => time() + 65); // issued too far in future
         $encoded = JWT::encode($payload, 'my_key');
-        $this->setExpectedException('Firebase\JWT\BeforeValidException');
+        $this->setExpectedException('Dremie\JWT\BeforeValidException');
         $decoded = JWT::decode($encoded, 'my_key', array('HS256'));
         JWT::$leeway = 0;
     }
@@ -177,7 +177,7 @@ class JWTTest extends PHPUnit_Framework_TestCase
             "message" => "abc",
             "exp" => time() + 20); // time in the future
         $encoded = JWT::encode($payload, 'my_key');
-        $this->setExpectedException('Firebase\JWT\SignatureInvalidException');
+        $this->setExpectedException('Dremie\JWT\SignatureInvalidException');
         $decoded = JWT::decode($encoded, 'my_key2', array('HS256'));
     }
 

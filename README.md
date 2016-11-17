@@ -20,7 +20,7 @@ Example
 -------
 ```php
 <?php
-use \Firebase\JWT\JWT;
+use \Dremie\JWT\JWT;
 
 $key = "example_key";
 $token = array(
