@@ -1,5 +1,5 @@
 <?php
-namespace Firebase\JWT;
+namespace Dremie\JWT;
 
 class SignatureInvalidException extends \UnexpectedValueException
 {
