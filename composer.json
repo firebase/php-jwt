@@ -21,7 +21,8 @@
     "autoload": {
         "psr-0": {
             "Dremie\\JWT\\": "src/"
-        }
+        },
+        "classmap": ["src/"]
     },
     "minimum-stability": "dev"
 }
