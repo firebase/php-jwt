@@ -3,7 +3,6 @@
 namespace Firebase\JWT;
 use \DomainException;
 use \InvalidArgumentException;
-use \UnexpectedValueException;
 use \DateTime;
 
 /**
@@ -55,7 +54,7 @@ class JWT
      *
      * @return object The JWT's payload as a PHP object
      *
-     * @throws UnexpectedValueException     Provided JWT was invalid
+     * @throws JWTException                 Provided JWT was invalid
      * @throws SignatureInvalidException    Provided JWT was invalid because the signature verification failed
      * @throws BeforeValidException         Provided JWT is trying to be used before it's eligible as defined by 'nbf'
      * @throws BeforeValidException         Provided JWT is trying to be used before it's been created as defined by 'iat'
@@ -76,31 +75,31 @@ class JWT
         }
         $tks = explode('.', $jwt);
         if (count($tks) != 3) {
-            throw new UnexpectedValueException('Wrong number of segments');
+            throw new JWTException('Wrong number of segments');
         }
         list($headb64, $bodyb64, $cryptob64) = $tks;
         if (null === ($header = static::jsonDecode(static::urlsafeB64Decode($headb64)))) {
-            throw new UnexpectedValueException('Invalid header encoding');
+            throw new JWTException('Invalid header encoding');
         }
         if (null === $payload = static::jsonDecode(static::urlsafeB64Decode($bodyb64))) {
-            throw new UnexpectedValueException('Invalid claims encoding');
+            throw new JWTException('Invalid claims encoding');
         }
         $sig = static::urlsafeB64Decode($cryptob64);
-        
+
         if (empty($header->alg)) {
-            throw new UnexpectedValueException('Empty algorithm');
+            throw new JWTException('Empty algorithm');
         }
         if (empty(static::$supported_algs[$header->alg])) {
-            throw new UnexpectedValueException('Algorithm not supported');
+            throw new JWTException('Algorithm not supported');
         }
         if (!in_array($header->alg, $allowed_algs)) {
-            throw new UnexpectedValueException('Algorithm not allowed');
+            throw new JWTException('Algorithm not allowed');
         }
         if (is_array($key) || $key instanceof \ArrayAccess) {
             if (isset($header->kid)) {
                 $key = $key[$header->kid];
             } else {
-                throw new UnexpectedValueException('"kid" empty, unable to lookup correct key');
+                throw new JWTException('"kid" empty, unable to lookup correct key');
             }
         }
 

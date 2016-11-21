@@ -232,33 +232,33 @@ class JWTTest extends PHPUnit_Framework_TestCase
     public function testNoneAlgorithm()
     {
         $msg = JWT::encode('abc', 'my_key');
-        $this->setExpectedException('UnexpectedValueException');
+        $this->setExpectedException('Firebase\JWT\JWTException');
         JWT::decode($msg, 'my_key', array('none'));
     }
 
     public function testIncorrectAlgorithm()
     {
         $msg = JWT::encode('abc', 'my_key');
-        $this->setExpectedException('UnexpectedValueException');
+        $this->setExpectedException('Firebase\JWT\JWTException');
         JWT::decode($msg, 'my_key', array('RS256'));
     }
 
     public function testMissingAlgorithm()
     {
         $msg = JWT::encode('abc', 'my_key');
-        $this->setExpectedException('UnexpectedValueException');
+        $this->setExpectedException('Firebase\JWT\JWTException');
         JWT::decode($msg, 'my_key');
     }
 
     public function testAdditionalHeaders()
     {
         $msg = JWT::encode('abc', 'my_key', 'HS256', null, array('cty' => 'test-eit;v=1'));
-        $this->assertEquals(JWT::decode($msg, 'my_key', array('HS256')), 'abc');        
+        $this->assertEquals(JWT::decode($msg, 'my_key', array('HS256')), 'abc');
     }
 
     public function testInvalidSegmentCount()
     {
-        $this->setExpectedException('UnexpectedValueException');
+        $this->setExpectedException('Firebase\JWT\JWTException');
         JWT::decode('brokenheader.brokenbody', 'my_key', array('HS256'));
     }
 }
