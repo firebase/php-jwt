@@ -100,6 +100,9 @@ class JWT
         }
         if (is_array($key) || $key instanceof \ArrayAccess) {
             if (isset($header->kid)) {
+                if(!isset($key[$header->kid])) {
+                    throw new UnexpectedValueException('"kid" not found in key map, unable to lookup correct key');
+                }
                 $key = $key[$header->kid];
             } else {
                 throw new UnexpectedValueException('"kid" empty, unable to lookup correct key');
