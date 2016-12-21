@@ -20,7 +20,8 @@
     },
     "autoload": {
         "psr-4": {
-            "Firebase\\JWT\\": "src"
+            "Firebase\\JWT\\": "src",
+            "Firebase\\JWT\\Tests\\": "tests"
         }
     },
     "minimum-stability": "dev",
