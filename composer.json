@@ -23,5 +23,8 @@
             "Firebase\\JWT\\": "src"
         }
     },
-    "minimum-stability": "dev"
+    "minimum-stability": "dev",
+    "require-dev": {
+        "phpunit/phpunit": "^5.7"
+    }
 }

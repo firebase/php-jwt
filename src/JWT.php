@@ -74,11 +74,7 @@ class JWT
         if (!is_array($allowed_algs)) {
             throw new InvalidArgumentException('Algorithm not allowed');
         }
-        $tks = explode('.', $jwt);
-        if (count($tks) != 3) {
-            throw new UnexpectedValueException('Wrong number of segments');
-        }
-        list($headb64, $bodyb64, $cryptob64) = $tks;
+        list($headb64, $bodyb64, $cryptob64) = static::split($jwt);
         if (null === ($header = static::jsonDecode(static::urlsafeB64Decode($headb64)))) {
             throw new UnexpectedValueException('Invalid header encoding');
         }
@@ -86,7 +82,7 @@ class JWT
             throw new UnexpectedValueException('Invalid claims encoding');
         }
         $sig = static::urlsafeB64Decode($cryptob64);
-        
+
         if (empty($header->alg)) {
             throw new UnexpectedValueException('Empty algorithm');
         }
@@ -132,6 +128,61 @@ class JWT
         }
 
         return $payload;
+    }
+
+    /**
+     * Returns the header of the JWT.
+     *
+     * @param string        $jwt            The JWT.
+     *
+     * @return array
+     *
+     * @throws UnexpectedValueException     Provided JWT was invalid
+     *
+     * @uses jsonDecode
+     * @uses urlsafeB64Decode
+     */
+    public static function header($jwt)
+    {
+        return static::jsonDecode(static::urlsafeB64Decode(static::split($jwt)[0]));
+    }
+
+    /**
+     * Returns the payload of the JWT.
+     *
+     * @param string        $jwt            The JWT.
+     *
+     * @return array
+     *
+     * @throws UnexpectedValueException     Provided JWT was invalid
+     *
+     * @uses jsonDecode
+     * @uses urlsafeB64Decode
+     */
+    public static function payload($jwt)
+    {
+        return static::jsonDecode(static::urlsafeB64Decode(static::split($jwt)[1]));
+    }
+
+    /**
+     * Splits the JWT into parts.
+     *
+     * @param string        $jwt            The JWT
+     *
+     * @throws UnexpectedValueException     Provided JWT was invalid
+     *
+     * @return array
+     */
+    public static function split($jwt)
+    {
+        if(!is_string($jwt)) {
+            throw new UnexpectedValueException('Must pass a string');
+        }
+        $tks = explode('.', $jwt);
+        if (count($tks) != 3) {
+            throw new UnexpectedValueException('Wrong number of segments');
+        }
+        return $tks;
     }
 
     /**
