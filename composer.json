@@ -24,8 +24,5 @@
             "Firebase\\JWT\\Tests\\": "tests"
         }
     },
-    "minimum-stability": "dev",
-    "require-dev": {
-        "phpunit/phpunit": "^5.7"
-    }
+    "minimum-stability": "dev"
 }
