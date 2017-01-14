@@ -1,10 +1,12 @@
 <?php
 
 namespace Firebase\JWT;
-use \DomainException;
-use \InvalidArgumentException;
-use \UnexpectedValueException;
-use \DateTime;
+
+use Firebase\JWT\InvalidTokenException as DomainException;
+use Firebase\JWT\InvalidTokenException as SignatureInvalidException;
+use Firebase\JWT\InvalidTokenException as BeforeValidException;
+use Firebase\JWT\InvalidTokenException as ExpiredException;
+use InvalidArgumentException;
 
 /**
  * JSON Web Token implementation, based on this spec:
@@ -37,29 +39,26 @@ class JWT
      */
     public static $timestamp = null;
 
-    public static $supported_algs = array(
-        'HS256' => array('hash_hmac', 'SHA256'),
-        'HS512' => array('hash_hmac', 'SHA512'),
-        'HS384' => array('hash_hmac', 'SHA384'),
-        'RS256' => array('openssl', 'SHA256'),
-    );
+    public static $supported_algs = [
+        'HS256' => ['hash_hmac', 'SHA256'],
+        'HS512' => ['hash_hmac', 'SHA512'],
+        'HS384' => ['hash_hmac', 'SHA384'],
+        'RS256' => ['openssl', 'SHA256'],
+    ];
 
     /**
      * Decodes a JWT string into a PHP object.
      *
-     * @param string        $jwt            The JWT
-     * @param string|array  $key            The key, or map of keys.
+     * @param string       $jwt             The JWT
+     * @param string|array $key             The key, or map of keys.
      *                                      If the algorithm used is asymmetric, this is the public key
-     * @param array         $allowed_algs   List of supported verification algorithms
+     * @param array        $allowed_algs    List of supported verification algorithms
      *                                      Supported algorithms are 'HS256', 'HS384', 'HS512' and 'RS256'
      *
      * @return object The JWT's payload as a PHP object
      *
-     * @throws UnexpectedValueException     Provided JWT was invalid
-     * @throws SignatureInvalidException    Provided JWT was invalid because the signature verification failed
-     * @throws BeforeValidException         Provided JWT is trying to be used before it's eligible as defined by 'nbf'
-     * @throws BeforeValidException         Provided JWT is trying to be used before it's been created as defined by 'iat'
-     * @throws ExpiredException             Provided JWT has since expired, as defined by the 'exp' claim
+     * @throws InvalidArgumentException Provided arguments were invalid
+     * @throws InvalidTokenException    Provided JWT was invalid
      *
      * @uses jsonDecode
      * @uses urlsafeB64Decode
@@ -76,31 +75,35 @@ class JWT
         }
         $tks = explode('.', $jwt);
         if (count($tks) != 3) {
-            throw new UnexpectedValueException('Wrong number of segments');
+            throw new InvalidTokenException('Wrong number of segments');
         }
         list($headb64, $bodyb64, $cryptob64) = $tks;
         if (null === ($header = static::jsonDecode(static::urlsafeB64Decode($headb64)))) {
-            throw new UnexpectedValueException('Invalid header encoding');
+            throw new InvalidTokenException('Invalid header encoding');
         }
         if (null === $payload = static::jsonDecode(static::urlsafeB64Decode($bodyb64))) {
-            throw new UnexpectedValueException('Invalid claims encoding');
+            throw new InvalidTokenException('Invalid claims encoding');
         }
         $sig = static::urlsafeB64Decode($cryptob64);
-        
+
         if (empty($header->alg)) {
-            throw new UnexpectedValueException('Empty algorithm');
+            throw new InvalidTokenException('Empty algorithm');
         }
         if (empty(static::$supported_algs[$header->alg])) {
-            throw new UnexpectedValueException('Algorithm not supported');
+            throw new InvalidTokenException('Algorithm not supported');
         }
         if (!in_array($header->alg, $allowed_algs)) {
-            throw new UnexpectedValueException('Algorithm not allowed');
+            throw new InvalidTokenException('Algorithm not allowed');
         }
+
         if (is_array($key) || $key instanceof \ArrayAccess) {
             if (isset($header->kid)) {
+                if (!isset($key[$header->kid])) {
+                    throw new InvalidTokenException('"kid" not found in key map, unable to lookup key');
+                }
                 $key = $key[$header->kid];
             } else {
-                throw new UnexpectedValueException('"kid" empty, unable to lookup correct key');
+                throw new InvalidTokenException('"kid" empty, unable to lookup correct key');
             }
         }
 
@@ -111,24 +114,36 @@ class JWT
 
         // Check if the nbf if it is defined. This is the time that the
         // token can actually be used. If it's not yet that time, abort.
-        if (isset($payload->nbf) && $payload->nbf > ($timestamp + static::$leeway)) {
-            throw new BeforeValidException(
-                'Cannot handle token prior to ' . date(DateTime::ISO8601, $payload->nbf)
-            );
+        if (isset($payload->nbf)) {
+            $validIn = $payload->nbf - $timestamp;
+            if ($validIn > static::$leeway) {
+                throw new BeforeValidException(
+                    "Token becomes valid in $validIn seconds"
+                );
+            }
         }
 
         // Check that this token has been created before 'now'. This prevents
         // using tokens that have been created for later use (and haven't
         // correctly used the nbf claim).
-        if (isset($payload->iat) && $payload->iat > ($timestamp + static::$leeway)) {
-            throw new BeforeValidException(
-                'Cannot handle token prior to ' . date(DateTime::ISO8601, $payload->iat)
-            );
+        if (isset($payload->iat)) {
+            $validIn = $payload->iat - $timestamp;
+            if ($validIn > static::$leeway) {
+                throw new BeforeValidException(
+                    "Token was issued $validIn seconds in the future"
+                );
+            }
         }
 
         // Check if this token has expired.
-        if (isset($payload->exp) && ($timestamp - static::$leeway) >= $payload->exp) {
-            throw new ExpiredException('Expired token');
+        if (isset($payload->exp)) {
+            $expiresIn = $timestamp - $payload->exp;
+            if ($expiresIn > static::$leeway) {
+                echo "Token expired $expiresIn seconds ago";
+                throw new ExpiredException(
+                    "Token expired $expiresIn seconds ago"
+                );
+            }
         }
 
         return $payload;
@@ -137,13 +152,13 @@ class JWT
     /**
      * Converts and signs a PHP object or array into a JWT string.
      *
-     * @param object|array  $payload    PHP object or array
-     * @param string        $key        The secret key.
-     *                                  If the algorithm used is asymmetric, this is the private key
-     * @param string        $alg        The signing algorithm.
-     *                                  Supported algorithms are 'HS256', 'HS384', 'HS512' and 'RS256'
-     * @param mixed         $keyId
-     * @param array         $head       An array with header elements to attach
+     * @param string|object|array $payload PHP object or array
+     * @param string              $key     The secret key.
+     *                                     If the algorithm used is asymmetric, this is the private key
+     * @param string              $alg     The signing algorithm.
+     *                                     Supported algorithms are 'HS256', 'HS384', 'HS512' and 'RS256'
+     * @param int                 $keyId
+     * @param array               $head    An array with header elements to attach
      *
      * @return string A signed JWT
      *
@@ -156,7 +171,7 @@ class JWT
         if ($keyId !== null) {
             $header['kid'] = $keyId;
         }
-        if ( isset($head) && is_array($head) ) {
+        if (isset($head) && is_array($head)) {
             $header = array_merge($head, $header);
         }
         $segments = array();
@@ -173,9 +188,9 @@ class JWT
     /**
      * Sign a string with a given key and algorithm.
      *
-     * @param string            $msg    The message to sign
-     * @param string|resource   $key    The secret key
-     * @param string            $alg    The signing algorithm.
+     * @param string          $msg      The message to sign
+     * @param string|resource $key      The secret key
+     * @param string          $alg      The signing algorithm.
      *                                  Supported algorithms are 'HS256', 'HS384', 'HS512' and 'RS256'
      *
      * @return string An encrypted message
@@ -188,7 +203,7 @@ class JWT
             throw new DomainException('Algorithm not supported');
         }
         list($function, $algorithm) = static::$supported_algs[$alg];
-        switch($function) {
+        switch ($function) {
             case 'hash_hmac':
                 return hash_hmac($algorithm, $msg, $key, true);
             case 'openssl':
@@ -200,16 +215,18 @@ class JWT
                     return $signature;
                 }
         }
+        return null;
     }
 
     /**
      * Verify a signature with the message, key and method. Not all methods
      * are symmetric, so we must have a separate verify and sign method.
      *
-     * @param string            $msg        The original message (header and body)
-     * @param string            $signature  The original signature
-     * @param string|resource   $key        For HS*, a string key works. for RS*, must be a resource of an openssl public key
-     * @param string            $alg        The algorithm
+     * @param string          $msg       The original message (header and body)
+     * @param string          $signature The original signature
+     * @param string|resource $key       For HS*, a string key works. for RS*, must be a resource of an openssl public
+     *                                   key
+     * @param string          $alg       The algorithm
      *
      * @return bool
      *
@@ -222,7 +239,7 @@ class JWT
         }
 
         list($function, $algorithm) = static::$supported_algs[$alg];
-        switch($function) {
+        switch ($function) {
             case 'openssl':
                 $success = openssl_verify($msg, $signature, $key, $algorithm);
                 if (!$success) {
@@ -270,8 +287,8 @@ class JWT
              * manually detect large ints in the JSON string and quote them (thus converting
              *them to strings) before decoding, hence the preg_replace() call.
              */
-            $max_int_length = strlen((string) PHP_INT_MAX) - 1;
-            $json_without_bigints = preg_replace('/:\s*(-?\d{'.$max_int_length.',})/', ': "$1"', $input);
+            $max_int_length = strlen((string)PHP_INT_MAX) - 1;
+            $json_without_bigints = preg_replace('/:\s*(-?\d{' . $max_int_length . ',})/', ': "$1"', $input);
             $obj = json_decode($json_without_bigints);
         }
 
@@ -336,20 +353,19 @@ class JWT
      * Helper method to create a JSON error.
      *
      * @param int $errno An error number from json_last_error()
-     *
-     * @return void
+     * @throws DomainException
      */
     private static function handleJsonError($errno)
     {
-        $messages = array(
-            JSON_ERROR_DEPTH => 'Maximum stack depth exceeded',
+        $messages = [
+            JSON_ERROR_DEPTH     => 'Maximum stack depth exceeded',
             JSON_ERROR_CTRL_CHAR => 'Unexpected control character found',
-            JSON_ERROR_SYNTAX => 'Syntax error, malformed JSON'
-        );
+            JSON_ERROR_SYNTAX    => 'Syntax error, malformed JSON',
+        ];
         throw new DomainException(
             isset($messages[$errno])
-            ? $messages[$errno]
-            : 'Unknown JSON error: ' . $errno
+                ? $messages[$errno]
+                : 'Unknown JSON error: ' . $errno
         );
     }
 
