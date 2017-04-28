@@ -3,5 +3,11 @@ namespace Firebase\JWT;
 
 class BeforeValidException extends \UnexpectedValueException
 {
-
+	private $payload;
+	public function __construct($payload = null){
+		$this->payload = $payload;
+	}
+	public function getPayload(){
+		return $this->payload;
+	}
 }
