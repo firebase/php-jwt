@@ -2,8 +2,7 @@
 namespace Firebase\JWT;
 
 class SignatureInvalidException extends \UnexpectedValueException
-{
-  
+{  
 	private $payload;
   
 	public function setPayload($payload){
