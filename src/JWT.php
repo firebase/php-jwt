@@ -294,7 +294,7 @@ class JWT
      */
     public static function jsonEncode($input)
     {
-        $json = json_encode($input);
+        $json = @json_encode($input);
         if (function_exists('json_last_error') && $errno = json_last_error()) {
             static::handleJsonError($errno);
         } elseif ($json === 'null' && $input !== null) {
