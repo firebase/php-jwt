@@ -16,4 +16,4 @@ before_script:
   - php composer.phar update phpunit/phpunit
   - php composer.phar install
 
-script: phpunit --configuration phpunit.xml.dist
+script: vendor/bin/phpunit --configuration phpunit.xml.dist
