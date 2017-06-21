@@ -243,6 +243,7 @@ class JWT
             default:
                 $hash = hash_hmac($algorithm, $msg, $key, true);
                 if (function_exists('hash_equals')) {
+                    error_reporting(E_ALL & ~E_WARNING);
                     return hash_equals($signature, $hash);
                 }
                 $len = min(static::safeStrlen($signature), static::safeStrlen($hash));
