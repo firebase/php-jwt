@@ -87,8 +87,9 @@ class JWT
         if (null === $payload = static::jsonDecode(static::urlsafeB64Decode($bodyb64))) {
             throw new UnexpectedValueException('Invalid claims encoding');
         }
-        $sig = static::urlsafeB64Decode($cryptob64);
-
+        if (false === ($sig = static::urlsafeB64Decode($cryptob64))) {
+            throw new UnexpectedValueException('Invalid signature encoding');
+        }
         if (empty($header->alg)) {
             throw new UnexpectedValueException('Empty algorithm');
         }
