@@ -88,7 +88,7 @@ class JWT
             throw new UnexpectedValueException('Invalid claims encoding');
         }
         $sig = static::urlsafeB64Decode($cryptob64);
-        
+
         if (empty($header->alg)) {
             throw new UnexpectedValueException('Empty algorithm');
         }
@@ -230,11 +230,15 @@ class JWT
         switch($function) {
             case 'openssl':
                 $success = openssl_verify($msg, $signature, $key, $algorithm);
-                if (!$success) {
-                    throw new DomainException("OpenSSL unable to verify data: " . openssl_error_string());
-                } else {
-                    return $signature;
+                if ($success === 1) {
+                    return true;
+                } elseif ($success === 0) {
+                    return false;
                 }
+                // returns 1 on success, 0 on failure, -1 on error.
+                throw new DomainException(
+                    'OpenSSL error: ' . openssl_error_string()
+                );
             case 'hash_hmac':
             default:
                 $hash = hash_hmac($algorithm, $msg, $key, true);
