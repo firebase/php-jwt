@@ -168,6 +168,12 @@ Time: 0 seconds, Memory: 2.50Mb
 OK (5 tests, 5 assertions)
 ```
 
+New Lines in private keys
+-----
+
+If your private key contains `\n` characters, be sure to wrap it in double quotes `""`
+and not single quotes `''` in order to properly interpret the escaped characters.
+
 License
 -------
 [3-Clause BSD](http://opensource.org/licenses/BSD-3-Clause).
