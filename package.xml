@@ -19,10 +19,10 @@
   <email>operations@firebase.com</email>
   <active>yes</active>
  </lead>
- <date>2015-06-22</date>
+ <date>2015-07-22</date>
  <version>
-  <release>2.2.0</release>
-  <api>2.2.0</api>
+  <release>3.0.0</release>
+  <api>3.0.0</api>
  </version>
  <stability>
   <release>beta</release>

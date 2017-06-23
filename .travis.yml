@@ -4,10 +4,11 @@ php:
   - 5.3
   - 5.4
   - 5.5
-  - hhvm
+  - 5.6
+  - 7.0
+  - 7.1
 
-before_script:
-  - wget -nc http://getcomposer.org/composer.phar
-  - php composer.phar install
+sudo: false
 
-script: phpunit --configuration phpunit.xml.dist
+before_script: composer install
+script: phpunit

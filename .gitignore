@@ -1,3 +1,5 @@
 vendor
 phpunit.phar
 phpunit.phar.asc
+composer.phar
+composer.lock
