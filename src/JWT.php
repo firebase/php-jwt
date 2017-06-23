@@ -1,6 +1,7 @@
 <?php
 
 namespace Firebase\JWT;
+
 use \DomainException;
 use \InvalidArgumentException;
 use \UnexpectedValueException;
@@ -63,10 +64,6 @@ class JWT
      * @throws BeforeValidException         Provided JWT is trying to be used before it's eligible as defined by 'nbf'
      * @throws BeforeValidException         Provided JWT is trying to be used before it's been created as defined by 'iat'
      * @throws ExpiredException             Provided JWT has since expired, as defined by the 'exp' claim
-     * @throws InvalidAudienceException     Provided JWT is having a 'aud' value other than audience option
-     * @throws InvalidIssuerException       Provided JWT is having a 'iss' value other than issuer option
-     * @throws InvalidJWTIdException        Provided JWT is having a 'jit' value other than jwtid option
-     * @throws InvalidSubjectException      Provided JWT is having a 'sub' value other than subject option
      *
      * @uses jsonDecode
      * @uses urlsafeB64Decode
@@ -144,25 +141,25 @@ class JWT
 
         if (isset($options['issuer']) && is_string($options['issuer'])) {
             if (!isset($payload->iss) || !is_string($payload->iss) || $payload->iss !== $options['issuer']) {
-                throw new InvalidIssuerException('Invalid issuer');
+                throw new UnexpectedValueException('Invalid issuer');
             }
         }
 
         if (isset($options['subject']) && is_string($options['subject'])) {
             if (!isset($payload->sub) || !is_string($payload->sub) || $payload->sub !== $options['subject']) {
-                throw new InvalidSubjectException('Invalid subject');
+                throw new UnexpectedValueException('Invalid subject');
             }
         }
 
         if (isset($options['jwtid']) && is_string($options['jwtid'])) {
             if (!isset($payload->jti) || !is_string($payload->jti) || $payload->jti !== $options['jwtid']) {
-                throw new InvalidJWTIdException('Invalid JWT ID');
+                throw new UnexpectedValueException('Invalid JWT ID');
             }
         }
 
         if (isset($options['audience']) && (is_string($options['audience']) || is_array($options['audience']))) {
             if (!isset($payload->aud)) {
-                throw new InvalidAudienceException('Invalid audience');
+                throw new UnexpectedValueException('Invalid audience');
             }
 
             $target = is_array($payload->aud) ? $payload->aud : array($payload->aud);
@@ -177,7 +174,7 @@ class JWT
             }
 
             if (!$audienceFound) {
-                throw new InvalidAudienceException('Invalid audience');
+                throw new UnexpectedValueException('Invalid audience');
             }
         }
 

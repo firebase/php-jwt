@@ -264,14 +264,14 @@ class JWTTest extends PHPUnit_Framework_TestCase
     public function testInvalidEmptyIssuerDecode()
     {
         $msg = JWT::encode(array('message' => 'abc'), 'my_key', 'HS256', NULL, array('cty' => 'test-eit;v=1'));
-        $this->setExpectedException('InvalidIssuerException');
+        $this->setExpectedException('UnexpectedValueException', 'Invalid issuer');
         JWT::decode($msg, 'my_key', array('HS256'), array('issuer' => ''));
     }
 
     public function testInvalidIssuer()
     {
         $msg = JWT::encode(array('message' => 'abc'), 'my_key', 'HS256', NULL, array('cty' => 'test-eit;v=1'), array('issuer' => 'another.example.com'));
-        $this->setExpectedException('InvalidIssuerException');
+        $this->setExpectedException('UnexpectedValueException', 'Invalid issuer');
         JWT::decode($msg, 'my_key', array('HS256'), array('issuer' => 'example.com'));
     }
 
@@ -292,14 +292,14 @@ class JWTTest extends PHPUnit_Framework_TestCase
     public function testInvalidEmptySubjectDecode()
     {
         $msg = JWT::encode(array('message' => 'abc'), 'my_key', 'HS256', NULL, array('cty' => 'test-eit;v=1'));
-        $this->setExpectedException('InvalidSubjectException');
+        $this->setExpectedException('UnexpectedValueException', 'Invalid subject');
         JWT::decode($msg, 'my_key', array('HS256'), array('subject' => ''));
     }
 
     public function testInvalidSubject()
     {
         $msg = JWT::encode(array('message' => 'abc'), 'my_key', 'HS256', NULL, array('cty' => 'test-eit;v=1'), array('subject' => 'NotSubject'));
-        $this->setExpectedException('InvalidSubjectException');
+        $this->setExpectedException('UnexpectedValueException', 'Invalid subject');
         JWT::decode($msg, 'my_key', array('HS256'), array('subject' => 'Subject'));
     }
 
@@ -320,14 +320,14 @@ class JWTTest extends PHPUnit_Framework_TestCase
     public function testInvalidEmptyAudienceDecode()
     {
         $msg = JWT::encode(array('message' => 'abc'), 'my_key', 'HS256', NULL, array('cty' => 'test-eit;v=1'));
-        $this->setExpectedException('InvalidAudienceException');
+        $this->setExpectedException('UnexpectedValueException', 'Invalid audience');
         JWT::decode($msg, 'my_key', array('HS256'), array('audience' => array('audience')));
     }
 
     public function testInvalidAudience()
     {
         $msg = JWT::encode(array('message' => 'abc'), 'my_key', 'HS256', NULL, array('cty' => 'test-eit;v=1'), array('audience' => array('Audience1', 'Audience2')));
-        $this->setExpectedException('InvalidAudienceException');
+        $this->setExpectedException('UnexpectedValueException', 'Invalid audience');
         JWT::decode($msg, 'my_key', array('HS256'), array('audience' => 'Audience3'));
     }
 
@@ -348,14 +348,14 @@ class JWTTest extends PHPUnit_Framework_TestCase
     public function testInvalidEmptyJWTIdDecode()
     {
         $msg = JWT::encode(array('message' => 'abc'), 'my_key', 'HS256', NULL, array('cty' => 'test-eit;v=1'));
-        $this->setExpectedException('InvalidJWTIdException');
+        $this->setExpectedException('UnexpectedValueException', 'Invalid JWT ID');
         JWT::decode($msg, 'my_key', array('HS256'), array('jwtid' => 'userID'));
     }
 
     public function testInvalidJWTId()
     {
         $msg = JWT::encode(array('message' => 'abc'), 'my_key', 'HS256', NULL, array('cty' => 'test-eit;v=1'), array('jwtid' => 'userID'));
-        $this->setExpectedException('InvalidJWTIdException');
+        $this->setExpectedException('UnexpectedValueException', 'Invalid JWT ID');
         JWT::decode($msg, 'my_key', array('HS256'), array('jwtid' => 'notMyUserID'));
     }
 
