@@ -139,41 +139,31 @@ class JWT
             throw new ExpiredException('Expired token');
         }
 
-        if (isset($options['issuer']) && is_string($options['issuer'])) {
-            if (!isset($payload->iss) || !is_string($payload->iss) || $payload->iss !== $options['issuer']) {
+        if (isset($options['issuer'])) {
+            if (!isset($payload->iss) || $payload->iss !== $options['issuer']) {
                 throw new UnexpectedValueException('Invalid issuer');
             }
         }
 
-        if (isset($options['subject']) && is_string($options['subject'])) {
-            if (!isset($payload->sub) || !is_string($payload->sub) || $payload->sub !== $options['subject']) {
+        if (isset($options['subject'])) {
+            if (!isset($payload->sub) || $payload->sub !== $options['subject']) {
                 throw new UnexpectedValueException('Invalid subject');
             }
         }
 
-        if (isset($options['jwtid']) && is_string($options['jwtid'])) {
-            if (!isset($payload->jti) || !is_string($payload->jti) || $payload->jti !== $options['jwtid']) {
+        if (isset($options['jwtid'])) {
+            if (!isset($payload->jti) || $payload->jti !== $options['jwtid']) {
                 throw new UnexpectedValueException('Invalid JWT ID');
             }
         }
 
-        if (isset($options['audience']) && (is_string($options['audience']) || is_array($options['audience']))) {
+        if (isset($options['audience'])) {
             if (!isset($payload->aud)) {
                 throw new UnexpectedValueException('Invalid audience');
             }
 
-            $target = is_array($payload->aud) ? $payload->aud : array($payload->aud);
-            $audiences = is_array($options['audience']) ? $options['audience'] : array($options['audience']);
-
-            $audienceFound = false;
-            foreach ($audiences as $audience) {
-                if (is_string($audience) && array_search($audience, $payload->aud) !== false) {
-                    $audienceFound = true;
-                    break;
-                }
-            }
-
-            if (!$audienceFound) {
+            $audienceFound = array_intersect((array) $options['audience'], (array) $payload->aud);
+            if (0 === count($audienceFound)) {
                 throw new UnexpectedValueException('Invalid audience');
             }
         }
@@ -204,31 +194,31 @@ class JWT
         if ($keyId !== null) {
             $header['kid'] = $keyId;
         }
-        if ( isset($head) && is_array($head) ) {
+        if (isset($head) && is_array($head)) {
             $header = array_merge($head, $header);
         }
-        if (isset($options['audience']) && (is_string($options['audience']) || is_array($options['audience']))) {
+        if (isset($options['audience'])) {
             if (is_array($payload)) {
-                $payload['aud'] = is_array($options['audience']) ? $options['audience'] : array($options['audience']);
+                $payload['aud'] = (array) $options['audience'];
             } else if (is_object($payload)) {
-                $payload->aud = is_array($options['audience']) ? $options['audience'] : array($options['audience']);
+                $payload->aud = (array) $options['audience'];
             }
         }
-        if (isset($options['issuer']) && is_string($options['issuer'])) {
+        if (isset($options['issuer'])) {
             if (is_array($payload)) {
                 $payload['iss'] = $options['issuer'];
             } else if (is_object($payload)) {
                 $payload->iss = $options['issuer'];
             }
         }
-        if (isset($options['subject']) && is_string($options['subject'])) {
+        if (isset($options['subject'])) {
             if (is_array($payload)) {
                 $payload['sub'] = $options['subject'];
             } else if (is_object($payload)) {
                 $payload->sub = $options['subject'];
             }
         }
-        if (isset($options['jwtid']) && is_string($options['jwtid'])) {
+        if (isset($options['jwtid'])) {
             if (is_array($payload)) {
                 $payload['jti'] = $options['jwtid'];
             } else if (is_object($payload)) {
