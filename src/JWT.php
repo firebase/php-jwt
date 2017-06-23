@@ -1,6 +1,7 @@
 <?php
 
 namespace Firebase\JWT;
+
 use \DomainException;
 use \InvalidArgumentException;
 use \UnexpectedValueException;
@@ -54,6 +55,7 @@ class JWT
      *                                      If the algorithm used is asymmetric, this is the public key
      * @param array         $allowed_algs   List of supported verification algorithms
      *                                      Supported algorithms are 'HS256', 'HS384', 'HS512' and 'RS256'
+     * @param array         $options        Extra options (audience, issuer, jwtid, subject)
      *
      * @return object The JWT's payload as a PHP object
      *
@@ -66,7 +68,7 @@ class JWT
      * @uses jsonDecode
      * @uses urlsafeB64Decode
      */
-    public static function decode($jwt, $key, $allowed_algs = array())
+    public static function decode($jwt, $key = null, $allowed_algs = array(), $options = array())
     {
         $timestamp = is_null(static::$timestamp) ? time() : static::$timestamp;
 
@@ -133,8 +135,37 @@ class JWT
         }
 
         // Check if this token has expired.
-        if (isset($payload->exp) && ($timestamp - static::$leeway) >= $payload->exp) {
+        if (isset($payload->exp) && (time() - self::$leeway) >= $payload->exp) {
             throw new ExpiredException('Expired token');
+        }
+
+        if (isset($options['issuer'])) {
+            if (!isset($payload->iss) || $payload->iss !== $options['issuer']) {
+                throw new UnexpectedValueException('Invalid issuer');
+            }
+        }
+
+        if (isset($options['subject'])) {
+            if (!isset($payload->sub) || $payload->sub !== $options['subject']) {
+                throw new UnexpectedValueException('Invalid subject');
+            }
+        }
+
+        if (isset($options['jwtid'])) {
+            if (!isset($payload->jti) || $payload->jti !== $options['jwtid']) {
+                throw new UnexpectedValueException('Invalid JWT ID');
+            }
+        }
+
+        if (isset($options['audience'])) {
+            if (!isset($payload->aud)) {
+                throw new UnexpectedValueException('Invalid audience');
+            }
+
+            $audienceFound = array_intersect((array) $options['audience'], (array) $payload->aud);
+            if (0 === count($audienceFound)) {
+                throw new UnexpectedValueException('Invalid audience');
+            }
         }
 
         return $payload;
@@ -150,20 +181,49 @@ class JWT
      *                                  Supported algorithms are 'HS256', 'HS384', 'HS512' and 'RS256'
      * @param mixed         $keyId
      * @param array         $head       An array with header elements to attach
+     * @param array         $options    Extra options (audience, issuer, jwtid, subject)
      *
      * @return string A signed JWT
      *
      * @uses jsonEncode
      * @uses urlsafeB64Encode
      */
-    public static function encode($payload, $key, $alg = 'HS256', $keyId = null, $head = null)
+    public static function encode($payload, $key, $alg = 'HS256', $keyId = null, $head = null, $options = array())
     {
         $header = array('typ' => 'JWT', 'alg' => $alg);
         if ($keyId !== null) {
             $header['kid'] = $keyId;
         }
-        if ( isset($head) && is_array($head) ) {
+        if (isset($head) && is_array($head)) {
             $header = array_merge($head, $header);
+        }
+        if (isset($options['audience'])) {
+            if (is_array($payload)) {
+                $payload['aud'] = (array) $options['audience'];
+            } else if (is_object($payload)) {
+                $payload->aud = (array) $options['audience'];
+            }
+        }
+        if (isset($options['issuer'])) {
+            if (is_array($payload)) {
+                $payload['iss'] = $options['issuer'];
+            } else if (is_object($payload)) {
+                $payload->iss = $options['issuer'];
+            }
+        }
+        if (isset($options['subject'])) {
+            if (is_array($payload)) {
+                $payload['sub'] = $options['subject'];
+            } else if (is_object($payload)) {
+                $payload->sub = $options['subject'];
+            }
+        }
+        if (isset($options['jwtid'])) {
+            if (is_array($payload)) {
+                $payload['jti'] = $options['jwtid'];
+            } else if (is_object($payload)) {
+                $payload->jti = $options['jwtid'];
+            }
         }
         $segments = array();
         $segments[] = static::urlsafeB64Encode(static::jsonEncode($header));
