@@ -68,15 +68,12 @@ class JWT
      * @uses jsonDecode
      * @uses urlsafeB64Decode
      */
-    public static function decode($jwt, $key = null, $allowed_algs = array(), $options = array())
+    public static function decode($jwt, $key, array $allowed_algs = array(), $options = array())
     {
         $timestamp = is_null(static::$timestamp) ? time() : static::$timestamp;
 
         if (empty($key)) {
             throw new InvalidArgumentException('Key may not be empty');
-        }
-        if (!is_array($allowed_algs)) {
-            throw new InvalidArgumentException('Algorithm not allowed');
         }
         $tks = explode('.', $jwt);
         if (count($tks) != 3) {
