@@ -118,6 +118,27 @@ echo "Decode:\n" . print_r($decoded_array, true) . "\n";
 Changelog
 ---------
 
+#### 5.0.0 / 2017-06-26
+- Support RS384 and RS512.
+  See [#117](https://github.com/firebase/php-jwt/pull/117). Thanks [@joostfaassen](https://github.com/joostfaassen)!
+- Add an example for RS256 openssl.
+  See [#125](https://github.com/firebase/php-jwt/pull/125). Thanks [@akeeman](https://github.com/akeeman)!
+- Detect invalid Base64 encoding in signature.
+  See [#162](https://github.com/firebase/php-jwt/pull/162). Thanks [@psignoret](https://github.com/psignoret)!
+- Update `JWT::verify` to handle OpenSSL errors.
+  See [#159](https://github.com/firebase/php-jwt/pull/159). Thanks [@bshaffer](https://github.com/bshaffer)!
+- Add `array` type hinting to `decode` method
+  See [#101](https://github.com/firebase/php-jwt/pull/101). Thanks [@hywak](https://github.com/hywak)!
+- Add all JSON error types.
+  See [#110](https://github.com/firebase/php-jwt/pull/110). Thanks [@gbalduzzi](https://github.com/gbalduzzi)!
+- Bugfix 'kid' not in given key list.
+  See [#129](https://github.com/firebase/php-jwt/pull/129). Thanks [@stampycode](https://github.com/stampycode)!
+- Miscellaneous cleanup, documentation and test fixes.
+  See [#107](https://github.com/firebase/php-jwt/pull/107), [#115](https://github.com/firebase/php-jwt/pull/115),
+  [#160](https://github.com/firebase/php-jwt/pull/160), [#161](https://github.com/firebase/php-jwt/pull/161), and
+  [#165](https://github.com/firebase/php-jwt/pull/165). Thanks [@akeeman](https://github.com/akeeman),
+  [@chinedufn](https://github.com/chinedufn), and [@bshaffer](https://github.com/bshaffer)!
+
 #### 4.0.0 / 2016-07-17
 - Add support for late static binding. See [#88](https://github.com/firebase/php-jwt/pull/88) for details. Thanks to [@chappy84](https://github.com/chappy84)!
 - Use static `$timestamp` instead of `time()` to improve unit testing. See [#93](https://github.com/firebase/php-jwt/pull/93) for details. Thanks to [@josephmcdermott](https://github.com/josephmcdermott)!
