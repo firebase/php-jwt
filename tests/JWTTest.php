@@ -237,21 +237,21 @@ class JWTTest extends PHPUnit_Framework_TestCase
     public function testNoneAlgorithm()
     {
         $msg = JWT::encode('abc', 'my_key');
-        $this->setExpectedException('UnexpectedValueException');
+        $this->setExpectedException('Firebase\JWT\FormatInvalidException');
         JWT::decode($msg, 'my_key', array('none'));
     }
 
     public function testIncorrectAlgorithm()
     {
         $msg = JWT::encode('abc', 'my_key');
-        $this->setExpectedException('UnexpectedValueException');
+        $this->setExpectedException('Firebase\JWT\FormatInvalidException');
         JWT::decode($msg, 'my_key', array('RS256'));
     }
 
     public function testMissingAlgorithm()
     {
         $msg = JWT::encode('abc', 'my_key');
-        $this->setExpectedException('UnexpectedValueException');
+        $this->setExpectedException('Firebase\JWT\FormatInvalidException');
         JWT::decode($msg, 'my_key');
     }
 
@@ -263,7 +263,7 @@ class JWTTest extends PHPUnit_Framework_TestCase
 
     public function testInvalidSegmentCount()
     {
-        $this->setExpectedException('UnexpectedValueException');
+        $this->setExpectedException('Firebase\JWT\FormatInvalidException');
         JWT::decode('brokenheader.brokenbody', 'my_key', array('HS256'));
     }
 

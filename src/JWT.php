@@ -58,6 +58,7 @@ class JWT
      * @return object The JWT's payload as a PHP object
      *
      * @throws UnexpectedValueException     Provided JWT was invalid
+     * @throws FormatInvalidException       Provided JWT has invalid format
      * @throws SignatureInvalidException    Provided JWT was invalid because the signature verification failed
      * @throws BeforeValidException         Provided JWT is trying to be used before it's eligible as defined by 'nbf'
      * @throws BeforeValidException         Provided JWT is trying to be used before it's been created as defined by 'iat'
@@ -75,35 +76,35 @@ class JWT
         }
         $tks = explode('.', $jwt);
         if (count($tks) != 3) {
-            throw new UnexpectedValueException('Wrong number of segments');
+            throw new FormatInvalidException('Wrong number of segments');
         }
         list($headb64, $bodyb64, $cryptob64) = $tks;
         if (null === ($header = static::jsonDecode(static::urlsafeB64Decode($headb64)))) {
-            throw new UnexpectedValueException('Invalid header encoding');
+            throw new FormatInvalidException('Invalid header encoding');
         }
         if (null === $payload = static::jsonDecode(static::urlsafeB64Decode($bodyb64))) {
-            throw new UnexpectedValueException('Invalid claims encoding');
+            throw new FormatInvalidException('Invalid claims encoding');
         }
         if (false === ($sig = static::urlsafeB64Decode($cryptob64))) {
             throw new UnexpectedValueException('Invalid signature encoding');
         }
         if (empty($header->alg)) {
-            throw new UnexpectedValueException('Empty algorithm');
+            throw new FormatInvalidException('Empty algorithm');
         }
         if (empty(static::$supported_algs[$header->alg])) {
-            throw new UnexpectedValueException('Algorithm not supported');
+            throw new FormatInvalidException('Algorithm not supported');
         }
         if (!in_array($header->alg, $allowed_algs)) {
-            throw new UnexpectedValueException('Algorithm not allowed');
+            throw new FormatInvalidException('Algorithm not allowed');
         }
         if (is_array($key) || $key instanceof \ArrayAccess) {
             if (isset($header->kid)) {
                 if (!isset($key[$header->kid])) {
-                    throw new UnexpectedValueException('"kid" invalid, unable to lookup correct key');
+                    throw new FormatInvalidException('"kid" invalid, unable to lookup correct key');
                 }
                 $key = $key[$header->kid];
             } else {
-                throw new UnexpectedValueException('"kid" empty, unable to lookup correct key');
+                throw new FormatInvalidException('"kid" empty, unable to lookup correct key');
             }
         }
 
