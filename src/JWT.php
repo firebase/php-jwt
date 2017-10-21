@@ -3,7 +3,6 @@
 namespace Firebase\JWT;
 use \DomainException;
 use \InvalidArgumentException;
-use \UnexpectedValueException;
 use \DateTime;
 
 /**
@@ -57,7 +56,6 @@ class JWT
      *
      * @return object The JWT's payload as a PHP object
      *
-     * @throws UnexpectedValueException     Provided JWT was invalid
      * @throws FormatInvalidException       Provided JWT has invalid format
      * @throws SignatureInvalidException    Provided JWT was invalid because the signature verification failed
      * @throws BeforeValidException         Provided JWT is trying to be used before it's eligible as defined by 'nbf'
@@ -86,7 +84,7 @@ class JWT
             throw new FormatInvalidException('Invalid claims encoding');
         }
         if (false === ($sig = static::urlsafeB64Decode($cryptob64))) {
-            throw new UnexpectedValueException('Invalid signature encoding');
+            throw new SignatureInvalidException('Invalid signature encoding');
         }
         if (empty($header->alg)) {
             throw new FormatInvalidException('Empty algorithm');
