@@ -192,7 +192,7 @@ class JWTTest extends PHPUnit_Framework_TestCase
             "message" => "abc",
             "exp" => time() + JWT::$leeway + 20); // time in the future
         $encoded = JWT::encode($payload, 'my_key');
-        $this->setExpectedException('InvalidArgumentException');
+        $this->setExpectedException('Firebase\JWT\KeyEmptyException');
         $decoded = JWT::decode($encoded, null, array('HS256'));
     }
 
@@ -202,7 +202,7 @@ class JWTTest extends PHPUnit_Framework_TestCase
             "message" => "abc",
             "exp" => time() + JWT::$leeway + 20); // time in the future
         $encoded = JWT::encode($payload, 'my_key');
-        $this->setExpectedException('InvalidArgumentException');
+        $this->setExpectedException('Firebase\JWT\KeyEmptyException');
         $decoded = JWT::decode($encoded, '', array('HS256'));
     }
 
