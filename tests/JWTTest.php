@@ -1,8 +1,13 @@
 <?php
-use \Firebase\JWT\JWT;
+namespace Firebase\JWT;
+
+use ArrayObject;
+use PHPUnit_Framework_TestCase;
 
 class JWTTest extends PHPUnit_Framework_TestCase
 {
+    public static $opensslVerifyReturnValue;
+
     public function testEncodeDecode()
     {
         $msg = JWT::encode('abc', 'my_key');
@@ -253,7 +258,7 @@ class JWTTest extends PHPUnit_Framework_TestCase
     public function testAdditionalHeaders()
     {
         $msg = JWT::encode('abc', 'my_key', 'HS256', null, array('cty' => 'test-eit;v=1'));
-        $this->assertEquals(JWT::decode($msg, 'my_key', array('HS256')), 'abc');        
+        $this->assertEquals(JWT::decode($msg, 'my_key', array('HS256')), 'abc');
     }
 
     public function testInvalidSegmentCount()
@@ -261,4 +266,31 @@ class JWTTest extends PHPUnit_Framework_TestCase
         $this->setExpectedException('UnexpectedValueException');
         JWT::decode('brokenheader.brokenbody', 'my_key', array('HS256'));
     }
+
+    public function testInvalidSignatureEncoding()
+    {
+        $msg = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpZCI6MSwibmFtZSI6ImZvbyJ9.Q4Kee9E8o0Xfo4ADXvYA8t7dN_X_bU9K5w6tXuiSjlUxx";
+        $this->setExpectedException('UnexpectedValueException');
+        JWT::decode($msg, 'secret', array('HS256'));
+    }
+
+    public function testVerifyError()
+    {
+        $this->setExpectedException('DomainException');
+        $pkey = openssl_pkey_new();
+        $msg = JWT::encode('abc', $pkey, 'RS256');
+        self::$opensslVerifyReturnValue = -1;
+        JWT::decode($msg, $pkey, array('RS256'));
+    }
+}
+
+/*
+ * Allows the testing of openssl_verify with an error return value
+ */
+function openssl_verify($msg, $signature, $key, $algorithm)
+{
+    if (null !== JWTTest::$opensslVerifyReturnValue) {
+        return JWTTest::$opensslVerifyReturnValue;
+    }
+    return \openssl_verify($msg, $signature, $key, $algorithm);
 }
