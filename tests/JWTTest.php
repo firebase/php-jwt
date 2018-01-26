@@ -2,9 +2,9 @@
 namespace Firebase\JWT;
 
 use ArrayObject;
-use PHPUnit_Framework_TestCase;
+use PHPUnit\Framework\TestCase;
 
-class JWTTest extends PHPUnit_Framework_TestCase
+class JWTTest extends TestCase
 {
     public static $opensslVerifyReturnValue;
 
