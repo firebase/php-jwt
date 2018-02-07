@@ -1,7 +1,7 @@
 {
-    "name": "firebase/php-jwt",
-    "description": "A simple library to encode and decode JSON Web Tokens (JWT) in PHP. Should conform to the current spec.",
-    "homepage": "https://github.com/firebase/php-jwt",
+    "name": "femastudios/php-jwt",
+    "description": "Forked firebase/php-jwt that adds parsed payload in exceptions.",
+    "homepage": "https://github.com/femastudios/php-jwt",
     "authors": [
         {
             "name": "Neuman Vong",
@@ -12,6 +12,10 @@
             "name": "Anant Narayanan",
             "email": "anant@php.net",
             "role": "Developer"
+        },
+        {
+            "name": "Mauro Molin",
+            "email": "molin.mauro@femastudios.com"
         }
     ],
     "license": "BSD-3-Clause",
