@@ -90,7 +90,7 @@ class JWT
         if (empty($header->alg)) {
             throw new UnexpectedValueException('Empty algorithm');
         }
-        if (empty(self::$supported_algs[$header->alg])) {
+        if (empty(static::$supported_algs[$header->alg])) {
             throw new UnexpectedValueException('Algorithm not supported');
         }
         if (!in_array($header->alg, $allowed_algs)) {
@@ -187,10 +187,10 @@ class JWT
      */
     public function sign($msg, $key, $alg = 'HS256')
     {
-        if (empty(self::$supported_algs[$alg])) {
+        if (empty(static::$supported_algs[$alg])) {
             throw new DomainException('Algorithm not supported');
         }
-        list($function, $algorithm) = self::$supported_algs[$alg];
+        list($function, $algorithm) = static::$supported_algs[$alg];
         switch($function) {
             case 'hash_hmac':
                 return hash_hmac($algorithm, $msg, $key, true);
@@ -220,11 +220,11 @@ class JWT
      */
     private function verify($msg, $signature, $key, $alg)
     {
-        if (empty(self::$supported_algs[$alg])) {
+        if (empty(static::$supported_algs[$alg])) {
             throw new DomainException('Algorithm not supported');
         }
 
-        list($function, $algorithm) = self::$supported_algs[$alg];
+        list($function, $algorithm) = static::$supported_algs[$alg];
         switch($function) {
             case 'openssl':
                 $success = openssl_verify($msg, $signature, $key, $algorithm);
