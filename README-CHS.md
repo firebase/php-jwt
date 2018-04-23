@@ -48,7 +48,7 @@ print_r($decoded);
 $decoded_array = (array) $decoded;
 
 /**
- * 当签名服务器和验证服务器之间存在偏移时，您可以添加 leeway。建议这个值不超过几分钟。
+ * 当签名服务器和验证服务器之间存在时间偏移时，您可以添加 leeway。建议这个值不要超过几分钟。
  *
  * 来源：http://self-issued.info/docs/draft-ietf-oauth-json-web-token.html#nbfDef
  */
@@ -188,7 +188,7 @@ OK (5 tests, 5 assertions)
 私钥换行
 -----
 
-如果您的私钥包含 `\n` 换行符, 请务必将其用双引号`""` 包裹，而不是单引号 `''`，以正确解析转移字符
+如果您的私钥包含 `\n` 换行符, 请务必将其用双引号`""` 包裹，而不是单引号 `''`，以正确解析转义字符
 
 许可
 -------
