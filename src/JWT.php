@@ -51,9 +51,9 @@ class JWT
      *
      * @param string                    $jwt            The JWT
      * @param string|array|resource     $key            The key, or map of keys.
-     *                                      If the algorithm used is asymmetric, this is the public key
+     *                                                  If the algorithm used is asymmetric, this is the public key
      * @param array                     $allowed_algs   List of supported verification algorithms
-     *                                      Supported algorithms are 'HS256', 'HS384', 'HS512' and 'RS256'
+     *                                                  Supported algorithms are 'HS256', 'HS384', 'HS512' and 'RS256'
      *
      * @return object The JWT's payload as a PHP object
      *
