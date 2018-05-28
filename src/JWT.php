@@ -78,13 +78,17 @@ class JWT
             throw new UnexpectedValueException('Wrong number of segments');
         }
         list($headb64, $bodyb64, $cryptob64) = $tks;
-        if (null === ($header = static::jsonDecode(static::urlsafeB64Decode($headb64)))) {
+        try {
+            $header = static::jsonDecode(static::urlsafeB64Decode($headb64));
+        } catch (DomainException $ex) {
             throw new UnexpectedValueException('Invalid header encoding');
         }
-        if (null === $payload = static::jsonDecode(static::urlsafeB64Decode($bodyb64))) {
+        try {
+            $payload = static::jsonDecode(static::urlsafeB64Decode($bodyb64));
+        } catch (DomainException $ex) {
             throw new UnexpectedValueException('Invalid claims encoding');
         }
-        if (false === ($sig = static::urlsafeB64Decode($cryptob64))) {
+        if (!is_string($sig = static::urlsafeB64Decode($cryptob64))) {
             throw new UnexpectedValueException('Invalid signature encoding');
         }
         if (empty($header->alg)) {
@@ -293,7 +297,7 @@ class JWT
     /**
      * Encode a PHP object into a JSON string.
      *
-     * @param object|array $input A PHP object or array
+     * @param mixed $input A PHP object or array
      *
      * @return string JSON representation of the PHP object or array
      *
