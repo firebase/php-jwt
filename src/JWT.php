@@ -66,7 +66,7 @@ class JWT
      * @uses jsonDecode
      * @uses urlsafeB64Decode
      */
-    public static function decode($jwt, $key, array $allowed_algs = array())
+    public static function decode($jwt, $key, array $allowed_algs = array(), $associative = false)
     {
         $timestamp = is_null(static::$timestamp) ? time() : static::$timestamp;
 
@@ -81,7 +81,7 @@ class JWT
         if (null === ($header = static::jsonDecode(static::urlsafeB64Decode($headb64)))) {
             throw new UnexpectedValueException('Invalid header encoding');
         }
-        if (null === $payload = static::jsonDecode(static::urlsafeB64Decode($bodyb64))) {
+        if (null === $payload = static::jsonDecode(static::urlsafeB64Decode($bodyb64), $associative)) {
             throw new UnexpectedValueException('Invalid claims encoding');
         }
         if (false === ($sig = static::urlsafeB64Decode($cryptob64))) {
@@ -264,14 +264,14 @@ class JWT
      *
      * @throws DomainException Provided string was invalid JSON
      */
-    public static function jsonDecode($input)
+    public static function jsonDecode($input, $associative = false)
     {
         if (version_compare(PHP_VERSION, '5.4.0', '>=') && !(defined('JSON_C_VERSION') && PHP_INT_SIZE > 4)) {
             /** In PHP >=5.4.0, json_decode() accepts an options parameter, that allows you
              * to specify that large ints (like Steam Transaction IDs) should be treated as
              * strings, rather than the PHP default behaviour of converting them to floats.
              */
-            $obj = json_decode($input, false, 512, JSON_BIGINT_AS_STRING);
+            $obj = json_decode($input, $associative, 512, JSON_BIGINT_AS_STRING);
         } else {
             /** Not all servers will support that, however, so for older versions we must
              * manually detect large ints in the JSON string and quote them (thus converting
@@ -279,7 +279,7 @@ class JWT
              */
             $max_int_length = strlen((string) PHP_INT_MAX) - 1;
             $json_without_bigints = preg_replace('/:\s*(-?\d{'.$max_int_length.',})/', ': "$1"', $input);
-            $obj = json_decode($json_without_bigints);
+            $obj = json_decode($json_without_bigints, $associative);
         }
 
         if (function_exists('json_last_error') && $errno = json_last_error()) {

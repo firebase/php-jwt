@@ -282,6 +282,43 @@ class JWTTest extends PHPUnit_Framework_TestCase
         self::$opensslVerifyReturnValue = -1;
         JWT::decode($msg, $pkey, array('RS256'));
     }
+
+    public function testNonAssociativeError()
+    {
+        $payload = array(
+            'pass' => true,
+            'nested' => array( 'fail' => true )
+        );
+        $key = 'test-key';
+        $jwt = JWT::encode($payload, $key, 'HS256');
+        $decoded = (array) JWT::decode($jwt, $key, array('HS256'));
+
+        $this->assertEquals($decoded['pass'], true);
+
+        $nested = $decoded['nested'];
+        $this->assertEquals(get_class($nested), 'stdClass');
+
+        $this->setExpectedException('Error');
+        $nested['fail'];
+    }
+
+    public function testAssociative()
+    {
+        $payload = array(
+            'pass' => true,
+            'nested' => array( 'fail' => false )
+        );
+        $key = 'test-key';
+        $jwt = JWT::encode($payload, $key, 'HS256');
+        $decoded = JWT::decode($jwt, $key, array('HS256'), true);
+
+        $this->assertEquals($decoded['pass'], true);
+
+        $nested = $decoded['nested'];
+        $this->assertTrue(is_array($nested));
+
+        $this->assertEquals($nested['fail'], false);
+    }
 }
 
 /*
