@@ -55,7 +55,7 @@ class JWT
      * @param array         $allowed_algs   List of supported verification algorithms
      *                                      Supported algorithms are 'HS256', 'HS384', 'HS512' and 'RS256'
      *
-     * @return object The JWT's payload as a PHP object
+     * @return \stdClass The JWT's payload as a PHP object
      *
      * @throws UnexpectedValueException     Provided JWT was invalid
      * @throws SignatureInvalidException    Provided JWT was invalid because the signature verification failed
@@ -260,7 +260,7 @@ class JWT
      *
      * @param string $input JSON string
      *
-     * @return object Object representation of JSON string
+     * @return \stdClass Object representation of JSON string
      *
      * @throws DomainException Provided string was invalid JSON
      */
