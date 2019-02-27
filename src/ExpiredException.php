@@ -20,7 +20,7 @@ class ExpiredException extends \UnexpectedValueException
      * @since 2019-02-27
      * @version PHP-JWT v5.0.0
      */
-    public function __construct(string $message, \DateInterval $timeExpired){
+    public function __construct($message, $timeExpired){
         parent::__construct($message);
 
         $this->timeExpired = $timeExpired;
@@ -49,7 +49,7 @@ class ExpiredException extends \UnexpectedValueException
      * @since 2019-02-27
      * @version PHP-JWT v5.0.0
      */
-    public function getTimeExpiredFormat(string $format = 'Y-m-d H:i:s'){
+    public function getTimeExpiredFormat($format = 'Y-m-d H:i:s'){
         return $this->timeExpired->format($format);
     }
 }
