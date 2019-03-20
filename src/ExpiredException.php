@@ -11,6 +11,8 @@ class ExpiredException extends \UnexpectedValueException
      * Construct Class
      *
      * @param string $message
+     * @param int $code
+     * @param Throwable $previous
      * @param \DateInterval $timeExpired
      * @return void
      *
@@ -45,7 +47,7 @@ class ExpiredException extends \UnexpectedValueException
      * @version PHP-JWT v5.0.0
      */
     public function getTimeExpiredFormat($format = 'Y-m-d H:i:s'){
-        if(!is_null($this->timeExpired){
+        if(!is_null($this->timeExpired)){
             return $this->timeExpired->format($format);
         }
     }
