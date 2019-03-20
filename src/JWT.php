@@ -135,7 +135,7 @@ class JWT
             $exp = date('Y-m-d H:i:s', $payload->exp);
             $timeExpired = $dt->diff(new \DateTime($exp));
             
-            throw new ExpiredException('Expired token', $timeExpired);
+            throw new ExpiredException('Expired token', 0, NULL, $timeExpired);
         }
 
         return $payload;
