@@ -18,7 +18,7 @@ class ExpiredException extends \UnexpectedValueException
      * @since 2019-02-27
      * @version PHP-JWT v5.0.0
      */
-    public function __construct($message, $code = 0, $previous = NULL, $timeExpired = NULL){
+    public function __construct($message = "", $code = 0, $previous = NULL, $timeExpired = NULL){
         parent::__construct($message, $code, $previous);
         $this->timeExpired = $timeExpired;
     }
