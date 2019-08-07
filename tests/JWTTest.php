@@ -2,6 +2,7 @@
 namespace Firebase\JWT;
 
 use ArrayObject;
+use DateTime;
 use PHPUnit_Framework_TestCase;
 
 class JWTTest extends PHPUnit_Framework_TestCase
@@ -281,6 +282,32 @@ class JWTTest extends PHPUnit_Framework_TestCase
         $msg = JWT::encode('abc', $pkey, 'RS256');
         self::$opensslVerifyReturnValue = -1;
         JWT::decode($msg, $pkey, array('RS256'));
+    }
+
+    public function testStringDatetimeTimestamp()
+    {
+        // reset the leeway to the default
+        JWT::$leeway = 0;
+        $payload = array(
+            "message" => "abc",
+            "iat" => 1502064545); // time way in the past
+        // a non-numeric timestamp
+        JWT::$timestamp = "2019-08-06T00:12:48.799";
+        $encoded = JWT::encode($payload, 'my_key');
+        JWT::decode($encoded, 'my_key', array('HS256'));
+    }
+
+    public function testDatetimeTimestamp()
+    {
+        // reset the leeway to the default
+        JWT::$leeway = 0;
+        $payload = array(
+            "message" => "abc",
+            "iat" => 1502064545); // time way in the past
+        // a non-numeric timestamp
+        JWT::$timestamp = new DateTime('2019-08-06T15:03:01.012345Z');
+        $encoded = JWT::encode($payload, 'my_key');
+        JWT::decode($encoded, 'my_key', array('HS256'));
     }
 }
 

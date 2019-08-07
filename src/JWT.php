@@ -70,6 +70,14 @@ class JWT
     {
         $timestamp = is_null(static::$timestamp) ? time() : static::$timestamp;
 
+        if ($timestamp instanceof DateTime) {
+            $timestamp = $timestamp->getTimeStamp();
+        } elseif (is_string($timestamp)) {
+            if (false !== ($time = strtotime($timestamp))) {
+                $timestamp = $time;
+            }
+        }
+
         if (empty($key)) {
             throw new InvalidArgumentException('Key may not be empty');
         }
