@@ -297,6 +297,19 @@ class JWTTest extends PHPUnit_Framework_TestCase
         JWT::decode($encoded, 'my_key', array('HS256'));
     }
 
+    public function testNumericStringTimestamp()
+    {
+        // reset the leeway to the default
+        JWT::$leeway = 0;
+        $payload = array(
+            "message" => "abc",
+            "iat" => 1502064545); // time way in the past
+        // ensure compatibility with stringy numerics
+        JWT::$timestamp = "1502064545";
+        $encoded = JWT::encode($payload, 'my_key');
+        JWT::decode($encoded, 'my_key', array('HS256'));
+    }
+
     public function testDatetimeTimestamp()
     {
         // reset the leeway to the default
