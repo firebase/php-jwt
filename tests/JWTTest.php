@@ -206,17 +206,29 @@ class JWTTest extends PHPUnit_Framework_TestCase
         $decoded = JWT::decode($encoded, '', array('HS256'));
     }
 
-    public function testRSEncodeDecode()
-    {
-        $privKey = openssl_pkey_new(array('digest_alg' => 'sha256',
-            'private_key_bits' => 1024,
-            'private_key_type' => OPENSSL_KEYTYPE_RSA));
-        $msg = JWT::encode('abc', $privKey, 'RS256');
-        $pubKey = openssl_pkey_get_details($privKey);
-        $pubKey = $pubKey['key'];
-        $decoded = JWT::decode($msg, $pubKey, array('RS256'));
-        $this->assertEquals($decoded, 'abc');
-    }
+	public function testRSEncodeDecode()
+	{
+		$privKey = openssl_pkey_new(array('digest_alg' => 'sha256',
+			'private_key_bits' => 1024,
+			'private_key_type' => OPENSSL_KEYTYPE_RSA));
+		$msg = JWT::encode('abc', $privKey, 'RS256');
+		$pubKey = openssl_pkey_get_details($privKey);
+		$pubKey = $pubKey['key'];
+		$decoded = JWT::decode($msg, $pubKey, array('RS256'));
+		$this->assertEquals($decoded, 'abc');
+	}
+
+	public function testESEncodeDecode()
+	{
+		$privKey = openssl_pkey_new(array('digest_alg' => 'sha256',
+			'private_key_bits' => 1024,
+			'private_key_type' => OPENSSL_KEYTYPE_RSA));
+		$msg = JWT::encode('abc', $privKey, 'ES256');
+		$pubKey = openssl_pkey_get_details($privKey);
+		$pubKey = $pubKey['key'];
+		$decoded = JWT::decode($msg, $pubKey, array('ES256'));
+		$this->assertEquals($decoded, 'abc');
+	}
 
     public function testKIDChooser()
     {
