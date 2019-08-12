@@ -5,6 +5,7 @@ use \DomainException;
 use \InvalidArgumentException;
 use \UnexpectedValueException;
 use \DateTime;
+use \DateTimeZone;
 
 /**
  * JSON Web Token implementation, based on this spec:
@@ -71,7 +72,7 @@ class JWT
         $timestamp = is_null(static::$timestamp) ? time() : static::$timestamp;
 
         if ($timestamp instanceof DateTime) {
-            $timestamp = $timestamp->getTimeStamp();
+            $timestamp = $timestamp->setTimeZone(new DateTimeZone("UTC"))->getTimeStamp();
         } elseif (is_string($timestamp)) {
             if (false !== ($time = strtotime($timestamp))) {
                 $timestamp = $time;
