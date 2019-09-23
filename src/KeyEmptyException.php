@@ -1,7 +1,7 @@
 <?php
 namespace Firebase\JWT;
 
-class KeyEmptyException extends \UnexpectedValueException
+class KeyEmptyException extends JWTException
 {
 
 }
