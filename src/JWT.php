@@ -112,7 +112,7 @@ class JWT
             throw new SignatureInvalidException('Signature verification failed');
         }
 
-        // Check if the nbf if it is defined. This is the time that the
+        // Check the nbf if it is defined. This is the time that the
         // token can actually be used. If it's not yet that time, abort.
         if (isset($payload->nbf) && $payload->nbf > ($timestamp + static::$leeway)) {
             throw new BeforeValidException(
