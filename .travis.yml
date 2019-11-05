@@ -7,13 +7,18 @@ php:
   - 7.0
   - 7.1
   - 7.2
+  - 7.3
 
 matrix:
   include:
     - php: 5.3
       dist: precise
+    - php: 5.4
+      dist: trusty
+    - php: 5.5
+      dist: trusty
 
 sudo: false
 
 before_script: composer install
-script: phpunit
+script: vendor/bin/phpunit
