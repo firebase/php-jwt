@@ -32,7 +32,7 @@ class JWTTest extends PHPUnit_Framework_TestCase
     public function testMalformedUtf8StringsFail()
     {
         $this->setExpectedException('DomainException');
-        JWT::encode(pack('c', 128), 'a');
+        JWT::encode(\pack('c', 128), 'a');
     }
 
     public function testMalformedJsonThrowsException()
@@ -46,7 +46,7 @@ class JWTTest extends PHPUnit_Framework_TestCase
         $this->setExpectedException('Firebase\JWT\ExpiredException');
         $payload = array(
             "message" => "abc",
-            "exp" => time() - 20); // time in the past
+            "exp" => \time() - 20); // time in the past
         $encoded = JWT::encode($payload, 'my_key');
         JWT::decode($encoded, 'my_key', array('HS256'));
     }
@@ -56,7 +56,7 @@ class JWTTest extends PHPUnit_Framework_TestCase
         $this->setExpectedException('Firebase\JWT\BeforeValidException');
         $payload = array(
             "message" => "abc",
-            "nbf" => time() + 20); // time in the future
+            "nbf" => \time() + 20); // time in the future
         $encoded = JWT::encode($payload, 'my_key');
         JWT::decode($encoded, 'my_key', array('HS256'));
     }
@@ -66,7 +66,7 @@ class JWTTest extends PHPUnit_Framework_TestCase
         $this->setExpectedException('Firebase\JWT\BeforeValidException');
         $payload = array(
             "message" => "abc",
-            "iat" => time() + 20); // time in the future
+            "iat" => \time() + 20); // time in the future
         $encoded = JWT::encode($payload, 'my_key');
         JWT::decode($encoded, 'my_key', array('HS256'));
     }
@@ -75,7 +75,7 @@ class JWTTest extends PHPUnit_Framework_TestCase
     {
         $payload = array(
             "message" => "abc",
-            "exp" => time() + JWT::$leeway + 20); // time in the future
+            "exp" => \time() + JWT::$leeway + 20); // time in the future
         $encoded = JWT::encode($payload, 'my_key');
         $decoded = JWT::decode($encoded, 'my_key', array('HS256'));
         $this->assertEquals($decoded->message, 'abc');
@@ -86,7 +86,7 @@ class JWTTest extends PHPUnit_Framework_TestCase
         JWT::$leeway = 60;
         $payload = array(
             "message" => "abc",
-            "exp" => time() - 20); // time in the past
+            "exp" => \time() - 20); // time in the past
         $encoded = JWT::encode($payload, 'my_key');
         $decoded = JWT::decode($encoded, 'my_key', array('HS256'));
         $this->assertEquals($decoded->message, 'abc');
@@ -98,7 +98,7 @@ class JWTTest extends PHPUnit_Framework_TestCase
         JWT::$leeway = 60;
         $payload = array(
             "message" => "abc",
-            "exp" => time() - 70); // time far in the past
+            "exp" => \time() - 70); // time far in the past
         $this->setExpectedException('Firebase\JWT\ExpiredException');
         $encoded = JWT::encode($payload, 'my_key');
         $decoded = JWT::decode($encoded, 'my_key', array('HS256'));
@@ -110,7 +110,7 @@ class JWTTest extends PHPUnit_Framework_TestCase
     {
         $payload = array(
             "message" => "abc",
-            "exp" => time() + 20); // time in the future
+            "exp" => \time() + 20); // time in the future
         $encoded = JWT::encode($payload, 'my_key');
         $decoded = JWT::decode($encoded, 'my_key', array('HS256', 'HS512'));
         $this->assertEquals($decoded->message, 'abc');
@@ -120,9 +120,9 @@ class JWTTest extends PHPUnit_Framework_TestCase
     {
         $payload = array(
             "message" => "abc",
-            "iat" => time(),
-            "exp" => time() + 20, // time in the future
-            "nbf" => time() - 20);
+            "iat" => \time(),
+            "exp" => \time() + 20, // time in the future
+            "nbf" => \time() - 20);
         $encoded = JWT::encode($payload, 'my_key');
         $decoded = JWT::decode($encoded, 'my_key', array('HS256'));
         $this->assertEquals($decoded->message, 'abc');
@@ -133,7 +133,7 @@ class JWTTest extends PHPUnit_Framework_TestCase
         JWT::$leeway = 60;
         $payload = array(
             "message" => "abc",
-            "nbf"     => time() + 20); // not before in near (leeway) future
+            "nbf"     => \time() + 20); // not before in near (leeway) future
         $encoded = JWT::encode($payload, 'my_key');
         $decoded = JWT::decode($encoded, 'my_key', array('HS256'));
         $this->assertEquals($decoded->message, 'abc');
@@ -145,7 +145,7 @@ class JWTTest extends PHPUnit_Framework_TestCase
         JWT::$leeway = 60;
         $payload = array(
             "message" => "abc",
-            "nbf"     => time() + 65); // not before too far in future
+            "nbf"     => \time() + 65); // not before too far in future
         $encoded = JWT::encode($payload, 'my_key');
         $this->setExpectedException('Firebase\JWT\BeforeValidException');
         $decoded = JWT::decode($encoded, 'my_key', array('HS256'));
@@ -157,7 +157,7 @@ class JWTTest extends PHPUnit_Framework_TestCase
         JWT::$leeway = 60;
         $payload = array(
             "message" => "abc",
-            "iat"     => time() + 20); // issued in near (leeway) future
+            "iat"     => \time() + 20); // issued in near (leeway) future
         $encoded = JWT::encode($payload, 'my_key');
         $decoded = JWT::decode($encoded, 'my_key', array('HS256'));
         $this->assertEquals($decoded->message, 'abc');
@@ -169,7 +169,7 @@ class JWTTest extends PHPUnit_Framework_TestCase
         JWT::$leeway = 60;
         $payload = array(
             "message" => "abc",
-            "iat"     => time() + 65); // issued too far in future
+            "iat"     => \time() + 65); // issued too far in future
         $encoded = JWT::encode($payload, 'my_key');
         $this->setExpectedException('Firebase\JWT\BeforeValidException');
         $decoded = JWT::decode($encoded, 'my_key', array('HS256'));
@@ -180,7 +180,7 @@ class JWTTest extends PHPUnit_Framework_TestCase
     {
         $payload = array(
             "message" => "abc",
-            "exp" => time() + 20); // time in the future
+            "exp" => \time() + 20); // time in the future
         $encoded = JWT::encode($payload, 'my_key');
         $this->setExpectedException('Firebase\JWT\SignatureInvalidException');
         $decoded = JWT::decode($encoded, 'my_key2', array('HS256'));
@@ -190,7 +190,7 @@ class JWTTest extends PHPUnit_Framework_TestCase
     {
         $payload = array(
             "message" => "abc",
-            "exp" => time() + JWT::$leeway + 20); // time in the future
+            "exp" => \time() + JWT::$leeway + 20); // time in the future
         $encoded = JWT::encode($payload, 'my_key');
         $this->setExpectedException('InvalidArgumentException');
         $decoded = JWT::decode($encoded, null, array('HS256'));
@@ -200,7 +200,7 @@ class JWTTest extends PHPUnit_Framework_TestCase
     {
         $payload = array(
             "message" => "abc",
-            "exp" => time() + JWT::$leeway + 20); // time in the future
+            "exp" => \time() + JWT::$leeway + 20); // time in the future
         $encoded = JWT::encode($payload, 'my_key');
         $this->setExpectedException('InvalidArgumentException');
         $decoded = JWT::decode($encoded, '', array('HS256'));
@@ -208,11 +208,11 @@ class JWTTest extends PHPUnit_Framework_TestCase
 
     public function testRSEncodeDecode()
     {
-        $privKey = openssl_pkey_new(array('digest_alg' => 'sha256',
+        $privKey = \openssl_pkey_new(array('digest_alg' => 'sha256',
             'private_key_bits' => 1024,
             'private_key_type' => OPENSSL_KEYTYPE_RSA));
         $msg = JWT::encode('abc', $privKey, 'RS256');
-        $pubKey = openssl_pkey_get_details($privKey);
+        $pubKey = \openssl_pkey_get_details($privKey);
         $pubKey = $pubKey['key'];
         $decoded = JWT::decode($msg, $pubKey, array('RS256'));
         $this->assertEquals($decoded, 'abc');
@@ -277,7 +277,7 @@ class JWTTest extends PHPUnit_Framework_TestCase
     public function testVerifyError()
     {
         $this->setExpectedException('DomainException');
-        $pkey = openssl_pkey_new();
+        $pkey = \openssl_pkey_new();
         $msg = JWT::encode('abc', $pkey, 'RS256');
         self::$opensslVerifyReturnValue = -1;
         JWT::decode($msg, $pkey, array('RS256'));
