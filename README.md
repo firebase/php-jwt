@@ -23,12 +23,12 @@ Example
 use \Firebase\JWT\JWT;
 
 $key = "example_key";
-$payload = array(
+$payload = [
     "iss" => "http://example.org",
     "aud" => "http://example.com",
     "iat" => 1356999524,
     "nbf" => 1357000000
-);
+];
 
 /**
  * IMPORTANT:
@@ -37,7 +37,7 @@ $payload = array(
  * for a list of spec-compliant algorithms.
  */
 $jwt = JWT::encode($payload, $key);
-$decoded = JWT::decode($jwt, $key, array('HS256'));
+$decoded = JWT::decode($jwt, $key, ['HS256']);
 
 print_r($decoded);
 
@@ -56,7 +56,7 @@ $decoded_array = (array) $decoded;
  * Source: http://self-issued.info/docs/draft-ietf-oauth-json-web-token.html#nbfDef
  */
 JWT::$leeway = 60; // $leeway in seconds
-$decoded = JWT::decode($jwt, $key, array('HS256'));
+$decoded = JWT::decode($jwt, $key, ['HS256']);
 
 ?>
 ```
@@ -103,7 +103,7 @@ $payload = array(
 $jwt = JWT::encode($payload, $privateKey, 'RS256');
 echo "Encode:\n" . print_r($jwt, true) . "\n";
 
-$decoded = JWT::decode($jwt, $publicKey, array('RS256'));
+$decoded = JWT::decode($jwt, $publicKey, ['RS256']);
 
 /*
  NOTE: This will now be an object instead of an associative array. To get
