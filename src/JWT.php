@@ -283,7 +283,7 @@ class JWT
             $obj = json_decode($json_without_bigints);
         }
 
-        if (function_exists('json_last_error') && $errno = json_last_error()) {
+        if ($errno = json_last_error()) {
             static::handleJsonError($errno);
         } elseif ($obj === null && $input !== 'null') {
             throw new DomainException('Null result with non-null input');
@@ -303,7 +303,7 @@ class JWT
     public static function jsonEncode($input)
     {
         $json = json_encode($input);
-        if (function_exists('json_last_error') && $errno = json_last_error()) {
+        if ($errno = json_last_error()) {
             static::handleJsonError($errno);
         } elseif ($json === 'null' && $input !== null) {
             throw new DomainException('Null result with non-null input');
