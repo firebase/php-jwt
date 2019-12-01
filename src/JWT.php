@@ -372,9 +372,6 @@ class JWT
      */
     private static function safeStrlen($str)
     {
-        if (function_exists('mb_strlen')) {
-            return mb_strlen($str, '8bit');
-        }
-        return strlen($str);
+        return mb_strlen($str, '8bit');
     }
 }
