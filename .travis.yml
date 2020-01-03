@@ -1,21 +1,10 @@
 language: php
 
 php:
-  - 5.6
-  - 7.0
-  - 7.1
   - 7.2
   - 7.3
-
-matrix:
-  include:
-    - php: 5.3
-      dist: precise
-    - php: 5.4
-      dist: trusty
-    - php: 5.5
-      dist: trusty
-
+  - 7.4  
+  
 sudo: false
 
 before_script: composer install
