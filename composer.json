@@ -20,7 +20,10 @@
     ],
     "license": "BSD-3-Clause",
     "require": {
-        "php": ">=5.3.0"
+        "php": ">=7.4",
+        "ext-json": "*",
+        "ext-openssl": "*",
+        "ext-mbstring": "*"
     },
     "autoload": {
         "psr-4": {
