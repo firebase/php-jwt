@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 namespace Firebase\JWT;
 
@@ -62,7 +62,7 @@ class JWT
      * @param array                     $allowed_algs   List of supported verification algorithms
      *                                                  Supported algorithms are 'ES256', 'HS256', 'HS384', 'HS512', 'RS256', 'RS384', and 'RS512'
      *
-     * @return stdClass The JWT's payload as a PHP object
+     * @return stdClass|mixed The JWT's payload as a PHP object
      *
      * @throws UnexpectedValueException     Provided JWT was invalid
      * @throws SignatureInvalidException    Provided JWT was invalid because the signature verification failed
@@ -73,7 +73,7 @@ class JWT
      * @uses jsonDecode
      * @uses urlsafeB64Decode
      */
-    public static function decode(string $jwt, $key, array $allowed_algs = []): stdClass
+    public static function decode(string $jwt, $key, array $allowed_algs = [])
     {
         $timestamp = static::$timestamp === null ? time() : static::$timestamp;
 
@@ -152,20 +152,20 @@ class JWT
     /**
      * Converts and signs a PHP object or array into a JWT string.
      *
-     * @param object|array  $payload    PHP object or array
-     * @param string        $key        The secret key.
+     * @param object|array    $payload  PHP object or array
+     * @param string|resource $key      The secret key.
      *                                  If the algorithm used is asymmetric, this is the private key
-     * @param string        $alg        The signing algorithm.
+     * @param string          $alg      The signing algorithm.
      *                                  Supported algorithms are 'ES256', 'HS256', 'HS384', 'HS512', 'RS256', 'RS384', and 'RS512'
-     * @param mixed         $keyId
-     * @param array         $head       An array with header elements to attach
+     * @param mixed           $keyId
+     * @param array           $head     An array with header elements to attach
      *
      * @return string A signed JWT
      *
      * @uses jsonEncode
      * @uses urlsafeB64Encode
      */
-    public static function encode($payload, string $key, string $alg = 'HS256', $keyId = null, array $head = []): string
+    public static function encode($payload, $key, string $alg = 'HS256', $keyId = null, array $head = []): string
     {
         $header = ['typ' => 'JWT', 'alg' => $alg];
         if ($keyId !== null) {
@@ -240,7 +240,7 @@ class JWT
      */
     private static function verify(string $msg, string $signature, $key, string $alg): bool
     {
-        if (isset(static::$supported_algs[$alg])) {
+        if (! isset(static::$supported_algs[$alg])) {
             throw new DomainException('Algorithm not supported');
         }
 
@@ -266,11 +266,11 @@ class JWT
      *
      * @param string $input JSON string
      *
-     * @return stdClass Object representation of JSON string
+     * @return stdClass|mixed Object representation of JSON string
      *
      * @throws DomainException Provided string was invalid JSON
      */
-    public static function jsonDecode(string $input): stdClass
+    public static function jsonDecode(string $input)
     {
         $obj = json_decode($input, false, 512, JSON_BIGINT_AS_STRING | JSON_THROW_ON_ERROR);
         if ($obj === null && $input !== 'null') {
