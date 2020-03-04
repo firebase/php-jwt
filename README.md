@@ -55,8 +55,8 @@ $decoded_array = (array) $decoded;
  *
  * Source: http://self-issued.info/docs/draft-ietf-oauth-json-web-token.html#nbfDef
  */
-JWT::$leeway = 60; // $leeway in seconds
-$decoded = JWT::decode($jwt, $key, array('HS256'));
+// $leeway in seconds. This: (JWT::$leeway = 60;) still works.
+$decoded = JWT::setLeeway(60)->decode($jwt, $key, ['HS256']);
 
 ?>
 ```

@@ -462,4 +462,18 @@ class JWT
 
         return [$pos, $data];
     }
+
+    /**
+     * Sets a leeway.
+     *
+     * @param int $seconds Seconds to account for clock skew.
+     *
+     * @return \Firebase\JWT\JWT
+     */
+    public static function setLeeway(int $seconds): JWT
+    {
+        self::$leeway = $seconds;
+
+        return new static();
+    }
 }
