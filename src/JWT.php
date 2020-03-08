@@ -453,7 +453,8 @@ class JWT
         if ($type == self::ASN1_BIT_STRING) {
             $pos++; // Skip the first contents octet (padding indicator)
             $data = substr($der, $pos, $len - 1);
-        } elseif (! $constructed) {
+            $pos += $len - 1;
+        } elseif (!$constructed) {
             $data = substr($der, $pos, $len);
             $pos += $len;
         } else {
