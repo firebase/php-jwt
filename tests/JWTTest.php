@@ -8,6 +8,17 @@ class JWTTest extends TestCase
 {
     public static $opensslVerifyReturnValue;
 
+    /*
+     * For compatibility with PHPUnit 4.8 and PHP < 5.6
+     */
+    public function setExpectedException($exceptionName, $message = '', $code = NULL) {
+        if (method_exists($this, 'expectException')) {
+            $this->expectException($exceptionName);
+        } else {
+            parent::setExpectedException($exceptionName, $message, $code);
+        }
+    }
+
     public function testEncodeDecode()
     {
         $msg = JWT::encode('abc', 'my_key');
