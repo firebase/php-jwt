@@ -148,7 +148,7 @@ class JWTTest extends TestCase
             "nbf"     => time() + 65); // not before too far in future
         $encoded = JWT::encode($payload, 'my_key');
         $this->setExpectedException('Firebase\JWT\BeforeValidException');
-        $decoded = JWT::decode($encoded, 'my_key', array('HS256'));
+        JWT::decode($encoded, 'my_key', array('HS256'));
         JWT::$leeway = 0;
     }
 
@@ -172,7 +172,7 @@ class JWTTest extends TestCase
             "iat"     => time() + 65); // issued too far in future
         $encoded = JWT::encode($payload, 'my_key');
         $this->setExpectedException('Firebase\JWT\BeforeValidException');
-        $decoded = JWT::decode($encoded, 'my_key', array('HS256'));
+        JWT::decode($encoded, 'my_key', array('HS256'));
         JWT::$leeway = 0;
     }
 
@@ -183,7 +183,7 @@ class JWTTest extends TestCase
             "exp" => time() + 20); // time in the future
         $encoded = JWT::encode($payload, 'my_key');
         $this->setExpectedException('Firebase\JWT\SignatureInvalidException');
-        $decoded = JWT::decode($encoded, 'my_key2', array('HS256'));
+        JWT::decode($encoded, 'my_key2', array('HS256'));
     }
 
     public function testNullKeyFails()
@@ -193,7 +193,7 @@ class JWTTest extends TestCase
             "exp" => time() + JWT::$leeway + 20); // time in the future
         $encoded = JWT::encode($payload, 'my_key');
         $this->setExpectedException('InvalidArgumentException');
-        $decoded = JWT::decode($encoded, null, array('HS256'));
+        JWT::decode($encoded, null, array('HS256'));
     }
 
     public function testEmptyKeyFails()
@@ -203,7 +203,7 @@ class JWTTest extends TestCase
             "exp" => time() + JWT::$leeway + 20); // time in the future
         $encoded = JWT::encode($payload, 'my_key');
         $this->setExpectedException('InvalidArgumentException');
-        $decoded = JWT::decode($encoded, '', array('HS256'));
+        JWT::decode($encoded, '', array('HS256'));
     }
 
     public function testRSEncodeDecode()
