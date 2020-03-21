@@ -9,12 +9,6 @@ class JWKTest extends TestCase
     private static $privKey1;
     private static $privKey2;
 
-    public static function setUpBeforeClass()
-    {
-        self::$privKey1 = file_get_contents(__DIR__ . '/rsa1-private.pem');
-        self::$privKey2 = file_get_contents(__DIR__ . '/rsa2-private.pem');
-    }
-
     public function testMissingKty()
     {
         $this->setExpectedException(
@@ -54,8 +48,9 @@ class JWKTest extends TestCase
      */
     public function testDecodeByJwkKeySetTokenExpired()
     {
+        $privKey1 = file_get_contents(__DIR__ . '/rsa1-private.pem');
         $payload = array('exp' => strtotime('-1 hour'));
-        $msg = JWT::encode($payload, self::$privKey1, 'RS256', 'jwk1');
+        $msg = JWT::encode($payload, $privKey1, 'RS256', 'jwk1');
 
         $this->setExpectedException('Firebase\JWT\ExpiredException');
 
@@ -67,8 +62,9 @@ class JWKTest extends TestCase
      */
     public function testDecodeByJwkKeySet()
     {
+        $privKey1 = file_get_contents(__DIR__ . '/rsa1-private.pem');
         $payload = array('sub' => 'foo', 'exp' => strtotime('+10 seconds'));
-        $msg = JWT::encode($payload, self::$privKey1, 'RS256', 'jwk1');
+        $msg = JWT::encode($payload, $privKey1, 'RS256', 'jwk1');
 
         $result = JWT::decode($msg, self::$keys, array('RS256'));
 
@@ -80,8 +76,9 @@ class JWKTest extends TestCase
      */
     public function testDecodeByMultiJwkKeySet()
     {
+        $privKey2 = file_get_contents(__DIR__ . '/rsa2-private.pem');
         $payload = array('sub' => 'bar', 'exp' => strtotime('+10 seconds'));
-        $msg = JWT::encode($payload, self::$privKey2, 'RS256', 'jwk2');
+        $msg = JWT::encode($payload, $privKey2, 'RS256', 'jwk2');
 
         $result = JWT::decode($msg, self::$keys, array('RS256'));
 
