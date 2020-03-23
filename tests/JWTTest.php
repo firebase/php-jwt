@@ -203,7 +203,7 @@ class JWTTest extends TestCase
             "message" => "abc",
             "exp" => time() + JWT::$leeway + 20); // time in the future
         $encoded = JWT::encode($payload, 'my_key');
-        $this->setExpectedException('InvalidArgumentException');
+        $this->setExpectedException('Firebase\JWT\KeyEmptyException');
         $decoded = JWT::decode($encoded, null, array('HS256'));
     }
 
@@ -213,7 +213,7 @@ class JWTTest extends TestCase
             "message" => "abc",
             "exp" => time() + JWT::$leeway + 20); // time in the future
         $encoded = JWT::encode($payload, 'my_key');
-        $this->setExpectedException('InvalidArgumentException');
+        $this->setExpectedException('Firebase\JWT\KeyEmptyException');
         $decoded = JWT::decode($encoded, '', array('HS256'));
     }
 
@@ -248,21 +248,21 @@ class JWTTest extends TestCase
     public function testNoneAlgorithm()
     {
         $msg = JWT::encode('abc', 'my_key');
-        $this->setExpectedException('UnexpectedValueException');
+        $this->setExpectedException('Firebase\JWT\FormatInvalidException');
         JWT::decode($msg, 'my_key', array('none'));
     }
 
     public function testIncorrectAlgorithm()
     {
         $msg = JWT::encode('abc', 'my_key');
-        $this->setExpectedException('UnexpectedValueException');
+        $this->setExpectedException('Firebase\JWT\FormatInvalidException');
         JWT::decode($msg, 'my_key', array('RS256'));
     }
 
     public function testMissingAlgorithm()
     {
         $msg = JWT::encode('abc', 'my_key');
-        $this->setExpectedException('UnexpectedValueException');
+        $this->setExpectedException('Firebase\JWT\FormatInvalidException');
         JWT::decode($msg, 'my_key');
     }
 
@@ -274,14 +274,14 @@ class JWTTest extends TestCase
 
     public function testInvalidSegmentCount()
     {
-        $this->setExpectedException('UnexpectedValueException');
+        $this->setExpectedException('Firebase\JWT\FormatInvalidException');
         JWT::decode('brokenheader.brokenbody', 'my_key', array('HS256'));
     }
 
     public function testInvalidSignatureEncoding()
     {
         $msg = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpZCI6MSwibmFtZSI6ImZvbyJ9.Q4Kee9E8o0Xfo4ADXvYA8t7dN_X_bU9K5w6tXuiSjlUxx";
-        $this->setExpectedException('UnexpectedValueException');
+        $this->setExpectedException('Firebase\JWT\SignatureInvalidException');
         JWT::decode($msg, 'secret', array('HS256'));
     }
 
