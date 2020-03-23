@@ -6,8 +6,6 @@ use PHPUnit\Framework\TestCase;
 
 class JWTTest extends TestCase
 {
-    public static $opensslVerifyReturnValue;
-
     /*
      * For compatibility with PHPUnit 4.8 and PHP < 5.6
      */
@@ -286,15 +284,6 @@ class JWTTest extends TestCase
         JWT::decode($msg, 'secret', array('HS256'));
     }
 
-    public function testVerifyError()
-    {
-        $this->setExpectedException('DomainException');
-        $pkey = openssl_pkey_new();
-        $msg = JWT::encode('abc', $pkey, 'RS256');
-        self::$opensslVerifyReturnValue = -1;
-        JWT::decode($msg, $pkey, array('RS256'));
-    }
-
     /**
      * @runInSeparateProcess
      */
@@ -310,15 +299,4 @@ class JWTTest extends TestCase
 
         $this->assertEquals('bar', $decoded->foo);
     }
-}
-
-/*
- * Allows the testing of openssl_verify with an error return value
- */
-function openssl_verify($msg, $signature, $key, $algorithm)
-{
-    if (null !== JWTTest::$opensslVerifyReturnValue) {
-        return JWTTest::$opensslVerifyReturnValue;
-    }
-    return \openssl_verify($msg, $signature, $key, $algorithm);
 }
