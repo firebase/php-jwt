@@ -11,7 +11,8 @@ class JWTTest extends TestCase
     /*
      * For compatibility with PHPUnit 4.8 and PHP < 5.6
      */
-    public function setExpectedException($exceptionName, $message = '', $code = NULL) {
+    public function setExpectedException($exceptionName, $message = '', $code = null)
+    {
         if (method_exists($this, 'expectException')) {
             $this->expectException($exceptionName);
         } else {
