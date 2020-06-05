@@ -115,6 +115,33 @@ echo "Decode:\n" . print_r($decoded_array, true) . "\n";
 ?>
 ```
 
+Example with convert public keys JWK to PEM
+-----
+
+```php
+<?php
+
+use Firebase\JWT\JWK;
+use Firebase\JWT\JWT;
+
+// fetch keys
+$keys = file_get_contents("https://~~~~~");
+$keys = json_decode($keys, true);
+
+// Firebase\JWT\JWT::decode() only recieve PEM format public key.
+// you can convert JWK to PEM with Firebase\JWT\JWK::parseKeySet().
+
+/** @var array<string,Resource> $convertedKeys array key is key id(kid), and value is Openssl Resource */
+$convertedKeys = JWT::parseKeySet($keys);
+
+// signed JWT signature
+$signature = '~~~~~.~~~~~~.~~~~~';
+
+$jwt = JWT::decode($signature, $convertedKeys, ['RS256']);
+var_dump($jwt)
+```
+
+
 Changelog
 ---------
 
