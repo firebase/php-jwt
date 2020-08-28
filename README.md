@@ -132,7 +132,7 @@ $keys = json_decode($keys, true);
 // you can convert JWK to PEM with Firebase\JWT\JWK::parseKeySet().
 
 /** @var array<string,Resource> $convertedKeys array key is key id(kid), and value is Openssl Resource */
-$convertedKeys = JWT::parseKeySet($keys);
+$convertedKeys = JWK::parseKeySet($keys);
 
 // signed JWT signature
 $signature = '~~~~~.~~~~~~.~~~~~';
