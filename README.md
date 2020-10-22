@@ -115,6 +115,19 @@ echo "Decode:\n" . print_r($decoded_array, true) . "\n";
 ?>
 ```
 
+Using JWKs
+----------
+
+```php
+// Set of keys. The "keys" key is required. For example, the JSON response to
+// this endpoint: https://www.gstatic.com/iap/verify/public_key-jwk
+$jwks = ['keys' => []];
+
+// JWK::parseKeySet($jwks) returns an associative array of **kid** to private
+// key. Pass this as the second parameter to JWT::decode.
+JWT::decode($payload, JWK::parseKeySet($jwks), $supportedAlgorithm);
+```
+
 Changelog
 ---------
 
