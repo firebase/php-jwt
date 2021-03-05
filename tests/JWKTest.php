@@ -43,6 +43,20 @@ class JWKTest extends TestCase
         self::$keys = $keys;
     }
 
+    public function testParseJwkKey_empty()
+    {
+        $this->setExpectedException('InvalidArgumentException', 'JWK must not be empty');
+
+        JWK::parseKeySet(array('keys' => array(array())));
+    }
+
+    public function testParseJwkKeySet_empty()
+    {
+        $this->setExpectedException('InvalidArgumentException', 'JWK Set did not contain any keys');
+
+        JWK::parseKeySet(array('keys' => array()));
+    }
+
     /**
      * @depends testParseJwkKeySet
      */
