@@ -13,7 +13,19 @@
 >
     <testsuites>
         <testsuite name="PHP JSON Web Token Test Suite">
-            <directory>./tests</directory>
+            <directory suffix=".php">./tests</directory>
         </testsuite>
     </testsuites>
+
+    <coverage processUncoveredFiles="true">
+        <include>
+            <directory suffix=".php">src</directory>
+        </include>
+    </coverage>
+
+    <filter>
+        <whitelist>
+            <directory suffix=".php">src</directory>
+        </whitelist>
+    </filter>
 </phpunit>
