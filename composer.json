@@ -23,7 +23,8 @@
         "php": ">=5.3.0"
     },
     "scripts": {
-        "test": "phpunit"
+        "test": "phpunit",
+        "coverage": "phpunit --coverage-html=coverage"
     },
     "autoload": {
         "psr-4": {
