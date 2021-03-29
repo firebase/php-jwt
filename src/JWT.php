@@ -42,6 +42,7 @@ class JWT
     public static $timestamp = null;
 
     public static $supported_algs = array(
+        'ES384' => array('openssl', 'SHA384'),
         'ES256' => array('openssl', 'SHA256'),
         'HS256' => array('hash_hmac', 'SHA256'),
         'HS384' => array('hash_hmac', 'SHA384'),
@@ -102,8 +103,8 @@ class JWT
         if (!\in_array($header->alg, $allowed_algs)) {
             throw new UnexpectedValueException('Algorithm not allowed');
         }
-        if ($header->alg === 'ES256') {
-            // OpenSSL expects an ASN.1 DER sequence for ES256 signatures
+        if ($header->alg === 'ES256' || $header->alg === 'ES384') {
+            // OpenSSL expects an ASN.1 DER sequence for ES256/ES384 signatures
             $sig = self::signatureToDER($sig);
         }
 
@@ -213,6 +214,9 @@ class JWT
                 } else {
                     if ($alg === 'ES256') {
                         $signature = self::signatureFromDER($signature, 256);
+                    }
+                    if ($alg === 'ES384') {
+                        $signature = self::signatureFromDER($signature, 384);
                     }
                     return $signature;
                 }

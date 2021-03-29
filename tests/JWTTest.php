@@ -299,4 +299,20 @@ class JWTTest extends TestCase
 
         $this->assertEquals('bar', $decoded->foo);
     }
+
+    /**
+     * @runInSeparateProcess
+     */
+    public function testEncodeAndDecodeEcdsa384Token()
+    {
+        $privateKey = file_get_contents(__DIR__ . '/ecdsa384-private.pem');
+        $payload = array('foo' => 'bar');
+        $encoded = JWT::encode($payload, $privateKey, 'ES384');
+
+        // Verify decoding succeeds
+        $publicKey = file_get_contents(__DIR__ . '/ecdsa384-public.pem');
+        $decoded = JWT::decode($encoded, $publicKey, array('ES384'));
+
+        $this->assertEquals('bar', $decoded->foo);
+    }
 }
