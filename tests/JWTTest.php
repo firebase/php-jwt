@@ -303,7 +303,7 @@ class JWTTest extends TestCase
     public function testKeyVerification()
     {
         $keys = array('HS256' => array('1' => 'my_key', '2' => 'my_key2'));
-        $keyProvider = $this->getMockBuilder(VerificationKeyInterface::class)->getMock();
+        $keyProvider = $this->getMockBuilder('Firebase\JWT\VerificationKeyInterface')->getMock();
         $keyProvider->method('verificationKey')->willReturnCallback(function ($header) use ($keys) {
             return $keys[$header->alg][$header->kid];
         });
