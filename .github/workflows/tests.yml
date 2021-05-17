@@ -36,9 +36,9 @@ jobs:
       uses: actions/checkout@v2
     - name: Run Unit Tests
       uses: docker://php:5.5-cli
-      run: |
-        php composer.phar install
-        vendor/bin/phpunit
+      with:
+        entrypoint: ./github/actions/entrypoint.sh
+
   test_php54:
     name: "PHP 5.4 Unit Test"
     runs-on: ubuntu-latest
@@ -47,9 +47,8 @@ jobs:
       uses: actions/checkout@v2
     - name: Run Unit Tests
       uses: docker://php:5.4-cli
-      run: |
-        php composer.phar install
-        vendor/bin/phpunit
+      with:
+        entrypoint: ./github/actions/entrypoint.sh
 
   style:
     runs-on: ubuntu-latest
@@ -59,7 +58,7 @@ jobs:
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
         with:
-          php-version: "7.4"
+          php-version: "7.0"
       - name: Run Script
         run: |
           composer require friendsofphp/php-cs-fixer
