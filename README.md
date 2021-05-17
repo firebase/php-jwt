@@ -19,8 +19,7 @@ composer require firebase/php-jwt
 Example
 -------
 ```php
-<?php
-use \Firebase\JWT\JWT;
+use Firebase\JWT\JWT;
 
 $key = "example_key";
 $payload = array(
@@ -57,14 +56,11 @@ $decoded_array = (array) $decoded;
  */
 JWT::$leeway = 60; // $leeway in seconds
 $decoded = JWT::decode($jwt, $key, array('HS256'));
-
-?>
 ```
 Example with RS256 (openssl)
 ----------------------------
 ```php
-<?php
-use \Firebase\JWT\JWT;
+use Firebase\JWT\JWT;
 
 $privateKey = <<<EOD
 -----BEGIN RSA PRIVATE KEY-----
@@ -112,13 +108,15 @@ $decoded = JWT::decode($jwt, $publicKey, array('RS256'));
 
 $decoded_array = (array) $decoded;
 echo "Decode:\n" . print_r($decoded_array, true) . "\n";
-?>
 ```
 
 Using JWKs
 ----------
 
 ```php
+use Firebase\JWT\JWK;
+use Firebase\JWT\JWT;
+
 // Set of keys. The "keys" key is required. For example, the JSON response to
 // this endpoint: https://www.gstatic.com/iap/verify/public_key-jwk
 $jwks = ['keys' => []];
