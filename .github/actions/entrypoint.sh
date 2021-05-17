@@ -1,9 +1,7 @@
 #!/bin/sh -l
 
-apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 40976EAF437D05B5 && \
-apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 3B4FE6ACC0B21F32 && \
 apt-get update && \
-apt-get install -y --no-install-recommends \
+apt-get install -y --force-yes --no-install-recommends \
     git \
     zip \
     curl \
