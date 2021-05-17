@@ -1,4 +1,5 @@
 <?php
+
 namespace Firebase\JWT;
 
 use PHPUnit\Framework\TestCase;
@@ -31,6 +32,36 @@ class JWKTest extends TestCase
         $keys = JWK::parseKeySet(array('keys' => array($badJwk)));
     }
 
+    public function testParsePrivateKey()
+    {
+        $this->setExpectedException(
+            'UnexpectedValueException',
+            'RSA private keys are not supported'
+        );
+        
+        $jwkSet = json_decode(
+            file_get_contents(__DIR__ . '/rsa-jwkset.json'),
+            true
+        );
+        $jwkSet['keys'][0]['d'] = 'privatekeyvalue';
+        
+        JWK::parseKeySet($jwkSet);
+    }
+    
+    public function testParseKeyWithEmptyDValue()
+    {
+        $jwkSet = json_decode(
+            file_get_contents(__DIR__ . '/rsa-jwkset.json'),
+            true
+        );
+        
+        // empty or null values are ok
+        $jwkSet['keys'][0]['d'] = null;
+        
+        $keys = JWK::parseKeySet($jwkSet);
+        $this->assertTrue(is_array($keys));
+    }
+
     public function testParseJwkKeySet()
     {
         $jwkSet = json_decode(
@@ -41,6 +72,20 @@ class JWKTest extends TestCase
         $this->assertTrue(is_array($keys));
         $this->assertArrayHasKey('jwk1', $keys);
         self::$keys = $keys;
+    }
+
+    public function testParseJwkKey_empty()
+    {
+        $this->setExpectedException('InvalidArgumentException', 'JWK must not be empty');
+
+        JWK::parseKeySet(array('keys' => array(array())));
+    }
+
+    public function testParseJwkKeySet_empty()
+    {
+        $this->setExpectedException('InvalidArgumentException', 'JWK Set did not contain any keys');
+
+        JWK::parseKeySet(array('keys' => array()));
     }
 
     /**
