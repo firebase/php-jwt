@@ -31,6 +31,36 @@ class JWKTest extends TestCase
         $keys = JWK::parseKeySet(array('keys' => array($badJwk)));
     }
 
+    public function testParsePrivateKey()
+    {
+        $this->setExpectedException(
+            'UnexpectedValueException',
+            'RSA private keys are not supported'
+        );
+        
+        $jwkSet = json_decode(
+            file_get_contents(__DIR__ . '/rsa-jwkset.json'),
+            true
+        );
+        $jwkSet['keys'][0]['d'] = 'privatekeyvalue';
+        
+        JWK::parseKeySet($jwkSet);
+    }
+    
+    public function testParseKeyWithEmptyDValue()
+    {
+        $jwkSet = json_decode(
+            file_get_contents(__DIR__ . '/rsa-jwkset.json'),
+            true
+        );
+        
+        // empty or null values are ok
+        $jwkSet['keys'][0]['d'] = null;
+        
+        $keys = JWK::parseKeySet($jwkSet);
+        $this->assertTrue(is_array($keys));
+    }
+
     public function testParseJwkKeySet()
     {
         $jwkSet = json_decode(
