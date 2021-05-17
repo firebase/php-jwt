@@ -22,9 +22,9 @@ use DateTime;
  */
 class JWT
 {
-    public const ASN1_INTEGER = 0x02;
-    public const ASN1_SEQUENCE = 0x10;
-    public const ASN1_BIT_STRING = 0x03;
+    const ASN1_INTEGER = 0x02;
+    const ASN1_SEQUENCE = 0x10;
+    const ASN1_BIT_STRING = 0x03;
 
     /**
      * When checking nbf, iat or expiration times,
