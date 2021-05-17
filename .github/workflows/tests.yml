@@ -37,7 +37,7 @@ jobs:
     - name: Run Unit Tests
       uses: docker://php:5.5-cli
       with:
-        entrypoint: ./github/actions/entrypoint.sh
+        entrypoint: ./.github/actions/entrypoint.sh
 
   test_php54:
     name: "PHP 5.4 Unit Test"
@@ -48,7 +48,7 @@ jobs:
     - name: Run Unit Tests
       uses: docker://php:5.4-cli
       with:
-        entrypoint: ./github/actions/entrypoint.sh
+        entrypoint: ./.github/actions/entrypoint.sh
 
   style:
     runs-on: ubuntu-latest
