@@ -11,7 +11,6 @@ jobs:
     strategy:
       matrix:
         php: [ "5.6", "7.0", "7.1", "7.2", "7.3", "7.4", "8.0" ]
-        older_php: [ "5.4", "5.5" ]
     name: PHP ${{matrix.php }} Unit Test
     steps:
       - uses: actions/checkout@v2
@@ -29,14 +28,26 @@ jobs:
         run: vendor/bin/phpunit
 
   # use dockerfiles for old versions of php (setup-php times out for those).
-  test_older_php:
-    name: "PHP ${{ matrix.older_php }} Unit Test"
+  test_php56:
+    name: "PHP 5.6 Unit Test"
     runs-on: ubuntu-latest
     steps:
     - name: Checkout
       uses: actions/checkout@v2
     - name: Run Unit Tests
-      uses: docker://php:${{ matrix.older_php }}-cli
+      uses: docker://php:5.6-cli
+      with:
+        run: |
+          php composer.phar install
+          vendor/bin/phpunit
+  test_php55:
+    name: "PHP 5.5 Unit Test"
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v2
+    - name: Run Unit Tests
+      uses: docker://php:5.5-cli
       with:
         run: |
           php composer.phar install
