@@ -57,7 +57,7 @@ jobs:
     - name: Checkout
       uses: actions/checkout@v2
     - name: Run Unit Tests
-      uses: docker://php:5.3-cli
+      uses: docker://tomsowerby/php-5.3:cli
       with:
         entrypoint: ./.github/actions/entrypoint.sh
 
