@@ -1,4 +1,5 @@
 <?php
+
 namespace Firebase\JWT;
 
 use PHPUnit\Framework\TestCase;

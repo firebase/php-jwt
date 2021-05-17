@@ -53,6 +53,6 @@ jobs:
           php-version: "7.4"
       - name: Run Script
         run: |
-          composer require friendsofphp/php-cs-fixer &&
-          vendor/bin/php-cs-fixer fix --diff --dry-run . &&
+          composer require friendsofphp/php-cs-fixer
+          vendor/bin/php-cs-fixer fix --diff --dry-run .
           vendor/bin/php-cs-fixer fix --rules=native_function_invocation --allow-risky=yes --diff src
