@@ -50,6 +50,17 @@ jobs:
       with:
         entrypoint: ./.github/actions/entrypoint.sh
 
+  test_php53:
+    name: "PHP 5.3 Unit Test"
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v2
+    - name: Run Unit Tests
+      uses: docker://tomsowerby/php-5.3:cli
+      with:
+        entrypoint: ./.github/actions/entrypoint.sh
+
   style:
     runs-on: ubuntu-latest
     name: PHP Style Check
