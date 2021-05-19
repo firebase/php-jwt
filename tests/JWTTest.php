@@ -304,9 +304,9 @@ class JWTTest extends TestCase
 
     public function provideEncodeDecode()
     {
-        return [
-            [__DIR__ . '/ecdsa-private.pem', __DIR__ . '/ecdsa-public.pem', 'ES256'],
-            [__DIR__ . '/ecdsa384-private.pem', __DIR__ . '/ecdsa384-public.pem', 'ES384'],
-        ];
+        return array(
+            array(__DIR__ . '/ecdsa-private.pem', __DIR__ . '/ecdsa-public.pem', 'ES256'),
+            array(__DIR__ . '/ecdsa384-private.pem', __DIR__ . '/ecdsa384-public.pem', 'ES384'),
+        );
     }
 }
