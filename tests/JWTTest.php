@@ -1,4 +1,5 @@
 <?php
+
 namespace Firebase\JWT;
 
 use ArrayObject;
@@ -16,12 +17,6 @@ class JWTTest extends TestCase
         } else {
             parent::setExpectedException($exceptionName, $message, $code);
         }
-    }
-
-    public function testEncodeDecode()
-    {
-        $msg = JWT::encode('abc', 'my_key');
-        $this->assertEquals(JWT::decode($msg, 'my_key', array('HS256')), 'abc');
     }
 
     public function testDecodeFromPython()
@@ -216,18 +211,6 @@ class JWTTest extends TestCase
         JWT::decode($encoded, '', array('HS256'));
     }
 
-    public function testRSEncodeDecode()
-    {
-        $privKey = openssl_pkey_new(array('digest_alg' => 'sha256',
-            'private_key_bits' => 1024,
-            'private_key_type' => OPENSSL_KEYTYPE_RSA));
-        $msg = JWT::encode('abc', $privKey, 'RS256');
-        $pubKey = openssl_pkey_get_details($privKey);
-        $pubKey = $pubKey['key'];
-        $decoded = JWT::decode($msg, $pubKey, array('RS256'));
-        $this->assertEquals($decoded, 'abc');
-    }
-
     public function testKIDChooser()
     {
         $keys = array('1' => 'my_key', '2' => 'my_key2');
@@ -284,20 +267,61 @@ class JWTTest extends TestCase
         JWT::decode($msg, 'secret', array('HS256'));
     }
 
+    public function testHSEncodeDecode()
+    {
+        $msg = JWT::encode('abc', 'my_key');
+        $this->assertEquals(JWT::decode($msg, 'my_key', array('HS256')), 'abc');
+    }
+
+    public function testRSEncodeDecode()
+    {
+        $privKey = openssl_pkey_new(array('digest_alg' => 'sha256',
+            'private_key_bits' => 1024,
+            'private_key_type' => OPENSSL_KEYTYPE_RSA));
+        $msg = JWT::encode('abc', $privKey, 'RS256');
+        $pubKey = openssl_pkey_get_details($privKey);
+        $pubKey = $pubKey['key'];
+        $decoded = JWT::decode($msg, $pubKey, array('RS256'));
+        $this->assertEquals($decoded, 'abc');
+    }
+
+    public function testRSEncodeDecodeWithPassphrase()
+    {
+        $privateKey = openssl_pkey_get_private(
+            file_get_contents(__DIR__ . '/rsa-with-passphrase.pem'),
+            'passphrase'
+        );
+
+        $jwt = JWT::encode('abc', $privateKey, 'RS256');
+        $keyDetails = openssl_pkey_get_details($privateKey);
+        $pubKey = $keyDetails['key'];
+        $decoded = JWT::decode($jwt, $pubKey, array('RS256'));
+        $this->assertEquals($decoded, 'abc');
+    }
+
     /**
      * @runInSeparateProcess
+     * @dataProvider provideEncodeDecode
      */
-    public function testEncodeAndDecodeEcdsaToken()
+    public function testEncodeDecode($privateKeyFile, $publicKeyFile, $alg)
     {
-        $privateKey = file_get_contents(__DIR__ . '/ecdsa-private.pem');
+        $privateKey = file_get_contents($privateKeyFile);
         $payload = array('foo' => 'bar');
-        $encoded = JWT::encode($payload, $privateKey, 'ES256');
+        $encoded = JWT::encode($payload, $privateKey, $alg);
 
         // Verify decoding succeeds
-        $publicKey = file_get_contents(__DIR__ . '/ecdsa-public.pem');
-        $decoded = JWT::decode($encoded, $publicKey, array('ES256'));
+        $publicKey = file_get_contents($publicKeyFile);
+        $decoded = JWT::decode($encoded, $publicKey, array($alg));
 
         $this->assertEquals('bar', $decoded->foo);
+    }
+
+    public function provideEncodeDecode()
+    {
+        return array(
+            array(__DIR__ . '/ecdsa-private.pem', __DIR__ . '/ecdsa-public.pem', 'ES256'),
+            array(__DIR__ . '/ecdsa384-private.pem', __DIR__ . '/ecdsa384-public.pem', 'ES384'),
+        );
     }
 
     public function testKeyVerification()
