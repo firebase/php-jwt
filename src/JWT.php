@@ -3,6 +3,7 @@
 namespace Firebase\JWT;
 
 use DomainException;
+use Exception;
 use InvalidArgumentException;
 use UnexpectedValueException;
 use DateTime;
@@ -50,6 +51,7 @@ class JWT
         'RS256' => array('openssl', 'SHA256'),
         'RS384' => array('openssl', 'SHA384'),
         'RS512' => array('openssl', 'SHA512'),
+        'EdDSA' => array('sodium_crypto', 'EdDSA'),
     );
 
     /**
@@ -198,7 +200,7 @@ class JWT
      *
      * @return string An encrypted message
      *
-     * @throws DomainException Unsupported algorithm was specified
+     * @throws DomainException Unsupported algorithm or bad key was specified
      */
     public static function sign($msg, $key, $alg = 'HS256')
     {
@@ -223,6 +225,15 @@ class JWT
                     }
                     return $signature;
                 }
+            case 'sodium_crypto':
+                if (!function_exists('sodium_crypto_sign_detached')) {
+                    throw new DomainException('libsodium is not available');
+                }
+                try {
+                    return sodium_crypto_sign_detached($msg, $key);
+                } catch (Exception $e) {
+                    throw new DomainException($e->getMessage(), 0, $e);
+                }
         }
     }
 
@@ -237,7 +248,7 @@ class JWT
      *
      * @return bool
      *
-     * @throws DomainException Invalid Algorithm or OpenSSL failure
+     * @throws DomainException Invalid Algorithm, bad key, or OpenSSL failure
      */
     private static function verify($msg, $signature, $key, $alg)
     {
@@ -258,6 +269,15 @@ class JWT
                 throw new DomainException(
                     'OpenSSL error: ' . \openssl_error_string()
                 );
+            case 'sodium_crypto':
+              if (!function_exists('sodium_crypto_sign_verify_detached')) {
+                  throw new DomainException('libsodium is not available');
+              }
+              try {
+                  return sodium_crypto_sign_verify_detached($signature, $msg, $key);
+              } catch (Exception $e) {
+                  throw new DomainException($e->getMessage(), 0, $e);
+              }
             case 'hash_hmac':
             default:
                 $hash = \hash_hmac($algorithm, $msg, $key, true);
