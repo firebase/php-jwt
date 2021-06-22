@@ -230,6 +230,9 @@ class JWT
                     throw new DomainException('libsodium is not available');
                 }
                 try {
+                    // The last non-empty line is used as the key.
+                    $lines = array_filter(explode("\n", $key));
+                    $key = base64_decode(end($lines));
                     return sodium_crypto_sign_detached($msg, $key);
                 } catch (Exception $e) {
                     throw new DomainException($e->getMessage(), 0, $e);
@@ -274,6 +277,9 @@ class JWT
                   throw new DomainException('libsodium is not available');
               }
               try {
+                  // The last non-empty line is used as the key.
+                  $lines = array_filter(explode("\n", $key));
+                  $key = base64_decode(end($lines));
                   return sodium_crypto_sign_verify_detached($signature, $msg, $key);
               } catch (Exception $e) {
                   throw new DomainException($e->getMessage(), 0, $e);
