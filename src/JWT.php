@@ -219,8 +219,7 @@ class JWT
                 }
                 if ($alg === 'ES256') {
                     $signature = self::signatureFromDER($signature, 256);
-                }
-                if ($alg === 'ES384') {
+                } elseif ($alg === 'ES384') {
                     $signature = self::signatureFromDER($signature, 384);
                 }
                 return $signature;
