@@ -24,7 +24,7 @@ jobs:
           timeout_minutes: 10
           max_attempts: 3
           command: composer install
-      - if: ${{ matrix.php == "5.6" }}
+      - if: ${{ matrix.php == '5.6' }}
         run: composer require --dev --with-dependencies paragonie/sodium_compat
       - name: Run Script
         run: vendor/bin/phpunit
