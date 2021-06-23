@@ -13,8 +13,8 @@ php composer.phar self-update
 
 echo "---Installing dependencies ---"
 
-echo "---Add compatiblity for libsodium with older versions of PHP ---"
-composer require --dev --with-dependencies paragonie/sodium_compat
+# Add compatiblity for libsodium with older versions of PHP
+php composer.phar require --dev --with-dependencies paragonie/sodium_compat
 
 echo "---Running unit tests ---"
 vendor/bin/phpunit
