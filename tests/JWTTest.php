@@ -285,6 +285,34 @@ class JWTTest extends TestCase
         $this->assertEquals($decoded, 'abc');
     }
 
+    public function testEdDsaEncodeDecode()
+    {
+        $keyPair = sodium_crypto_sign_keypair();
+        $privKey = base64_encode(sodium_crypto_sign_secretkey($keyPair));
+
+        $payload = array('foo' => 'bar');
+        $msg = JWT::encode($payload, $privKey, 'EdDSA');
+
+        $pubKey = base64_encode(sodium_crypto_sign_publickey($keyPair));
+        $decoded = JWT::decode($msg, $pubKey, array('EdDSA'));
+        $this->assertEquals('bar', $decoded->foo);
+    }
+
+    public function testInvalidEdDsaEncodeDecode()
+    {
+        $keyPair = sodium_crypto_sign_keypair();
+        $privKey = base64_encode(sodium_crypto_sign_secretkey($keyPair));
+
+        $payload = array('foo' => 'bar');
+        $msg = JWT::encode($payload, $privKey, 'EdDSA');
+
+        // Generate a different key.
+        $keyPair = sodium_crypto_sign_keypair();
+        $pubKey = base64_encode(sodium_crypto_sign_publickey($keyPair));
+        $this->setExpectedException('Firebase\JWT\SignatureInvalidException');
+        JWT::decode($msg, $pubKey, array('EdDSA'));
+    }
+
     public function testRSEncodeDecodeWithPassphrase()
     {
         $privateKey = openssl_pkey_get_private(

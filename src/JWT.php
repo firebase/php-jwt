@@ -216,15 +216,14 @@ class JWT
                 $success = \openssl_sign($msg, $signature, $key, $algorithm);
                 if (!$success) {
                     throw new DomainException("OpenSSL unable to sign data");
-                } else {
-                    if ($alg === 'ES256') {
-                        $signature = self::signatureFromDER($signature, 256);
-                    }
-                    if ($alg === 'ES384') {
-                        $signature = self::signatureFromDER($signature, 384);
-                    }
-                    return $signature;
                 }
+                if ($alg === 'ES256') {
+                    $signature = self::signatureFromDER($signature, 256);
+                }
+                if ($alg === 'ES384') {
+                    $signature = self::signatureFromDER($signature, 384);
+                }
+                return $signature;
             case 'sodium_crypto':
                 if (!function_exists('sodium_crypto_sign_detached')) {
                     throw new DomainException('libsodium is not available');
