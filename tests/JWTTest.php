@@ -321,7 +321,7 @@ class JWTTest extends TestCase
         return array(
             array(__DIR__ . '/ecdsa-private.pem', __DIR__ . '/ecdsa-public.pem', 'ES256'),
             array(__DIR__ . '/ecdsa384-private.pem', __DIR__ . '/ecdsa384-public.pem', 'ES384'),
-            array(__DIR__ . '/rsa1-private.pem', __DIR__ . '/rsa1-public.pem', 'RS512'),
+            array(__DIR__ . '/rsa1-private.pem', __DIR__ . '/rsa1-public.pub', 'RS512'),
             array(__DIR__ . '/ed25519-1.sec', __DIR__ . '/ed25519-1.pub', 'EdDSA'),
         );
     }
