@@ -120,6 +120,8 @@ class JWT
             } else {
                 throw new UnexpectedValueException('"kid" empty, unable to lookup correct key');
             }
+        } elseif ($key instanceof VerificationKeyInterface) {
+            $key = $key->verificationKey($header);
         }
 
         // Check the signature

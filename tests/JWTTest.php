@@ -353,4 +353,21 @@ class JWTTest extends TestCase
             array(__DIR__ . '/ed25519-1.sec', __DIR__ . '/ed25519-1.pub', 'EdDSA'),
         );
     }
+
+    public function testKeyVerification()
+    {
+        $keys = array('HS256' => array('1' => 'my_key', '2' => 'my_key2'));
+        $keyProvider = $this->getMockBuilder('Firebase\JWT\VerificationKeyInterface')->getMock();
+        $keyProvider->method('verificationKey')->willReturnCallback(function ($header) use ($keys) {
+            return $keys[$header->alg][$header->kid];
+        });
+
+        $msg = JWT::encode('abc', $keys['HS256']['1'], 'HS256', '1');
+        $decoded = JWT::decode($msg, $keyProvider, array('HS256'));
+        $this->assertEquals($decoded, 'abc');
+
+        $msg = JWT::encode('abc', $keys['HS256']['2'], 'HS256', '2');
+        $decoded = JWT::decode($msg, $keyProvider, array('HS256'));
+        $this->assertEquals($decoded, 'abc');
+    }
 }
