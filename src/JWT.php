@@ -2,8 +2,11 @@
 
 namespace Firebase\JWT;
 
+use ArrayAccess;
 use DomainException;
 use Exception;
+use Firebase\JWT\Keys\JWTKey;
+use Firebase\JWT\Keys\Keyring;
 use InvalidArgumentException;
 use UnexpectedValueException;
 use DateTime;
@@ -111,7 +114,9 @@ class JWT
             $sig = self::signatureToDER($sig);
         }
 
-        if (\is_array($key) || $key instanceof \ArrayAccess) {
+        /** @var Keyring|JWTKey $key */
+        $key = self::getKeyType($key, $allowed_algs);
+        if ($key instanceof Keyring) {
             if (isset($header->kid)) {
                 if (!isset($key[$header->kid])) {
                     throw new UnexpectedValueException('"kid" invalid, unable to lookup correct key');
@@ -121,9 +126,16 @@ class JWT
                 throw new UnexpectedValueException('"kid" empty, unable to lookup correct key');
             }
         }
+        if (!($key instanceof JWTKey)) {
+            throw new UnexpectedValueException('$key should be an instance of JWTKey');
+        }
 
         // Check the signature
-        if (!static::verify("$headb64.$bodyb64", $sig, $key, $header->alg)) {
+        if (!$key->isValidForAlg($header->alg)) {
+            // See issue #351
+            throw new UnexpectedValueException('Incorrect key for this algorithm');
+        }
+        if (!static::verify("$headb64.$bodyb64", $sig, $key->getKeyMaterial(), $header->alg)) {
             throw new SignatureInvalidException('Signature verification failed');
         }
 
@@ -285,18 +297,7 @@ class JWT
             case 'hash_hmac':
             default:
                 $hash = \hash_hmac($algorithm, $msg, $key, true);
-                if (\function_exists('hash_equals')) {
-                    return \hash_equals($signature, $hash);
-                }
-                $len = \min(static::safeStrlen($signature), static::safeStrlen($hash));
-
-                $status = 0;
-                for ($i = 0; $i < $len; $i++) {
-                    $status |= (\ord($signature[$i]) ^ \ord($hash[$i]));
-                }
-                $status |= (static::safeStrlen($signature) ^ static::safeStrlen($hash));
-
-                return ($status === 0);
+                return self::constantTimeEquals($signature, $hash);
         }
     }
 
@@ -385,6 +386,50 @@ class JWT
     }
 
     /**
+     * @param string $left
+     * @param string $right
+     * @return bool
+     */
+    public static function constantTimeEquals($left, $right)
+    {
+        if (\function_exists('hash_equals')) {
+            return \hash_equals($left, $right);
+        }
+        $len = \min(static::safeStrlen($left), static::safeStrlen($right));
+
+        $status = 0;
+        for ($i = 0; $i < $len; $i++) {
+            $status |= (\ord($left[$i]) ^ \ord($right[$i]));
+        }
+        $status |= (static::safeStrlen($left) ^ static::safeStrlen($right));
+
+        return ($status === 0);
+    }
+
+    /**
+     * @param string|array|ArrayAccess $oldType
+     * @param string[] $algs
+     * @return KeyInterface
+     */
+    public static function getKeyType($oldType, $algs)
+    {
+        if ($oldType instanceof KeyInterface) {
+            return $oldType;
+        }
+        if (is_string($oldType)) {
+            return new JWTKey($oldType, $algs);
+        }
+        if (is_array($oldType) || $oldType instanceof ArrayAccess) {
+            $keyring = new Keyring(array());
+            foreach ($oldType as $kid => $key) {
+                $keyring[$kid] = new JWTKey($key, $algs);
+            }
+            return $keyring;
+        }
+        throw new InvalidArgumentException('Invalid type: Must be string or array');
+    }
+
+    /**
      * Helper method to create a JSON error.
      *
      * @param int $errno An error number from json_last_error()
@@ -414,7 +459,7 @@ class JWT
      *
      * @return int
      */
-    private static function safeStrlen($str)
+    public static function safeStrlen($str)
     {
         if (\function_exists('mb_strlen')) {
             return \mb_strlen($str, '8bit');
