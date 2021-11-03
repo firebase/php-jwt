@@ -5,8 +5,6 @@ namespace Firebase\JWT;
 use ArrayAccess;
 use DomainException;
 use Exception;
-use Firebase\JWT\Keys\JWTKey;
-use Firebase\JWT\Keys\Keyring;
 use InvalidArgumentException;
 use UnexpectedValueException;
 use DateTime;
@@ -475,7 +473,7 @@ class JWT
      *
      * @return int
      */
-    public static function safeStrlen($str)
+    private static function safeStrlen($str)
     {
         if (\function_exists('mb_strlen')) {
             return \mb_strlen($str, '8bit');
