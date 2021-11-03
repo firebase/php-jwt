@@ -65,7 +65,7 @@ class JWT
      *                                                  Supported algorithms are 'ES384','ES256', 'HS256', 'HS384',
      *                                                  'HS512', 'RS256', 'RS384', and 'RS512'
      * @param array                     $allowed_algs   [DEPRECATED] List of supported verification algorithms. Only
-     *                                                  should be used for BC.
+     *                                                  should be used for backwards  compatibility.
      *
      * @return object The JWT's payload as a PHP object
      *
@@ -386,6 +386,7 @@ class JWT
      * Determine if an algorithm has been provided for each Key
      *
      * @param string|array $keyOrKeyArray
+     * @param string|null $kid
      *
      * @return an array containing the keyMaterial and algorithm
      */
