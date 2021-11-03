@@ -5,6 +5,7 @@ apt-get install -y --no-install-recommends \
     git \
     zip \
     curl \
+    ca-certificates \
     unzip \
     wget
 
