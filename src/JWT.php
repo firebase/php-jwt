@@ -3,6 +3,7 @@
 namespace Firebase\JWT;
 
 use DomainException;
+use Exception;
 use InvalidArgumentException;
 use UnexpectedValueException;
 use DateTime;
@@ -50,6 +51,7 @@ class JWT
         'RS256' => array('openssl', 'SHA256'),
         'RS384' => array('openssl', 'SHA384'),
         'RS512' => array('openssl', 'SHA512'),
+        'EdDSA' => array('sodium_crypto', 'EdDSA'),
     );
 
     /**
@@ -153,14 +155,14 @@ class JWT
     /**
      * Converts and signs a PHP object or array into a JWT string.
      *
-     * @param object|array  $payload    PHP object or array
-     * @param string        $key        The secret key.
-     *                                  If the algorithm used is asymmetric, this is the private key
-     * @param string        $alg        The signing algorithm.
-     *                                  Supported algorithms are 'ES384','ES256', 'HS256', 'HS384',
-     *                                  'HS512', 'RS256', 'RS384', and 'RS512'
-     * @param mixed         $keyId
-     * @param array         $head       An array with header elements to attach
+     * @param object|array      $payload    PHP object or array
+     * @param string|resource   $key        The secret key.
+     *                                      If the algorithm used is asymmetric, this is the private key
+     * @param string            $alg        The signing algorithm.
+     *                                      Supported algorithms are 'ES384','ES256', 'HS256', 'HS384',
+     *                                      'HS512', 'RS256', 'RS384', and 'RS512'
+     * @param mixed             $keyId
+     * @param array             $head       An array with header elements to attach
      *
      * @return string A signed JWT
      *
@@ -198,7 +200,7 @@ class JWT
      *
      * @return string An encrypted message
      *
-     * @throws DomainException Unsupported algorithm was specified
+     * @throws DomainException Unsupported algorithm or bad key was specified
      */
     public static function sign($msg, $key, $alg = 'HS256')
     {
@@ -214,14 +216,24 @@ class JWT
                 $success = \openssl_sign($msg, $signature, $key, $algorithm);
                 if (!$success) {
                     throw new DomainException("OpenSSL unable to sign data");
-                } else {
-                    if ($alg === 'ES256') {
-                        $signature = self::signatureFromDER($signature, 256);
-                    }
-                    if ($alg === 'ES384') {
-                        $signature = self::signatureFromDER($signature, 384);
-                    }
-                    return $signature;
+                }
+                if ($alg === 'ES256') {
+                    $signature = self::signatureFromDER($signature, 256);
+                } elseif ($alg === 'ES384') {
+                    $signature = self::signatureFromDER($signature, 384);
+                }
+                return $signature;
+            case 'sodium_crypto':
+                if (!function_exists('sodium_crypto_sign_detached')) {
+                    throw new DomainException('libsodium is not available');
+                }
+                try {
+                    // The last non-empty line is used as the key.
+                    $lines = array_filter(explode("\n", $key));
+                    $key = base64_decode(end($lines));
+                    return sodium_crypto_sign_detached($msg, $key);
+                } catch (Exception $e) {
+                    throw new DomainException($e->getMessage(), 0, $e);
                 }
         }
     }
@@ -237,7 +249,7 @@ class JWT
      *
      * @return bool
      *
-     * @throws DomainException Invalid Algorithm or OpenSSL failure
+     * @throws DomainException Invalid Algorithm, bad key, or OpenSSL failure
      */
     private static function verify($msg, $signature, $key, $alg)
     {
@@ -258,6 +270,18 @@ class JWT
                 throw new DomainException(
                     'OpenSSL error: ' . \openssl_error_string()
                 );
+            case 'sodium_crypto':
+              if (!function_exists('sodium_crypto_sign_verify_detached')) {
+                  throw new DomainException('libsodium is not available');
+              }
+              try {
+                  // The last non-empty line is used as the key.
+                  $lines = array_filter(explode("\n", $key));
+                  $key = base64_decode(end($lines));
+                  return sodium_crypto_sign_verify_detached($signature, $msg, $key);
+              } catch (Exception $e) {
+                  throw new DomainException($e->getMessage(), 0, $e);
+              }
             case 'hash_hmac':
             default:
                 $hash = \hash_hmac($algorithm, $msg, $key, true);

@@ -12,7 +12,9 @@ curl --silent --show-error https://getcomposer.org/installer | php
 php composer.phar self-update
 
 echo "---Installing dependencies ---"
-php composer.phar update
+
+# Add compatiblity for libsodium with older versions of PHP
+php composer.phar require --dev --with-dependencies paragonie/sodium_compat
 
 echo "---Running unit tests ---"
 vendor/bin/phpunit
