@@ -49,7 +49,7 @@ class Key
     }
 
     /**
-     * @return string|resource
+     * @return string|resource|OpenSSLAsymmetricKey
      */
     public function getKeyMaterial()
     {

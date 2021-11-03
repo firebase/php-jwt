@@ -5,8 +5,6 @@ namespace Firebase\JWT;
 use ArrayAccess;
 use DomainException;
 use Exception;
-use Firebase\JWT\Keys\JWTKey;
-use Firebase\JWT\Keys\Keyring;
 use InvalidArgumentException;
 use UnexpectedValueException;
 use DateTime;
@@ -81,8 +79,9 @@ class JWT
      * @uses jsonDecode
      * @uses urlsafeB64Decode
      */
-    public static function decode($jwt, $keyOrKeyArray, array $allowed_algs = array())
+    public static function decode($jwt, $keyOrKeyArray)
     {
+        // Validate JWT
         $timestamp = \is_null(static::$timestamp) ? \time() : static::$timestamp;
 
         if (empty($keyOrKeyArray)) {
@@ -109,31 +108,18 @@ class JWT
             throw new UnexpectedValueException('Algorithm not supported');
         }
 
-        list($keyMaterial, $algorithm) = self::getKeyMaterialAndAlgorithm(
-            $keyOrKeyArray,
-            empty($header->kid) ? null : $header->kid
-        );
+        $key = self::getKey($keyOrKeyArray, empty($header->kid) ? null : $header->kid);
 
-        if (empty($algorithm)) {
-            // Use deprecated "allowed_algs" to determine if the algorithm is supported.
-            // This opens up the possibility of an attack in some implementations.
-            // @see https://github.com/firebase/php-jwt/issues/351
-            if (!\in_array($header->alg, $allowed_algs)) {
-                throw new UnexpectedValueException('Algorithm not allowed');
-            }
-        } else {
-            // Check the algorithm
-            if (!self::constantTimeEquals($algorithm, $header->alg)) {
-                // See issue #351
-                throw new UnexpectedValueException('Incorrect key for this algorithm');
-            }
+        // Check the algorithm
+        if (!self::constantTimeEquals($key->getAlgorithm(), $header->alg)) {
+            // See issue #351
+            throw new UnexpectedValueException('Incorrect key for this algorithm');
         }
         if ($header->alg === 'ES256' || $header->alg === 'ES384') {
             // OpenSSL expects an ASN.1 DER sequence for ES256/ES384 signatures
             $sig = self::signatureToDER($sig);
         }
-
-        if (!static::verify("$headb64.$bodyb64", $sig, $keyMaterial, $header->alg)) {
+        if (!static::verify("$headb64.$bodyb64", $sig, $key->getKeyMaterial(), $header->alg)) {
             throw new SignatureInvalidException('Signature verification failed');
         }
 
@@ -391,17 +377,21 @@ class JWT
      *
      * @return an array containing the keyMaterial and algorithm
      */
-    private static function getKeyMaterialAndAlgorithm($keyOrKeyArray, $kid = null)
+    private static function getKey($keyOrKeyArray, $kid = null)
     {
-        if (is_string($keyOrKeyArray)) {
-            return array($keyOrKeyArray, null);
-        }
-
         if ($keyOrKeyArray instanceof Key) {
-            return array($keyOrKeyArray->getKeyMaterial(), $keyOrKeyArray->getAlgorithm());
+            return $keyOrKeyArray;
         }
 
         if (is_array($keyOrKeyArray) || $keyOrKeyArray instanceof ArrayAccess) {
+            foreach ($keyOrKeyArray as $keyId => $key) {
+                if (!$key instanceof Key) {
+                    throw new UnexpectedValueException(
+                        '$keyOrKeyArray must be an instance of Firebase\JWT\Key key or an '
+                        . 'array of Firebase\JWT\Key keys'
+                    );
+                }
+            }
             if (!isset($kid)) {
                 throw new UnexpectedValueException('"kid" empty, unable to lookup correct key');
             }
@@ -409,18 +399,12 @@ class JWT
                 throw new UnexpectedValueException('"kid" invalid, unable to lookup correct key');
             }
 
-            $key = $keyOrKeyArray[$kid];
-
-            if ($key instanceof Key) {
-                return array($key->getKeyMaterial(), $key->getAlgorithm());
-            }
-
-            return array($key, null);
+            return $keyOrKeyArray[$kid];
         }
 
         throw new UnexpectedValueException(
-            '$keyOrKeyArray must be a string key, an array of string keys, '
-            . 'an instance of Firebase\JWT\Key key or an array of Firebase\JWT\Key keys'
+            '$keyOrKeyArray must be an instance of Firebase\JWT\Key key or an '
+            . 'array of Firebase\JWT\Key keys'
         );
     }
 
@@ -475,7 +459,7 @@ class JWT
      *
      * @return int
      */
-    public static function safeStrlen($str)
+    private static function safeStrlen($str)
     {
         if (\function_exists('mb_strlen')) {
             return \mb_strlen($str, '8bit');
