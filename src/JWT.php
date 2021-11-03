@@ -394,11 +394,11 @@ class JWT
     private static function getKeyMaterialAndAlgorithm($keyOrKeyArray, $kid = null)
     {
         if (is_string($keyOrKeyArray)) {
-            return [$keyOrKeyArray, null];
+            return array($keyOrKeyArray, null);
         }
 
         if ($keyOrKeyArray instanceof Key) {
-            return [$keyOrKeyArray->getKeyMaterial(), $keyOrKeyArray->getAlgorithm()];
+            return array($keyOrKeyArray->getKeyMaterial(), $keyOrKeyArray->getAlgorithm());
         }
 
         if (is_array($keyOrKeyArray) || $keyOrKeyArray instanceof ArrayAccess) {
@@ -412,10 +412,10 @@ class JWT
             $key = $keyOrKeyArray[$kid];
 
             if ($key instanceof Key) {
-                return [$key->getKeyMaterial(), $key->getAlgorithm()];
+                return array($key->getKeyMaterial(), $key->getAlgorithm());
             }
 
-            return [$key, null];
+            return array($key, null);
         }
 
         throw new UnexpectedValueException(
