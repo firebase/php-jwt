@@ -6,6 +6,7 @@ use ArrayAccess;
 use DomainException;
 use Exception;
 use InvalidArgumentException;
+use OpenSSLAsymmetricKey;
 use UnexpectedValueException;
 use DateTime;
 
@@ -59,7 +60,7 @@ class JWT
      * Decodes a JWT string into a PHP object.
      *
      * @param string                    $jwt            The JWT
-     * @param Key|array<Key>            $keyOrKeyArray  The Key or array of Key objects.
+     * @param Key|array<Key>|mixed      $keyOrKeyArray  The Key or array of Key objects.
      *                                                  If the algorithm used is asymmetric, this is the public key
      *                                                  Each Key object contains an algorithm and matching key.
      *                                                  Supported algorithms are 'ES384','ES256', 'HS256', 'HS384',
@@ -385,14 +386,20 @@ class JWT
     /**
      * Determine if an algorithm has been provided for each Key
      *
-     * @param string|array $keyOrKeyArray
+     * @param Key|array<Key>|mixed $keyOrKeyArray
      * @param string|null $kid
      *
-     * @return an array containing the keyMaterial and algorithm
+     * @throws UnexpectedValueException
+     *
+     * @return array containing the keyMaterial and algorithm
      */
     private static function getKeyMaterialAndAlgorithm($keyOrKeyArray, $kid = null)
     {
-        if (is_string($keyOrKeyArray)) {
+        if (
+            is_string($keyOrKeyArray)
+            || is_resource($keyOrKeyArray)
+            || $keyOrKeyArray instanceof OpenSSLAsymmetricKey
+        ) {
             return array($keyOrKeyArray, null);
         }
 
@@ -418,7 +425,7 @@ class JWT
         }
 
         throw new UnexpectedValueException(
-            '$keyOrKeyArray must be a string key, an array of string keys, '
+            '$keyOrKeyArray must be a string|resource key, an array of string|resource keys, '
             . 'an instance of Firebase\JWT\Key key or an array of Firebase\JWT\Key keys'
         );
     }
