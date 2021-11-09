@@ -344,6 +344,34 @@ class JWTTest extends TestCase
         $this->assertEquals('bar', $decoded->foo);
     }
 
+    /**
+     * @runInSeparateProcess
+     * @dataProvider provideEncodeDecode
+     */
+    public function testEncodeDecodeWithKeyObject($privateKeyFile, $publicKeyFile, $alg)
+    {
+        $privateKey = file_get_contents($privateKeyFile);
+        $payload = array('foo' => 'bar');
+        $encoded = JWT::encode($payload, $privateKey, $alg);
+
+        // Verify decoding succeeds
+        $publicKey = file_get_contents($publicKeyFile);
+        $decoded = JWT::decode($encoded, new Key($publicKey, $alg));
+
+        $this->assertEquals('bar', $decoded->foo);
+    }
+
+    public function testArrayAccessKIDChooserWithKeyObject()
+    {
+        $keys = new ArrayObject(array(
+            '1' => new Key('my_key', 'HS256'),
+            '2' => new Key('my_key2', 'HS256'),
+        ));
+        $msg = JWT::encode('abc', $keys['1']->getKeyMaterial(), 'HS256', '1');
+        $decoded = JWT::decode($msg, $keys);
+        $this->assertEquals($decoded, 'abc');
+    }
+
     public function provideEncodeDecode()
     {
         return array(
@@ -352,5 +380,20 @@ class JWTTest extends TestCase
             array(__DIR__ . '/rsa1-private.pem', __DIR__ . '/rsa1-public.pub', 'RS512'),
             array(__DIR__ . '/ed25519-1.sec', __DIR__ . '/ed25519-1.pub', 'EdDSA'),
         );
+    }
+
+    public function testEncodeDecodeWithResource()
+    {
+        $pem = file_get_contents(__DIR__ . '/rsa1-public.pub');
+        $resource = openssl_pkey_get_public($pem);
+        $privateKey = file_get_contents(__DIR__ . '/rsa1-private.pem');
+
+        $payload = array('foo' => 'bar');
+        $encoded = JWT::encode($payload, $privateKey, 'RS512');
+
+        // Verify decoding succeeds
+        $decoded = JWT::decode($encoded, $resource, array('RS512'));
+
+        $this->assertEquals('bar', $decoded->foo);
     }
 }
