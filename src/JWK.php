@@ -47,7 +47,15 @@ class JWK
         foreach ($jwks['keys'] as $k => $v) {
             $kid = isset($v['kid']) ? $v['kid'] : $k;
             if ($key = self::parseKey($v)) {
-                $keys[$kid] = $key;
+                if (isset($v['alg'])) {
+                    $keys[$kid] = new Key($key, $v['alg']);
+                } else {
+                    // The "alg" parameter is optional in a KTY, but is required
+                    // for parsing in this library. Add it manually to your JWK
+                    // array if it doesn't already exist.
+                    // @see https://datatracker.ietf.org/doc/html/rfc7517#section-4.4
+                    throw new InvalidArgumentException('JWK key is missing "alg"');
+                }
             }
         }
 

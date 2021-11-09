@@ -200,8 +200,7 @@ $jwks = ['keys' => []];
 
 // JWK::parseKeySet($jwks) returns an associative array of **kid** to private
 // key. Pass this as the second parameter to JWT::decode.
-// NOTE: The deprecated $supportedAlgorithm must be supplied when parsing from JWK.
-JWT::decode($payload, JWK::parseKeySet($jwks), $supportedAlgorithm);
+JWT::decode($payload, JWK::parseKeySet($jwks));
 ```
 
 Changelog
