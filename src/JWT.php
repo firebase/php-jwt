@@ -6,6 +6,7 @@ use ArrayAccess;
 use DomainException;
 use Exception;
 use InvalidArgumentException;
+use OpenSSLAsymmetricKey;
 use UnexpectedValueException;
 use DateTime;
 
@@ -64,8 +65,6 @@ class JWT
      *                                                  Each Key object contains an algorithm and matching key.
      *                                                  Supported algorithms are 'ES384','ES256', 'HS256', 'HS384',
      *                                                  'HS512', 'RS256', 'RS384', and 'RS512'
-     * @param array                     $allowed_algs   [DEPRECATED] List of supported verification algorithms. Only
-     *                                                  should be used for BC.
      *
      * @return object The JWT's payload as a PHP object
      *
@@ -392,6 +391,7 @@ class JWT
                     );
                 }
             }
+
             if (!isset($kid)) {
                 throw new UnexpectedValueException('"kid" empty, unable to lookup correct key');
             }

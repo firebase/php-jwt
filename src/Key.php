@@ -10,11 +10,11 @@ class Key
     /** @var string $algorithm */
     private $algorithm;
 
-    /** @var string $keyMaterial */
+    /** @var string|resource|OpenSSLAsymmetricKey $keyMaterial */
     private $keyMaterial;
 
     /**
-     * @param string|resource $keyMaterial
+     * @param string|resource|OpenSSLAsymmetricKey $keyMaterial
      * @param string $algorithm
      */
     public function __construct($keyMaterial, $algorithm)
@@ -34,6 +34,7 @@ class Key
         if (!is_string($algorithm)|| empty($keyMaterial)) {
             throw new InvalidArgumentException('Type error: $algorithm must be a string');
         }
+
         $this->keyMaterial = $keyMaterial;
         $this->algorithm = $algorithm;
     }
