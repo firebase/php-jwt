@@ -312,7 +312,7 @@ class JWTTest extends TestCase
     public function testRSEncodeDecodeWithPassphrase()
     {
         $privateKey = openssl_pkey_get_private(
-            file_get_contents(__DIR__ . '/rsa-with-passphrase.pem'),
+            file_get_contents(__DIR__ . '/data/rsa-with-passphrase.pem'),
             'passphrase'
         );
 
@@ -343,18 +343,18 @@ class JWTTest extends TestCase
     public function provideEncodeDecode()
     {
         return array(
-            array(__DIR__ . '/ecdsa-private.pem', __DIR__ . '/ecdsa-public.pem', 'ES256'),
-            array(__DIR__ . '/ecdsa384-private.pem', __DIR__ . '/ecdsa384-public.pem', 'ES384'),
-            array(__DIR__ . '/rsa1-private.pem', __DIR__ . '/rsa1-public.pub', 'RS512'),
-            array(__DIR__ . '/ed25519-1.sec', __DIR__ . '/ed25519-1.pub', 'EdDSA'),
+            array(__DIR__ . '/data/ecdsa-private.pem', __DIR__ . '/data/ecdsa-public.pem', 'ES256'),
+            array(__DIR__ . '/data/ecdsa384-private.pem', __DIR__ . '/data/ecdsa384-public.pem', 'ES384'),
+            array(__DIR__ . '/data/rsa1-private.pem', __DIR__ . '/data/rsa1-public.pub', 'RS512'),
+            array(__DIR__ . '/data/ed25519-1.sec', __DIR__ . '/data/ed25519-1.pub', 'EdDSA'),
         );
     }
 
     public function testEncodeDecodeWithResource()
     {
-        $pem = file_get_contents(__DIR__ . '/rsa1-public.pub');
+        $pem = file_get_contents(__DIR__ . '/data/rsa1-public.pub');
         $resource = openssl_pkey_get_public($pem);
-        $privateKey = file_get_contents(__DIR__ . '/rsa1-private.pem');
+        $privateKey = file_get_contents(__DIR__ . '/data/rsa1-private.pem');
 
         $payload = array('foo' => 'bar');
         $encoded = JWT::encode($payload, $privateKey, 'RS512');

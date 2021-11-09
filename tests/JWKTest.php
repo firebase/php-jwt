@@ -40,7 +40,7 @@ class JWKTest extends TestCase
         );
 
         $jwkSet = json_decode(
-            file_get_contents(__DIR__ . '/rsa-jwkset.json'),
+            file_get_contents(__DIR__ . '/data/rsa-jwkset.json'),
             true
         );
         $jwkSet['keys'][0]['d'] = 'privatekeyvalue';
@@ -56,7 +56,7 @@ class JWKTest extends TestCase
         );
 
         $jwkSet = json_decode(
-            file_get_contents(__DIR__ . '/rsa-jwkset.json'),
+            file_get_contents(__DIR__ . '/data/rsa-jwkset.json'),
             true
         );
         unset($jwkSet['keys'][0]['alg']);
@@ -67,7 +67,7 @@ class JWKTest extends TestCase
     public function testParseKeyWithEmptyDValue()
     {
         $jwkSet = json_decode(
-            file_get_contents(__DIR__ . '/rsa-jwkset.json'),
+            file_get_contents(__DIR__ . '/data/rsa-jwkset.json'),
             true
         );
 
@@ -81,7 +81,7 @@ class JWKTest extends TestCase
     public function testParseJwkKeySet()
     {
         $jwkSet = json_decode(
-            file_get_contents(__DIR__ . '/rsa-jwkset.json'),
+            file_get_contents(__DIR__ . '/data/rsa-jwkset.json'),
             true
         );
         $keys = JWK::parseKeySet($jwkSet);
@@ -109,7 +109,7 @@ class JWKTest extends TestCase
      */
     public function testDecodeByJwkKeySetTokenExpired()
     {
-        $privKey1 = file_get_contents(__DIR__ . '/rsa1-private.pem');
+        $privKey1 = file_get_contents(__DIR__ . '/data/rsa1-private.pem');
         $payload = array('exp' => strtotime('-1 hour'));
         $msg = JWT::encode($payload, $privKey1, 'RS256', 'jwk1');
 
@@ -123,7 +123,7 @@ class JWKTest extends TestCase
      */
     public function testDecodeByJwkKeySet()
     {
-        $privKey1 = file_get_contents(__DIR__ . '/rsa1-private.pem');
+        $privKey1 = file_get_contents(__DIR__ . '/data/rsa1-private.pem');
         $payload = array('sub' => 'foo', 'exp' => strtotime('+10 seconds'));
         $msg = JWT::encode($payload, $privKey1, 'RS256', 'jwk1');
 
@@ -137,7 +137,7 @@ class JWKTest extends TestCase
      */
     public function testDecodeByMultiJwkKeySet()
     {
-        $privKey2 = file_get_contents(__DIR__ . '/rsa2-private.pem');
+        $privKey2 = file_get_contents(__DIR__ . '/data/rsa2-private.pem');
         $payload = array('sub' => 'bar', 'exp' => strtotime('+10 seconds'));
         $msg = JWT::encode($payload, $privKey2, 'RS256', 'jwk2');
 
