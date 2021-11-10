@@ -330,7 +330,12 @@ class JWT
      */
     public static function jsonEncode($input)
     {
-        $json = \json_encode($input);
+        if (PHP_VERSION_ID >= 50400) {
+            $json = \json_encode($input, \JSON_UNESCAPED_SLASHES);
+        } else {
+            // PHP 5.3 only
+            $json = \json_encode($input);
+        }
         if ($errno = \json_last_error()) {
             static::handleJsonError($errno);
         } elseif ($json === 'null' && $input !== null) {
