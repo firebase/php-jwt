@@ -25,9 +25,12 @@ use DateTime;
  */
 class JWT
 {
-    const ASN1_INTEGER = 0x02;
-    const ASN1_SEQUENCE = 0x10;
-    const ASN1_BIT_STRING = 0x03;
+    // const ASN1_INTEGER = 0x02;
+    // const ASN1_SEQUENCE = 0x10;
+    // const ASN1_BIT_STRING = 0x03;
+    private static $asn1Integer = 0x02;
+    private static $asn1Sequence = 0x10;
+    private static $asn1BitString = 0x03;
 
     /**
      * When checking nbf, iat or expiration times,
@@ -494,9 +497,9 @@ class JWT
         }
 
         return self::encodeDER(
-            self::ASN1_SEQUENCE,
-            self::encodeDER(self::ASN1_INTEGER, $r) .
-            self::encodeDER(self::ASN1_INTEGER, $s)
+            self::$asn1Sequence,
+            self::encodeDER(self::$asn1Integer, $r) .
+            self::encodeDER(self::$asn1Integer, $s)
         );
     }
 
@@ -510,7 +513,7 @@ class JWT
     private static function encodeDER($type, $value)
     {
         $tag_header = 0;
-        if ($type === self::ASN1_SEQUENCE) {
+        if ($type === self::$asn1Sequence) {
             $tag_header |= 0x20;
         }
 
@@ -575,7 +578,7 @@ class JWT
         }
 
         // Value
-        if ($type == self::ASN1_BIT_STRING) {
+        if ($type == self::$asn1BitString) {
             $pos++; // Skip the first contents octet (padding indicator)
             $data = \substr($der, $pos, $len - 1);
             $pos += $len - 1;
