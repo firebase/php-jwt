@@ -167,7 +167,7 @@ class JWT
      * @uses jsonEncode
      * @uses urlsafeB64Encode
      */
-    public static function encode($payload, $key, $alg = 'HS256', $keyId = null, $head = null)
+    public static function encode($payload, $key, $alg, $keyId = null, $head = null)
     {
         $header = array('typ' => 'JWT', 'alg' => $alg);
         if ($keyId !== null) {
@@ -200,7 +200,7 @@ class JWT
      *
      * @throws DomainException Unsupported algorithm or bad key was specified
      */
-    public static function sign($msg, $key, $alg = 'HS256')
+    public static function sign($msg, $key, $alg)
     {
         if (empty(static::$supported_algs[$alg])) {
             throw new DomainException('Algorithm not supported');
