@@ -70,7 +70,8 @@ class JWT
      *
      * @return object The JWT's payload as a PHP object
      *
-     * @throws InvalidArgumentException     Provided JWT was empty
+     * @throws InvalidArgumentException     Provided key/key-array was empty
+     * @throws DomainException              Provided JWT is malformed
      * @throws UnexpectedValueException     Provided JWT was invalid
      * @throws SignatureInvalidException    Provided JWT was invalid because the signature verification failed
      * @throws BeforeValidException         Provided JWT is trying to be used before it's eligible as defined by 'nbf'
