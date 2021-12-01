@@ -1,4 +1,4 @@
-name: Example workflow for Python using Snyk
+name: Example workflow for Python using Snyk Github Actions
 on: push
 jobs:
   security:
