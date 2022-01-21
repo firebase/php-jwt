@@ -206,6 +206,14 @@ JWT::decode($payload, JWK::parseKeySet($jwks));
 Changelog
 ---------
 
+#### 6.0.0 / 2022-01-25
+
+ - New Key object to prevent key/algorithm type confusion (#365)
+ - Add JWK support (#273)
+ - Add ES256 support (#256)
+ - Add ES384 support (#324)
+ - Add Ed25519 support (#343)
+
 #### 5.0.0 / 2017-06-26
 - Support RS384 and RS512.
   See [#117](https://github.com/firebase/php-jwt/pull/117). Thanks [@joostfaassen](https://github.com/joostfaassen)!
