@@ -63,7 +63,7 @@ class JWT
      * Decodes a JWT string into a PHP object.
      *
      * @param string                    $jwt            The JWT
-     * @param Key|array<Key>            $keyOrKeyArray  The Key or array of Key objects.
+     * @param Key|array<string, Key>    $keyOrKeyArray  The Key or associative array of kid to Key objects.
      *                                                  If the algorithm used is asymmetric, this is the public key
      *                                                  Each Key object contains an algorithm and matching key.
      *                                                  Supported algorithms are 'ES384','ES256', 'HS256', 'HS384',
@@ -381,7 +381,7 @@ class JWT
     /**
      * Determine if an algorithm has been provided for each Key
      *
-     * @param Key|array<Key>|mixed $keyOrKeyArray
+     * @param Key|array<string, Key>
      * @param string|null $kid
      *
      * @throws UnexpectedValueException
