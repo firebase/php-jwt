@@ -381,8 +381,8 @@ class JWT
     /**
      * Determine if an algorithm has been provided for each Key
      *
-     * @param Key|array<string, Key>
-     * @param string|null $kid
+     * @param Key|array<string, Key> $keyOrKeyArray
+     * @param string|null            $kid
      *
      * @throws UnexpectedValueException
      *
