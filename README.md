@@ -198,8 +198,8 @@ use Firebase\JWT\JWT;
 // this endpoint: https://www.gstatic.com/iap/verify/public_key-jwk
 $jwks = ['keys' => []];
 
-// JWK::parseKeySet($jwks) returns an associative array of **kid** to private
-// key. Pass this as the second parameter to JWT::decode.
+// JWK::parseKeySet($jwks) returns an associative array of **kid** to Firebase\JWT\Key
+// objects. Pass this as the second parameter to JWT::decode.
 JWT::decode($payload, JWK::parseKeySet($jwks));
 ```
 
@@ -208,6 +208,7 @@ Changelog
 
 #### 6.0.0 / 2022-01-24
 
+ - **Backwards-Compatibility Breaking Changes**: See the [Release Notes](https://github.com/firebase/php-jwt/releases/tag/v5.5.1) for more information.
  - New Key object to prevent key/algorithm type confusion (#365)
  - Add JWK support (#273)
  - Add ES256 support (#256)
