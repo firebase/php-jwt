@@ -51,7 +51,7 @@ class JWKTest extends TestCase
     public function testParsePrivateKeyWithoutAlg()
     {
         $this->setExpectedException(
-            'InvalidArgumentException',
+            'UnexpectedValueException',
             'JWK key is missing "alg"'
         );
 
