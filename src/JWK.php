@@ -25,7 +25,7 @@ class JWK
      *
      * @param array $jwks The JSON Web Key Set as an associative array
      *
-     * @return Key[] An associative array that represents the set of keys
+     * @return array<string, Key> An associative array of key IDs (kid) to Key objects
      *
      * @throws InvalidArgumentException     Provided JWK Set is empty
      * @throws UnexpectedValueException     Provided JWK Set was invalid

@@ -52,12 +52,12 @@ class JWT
     /**
      * Decodes a JWT string into a PHP object.
      *
-     * @param string    $jwt            The JWT
-     * @param Key|Key[] $keyOrKeyArray  The Key or array of Key objects.
-     *                                  If the algorithm used is asymmetric, this is the public key
-     *                                  Each Key object contains an algorithm and matching key.
-     *                                  Supported algorithms are 'ES384','ES256', 'HS256', 'HS384',
-     *                                  'HS512', 'RS256', 'RS384', and 'RS512'
+     * @param string                 $jwt            The JWT
+     * @param Key|array<string, Key> $keyOrKeyArray  The Key or associative array of key IDs (kid) to Key objects.
+     *                                               If the algorithm used is asymmetric, this is the public key
+     *                                               Each Key object contains an algorithm and matching key.
+     *                                               Supported algorithms are 'ES384','ES256', 'HS256', 'HS384',
+     *                                               'HS512', 'RS256', 'RS384', and 'RS512'
      *
      * @return stdClass The JWT's payload as a PHP object
      *
@@ -365,8 +365,8 @@ class JWT
     /**
      * Determine if an algorithm has been provided for each Key
      *
-     * @param Key|Key[]   $keyOrKeyArray
-     * @param string|null $kid
+     * @param Key|array<string, Key> $keyOrKeyArray
+     * @param string|null            $kid
      *
      * @throws UnexpectedValueException
      *
