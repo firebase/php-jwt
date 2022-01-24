@@ -284,7 +284,7 @@ class JWT
             case 'hash_hmac':
             default:
                 $hash = \hash_hmac($algorithm, $msg, $key, true);
-                return self::constantTimeEquals($signature, $hash);
+                return self::constantTimeEquals($hash, $signature);
         }
     }
 
@@ -420,8 +420,8 @@ class JWT
     }
 
     /**
-     * @param string $left
-     * @param string $right
+     * @param string $left  The string of known length to compare against
+     * @param string $right The user-supplied string
      * @return bool
      */
     public static function constantTimeEquals($left, $right)
