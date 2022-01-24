@@ -52,7 +52,7 @@ class JWKTest extends TestCase
     {
         $this->setExpectedException(
             'UnexpectedValueException',
-            'JWK key is missing "alg"'
+            'JWK must contain an "alg" parameter'
         );
 
         $jwkSet = json_decode(
