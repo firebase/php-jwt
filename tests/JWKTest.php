@@ -28,7 +28,7 @@ class JWKTest extends TestCase
             'No supported algorithms found in JWK Set'
         );
 
-        $badJwk = array('kty' => 'BADALG');
+        $badJwk = array('kty' => 'BADALG', 'alg' => 'RSA256');
         $keys = JWK::parseKeySet(array('keys' => array($badJwk)));
     }
 
