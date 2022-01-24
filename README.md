@@ -206,7 +206,7 @@ JWT::decode($payload, JWK::parseKeySet($jwks));
 Changelog
 ---------
 
-#### 6.0.0 / 2022-01-25
+#### 6.0.0 / 2022-01-24
 
  - New Key object to prevent key/algorithm type confusion (#365)
  - Add JWK support (#273)
