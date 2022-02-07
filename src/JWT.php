@@ -111,7 +111,7 @@ class JWT
             throw new UnexpectedValueException('Algorithm not supported');
         }
 
-        $key = self::getKey($keyOrKeyArray, empty($header->kid) ? null : $header->kid);
+        $key = self::getKey($keyOrKeyArray, property_exists($header, 'kid') ? $header->kid : null);
 
         // Check the algorithm
         if (!self::constantTimeEquals($key->getAlgorithm(), $header->alg)) {
