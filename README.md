@@ -208,7 +208,7 @@ Changelog
 
 #### 6.0.0 / 2022-01-24
 
- - **Backwards-Compatibility Breaking Changes**: See the [Release Notes](https://github.com/firebase/php-jwt/releases/tag/v5.5.1) for more information.
+ - **Backwards-Compatibility Breaking Changes**: See the [Release Notes](https://github.com/firebase/php-jwt/releases/tag/v6.0.0) for more information.
  - New Key object to prevent key/algorithm type confusion (#365)
  - Add JWK support (#273)
  - Add ES256 support (#256)

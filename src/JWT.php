@@ -104,7 +104,7 @@ class JWT
             throw new UnexpectedValueException('Algorithm not supported');
         }
 
-        $key = self::getKey($keyOrKeyArray, empty($header->kid) ? null : $header->kid);
+        $key = self::getKey($keyOrKeyArray, property_exists($header, 'kid') ? $header->kid : null);
 
         // Check the algorithm
         if (!self::constantTimeEquals($key->getAlgorithm(), $header->alg)) {
@@ -282,7 +282,7 @@ class JWT
             case 'hash_hmac':
             default:
                 $hash = \hash_hmac($algorithm, $msg, $keyMaterial, true);
-                return self::constantTimeEquals($signature, $hash);
+                return self::constantTimeEquals($hash, $signature);
         }
     }
 
@@ -404,8 +404,8 @@ class JWT
     }
 
     /**
-     * @param string $left
-     * @param string $right
+     * @param string $left  The string of known length to compare against
+     * @param string $right The user-supplied string
      * @return bool
      */
     public static function constantTimeEquals(string $left, string $right): bool
