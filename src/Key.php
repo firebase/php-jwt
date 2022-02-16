@@ -30,9 +30,6 @@ class Key
         if (empty($algorithm)) {
             throw new InvalidArgumentException('Algorithm must not be empty');
         }
-
-        $this->keyMaterial = $keyMaterial;
-        $this->algorithm = $algorithm;
     }
 
     /**
