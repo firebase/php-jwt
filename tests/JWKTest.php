@@ -14,10 +14,8 @@ class JWKTest extends TestCase
 
     public function testMissingKty()
     {
-        $this->setExpectedException(
-            UnexpectedValueException::class,
-            'JWK must contain a "kty" parameter'
-        );
+        $this->expectException(UnexpectedValueException::class);
+        $this->expectExceptionMessage('JWK must contain a "kty" parameter');
 
         $badJwk = ['kid' => 'foo'];
         $keys = JWK::parseKeySet(['keys' => [$badJwk]]);
@@ -25,10 +23,8 @@ class JWKTest extends TestCase
 
     public function testInvalidAlgorithm()
     {
-        $this->setExpectedException(
-            UnexpectedValueException::class,
-            'No supported algorithms found in JWK Set'
-        );
+        $this->expectException(UnexpectedValueException::class);
+        $this->expectExceptionMessage('No supported algorithms found in JWK Set');
 
         $badJwk = ['kty' => 'BADTYPE', 'alg' => 'RSA256'];
         $keys = JWK::parseKeySet(['keys' => [$badJwk]]);
@@ -36,10 +32,8 @@ class JWKTest extends TestCase
 
     public function testParsePrivateKey()
     {
-        $this->setExpectedException(
-            UnexpectedValueException::class,
-            'RSA private keys are not supported'
-        );
+        $this->expectException(UnexpectedValueException::class);
+        $this->expectExceptionMessage('RSA private keys are not supported');
 
         $jwkSet = json_decode(
             file_get_contents(__DIR__ . '/data/rsa-jwkset.json'),
@@ -52,10 +46,8 @@ class JWKTest extends TestCase
 
     public function testParsePrivateKeyWithoutAlg()
     {
-        $this->setExpectedException(
-            UnexpectedValueException::class,
-            'JWK must contain an "alg" parameter'
-        );
+        $this->expectException(UnexpectedValueException::class);
+        $this->expectExceptionMessage('JWK must contain an "alg" parameter');
 
         $jwkSet = json_decode(
             file_get_contents(__DIR__ . '/data/rsa-jwkset.json'),
@@ -94,14 +86,16 @@ class JWKTest extends TestCase
 
     public function testParseJwkKey_empty()
     {
-        $this->setExpectedException(InvalidArgumentException::class, 'JWK must not be empty');
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('JWK must not be empty');
 
         JWK::parseKeySet(['keys' => [[]]]);
     }
 
     public function testParseJwkKeySet_empty()
     {
-        $this->setExpectedException(InvalidArgumentException::class, 'JWK Set did not contain any keys');
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('JWK Set did not contain any keys');
 
         JWK::parseKeySet(['keys' => []]);
     }
@@ -115,7 +109,7 @@ class JWKTest extends TestCase
         $payload = ['exp' => strtotime('-1 hour')];
         $msg = JWT::encode($payload, $privKey1, 'RS256', 'jwk1');
 
-        $this->setExpectedException(ExpiredException::class);
+        $this->expectException(ExpiredException::class);
 
         JWT::decode($msg, self::$keys);
     }
@@ -146,20 +140,5 @@ class JWKTest extends TestCase
         $result = JWT::decode($msg, self::$keys);
 
         $this->assertEquals("bar", $result->sub);
-    }
-
-    /*
-     * For compatibility with PHPUnit 4.8 and PHP < 5.6
-     */
-    public function setExpectedException($exceptionName, $message = '', $code = null)
-    {
-        if (method_exists($this, 'expectException')) {
-            $this->expectException($exceptionName);
-            if ($message) {
-                $this->expectExceptionMessage($message);
-            }
-        } else {
-            parent::setExpectedException($exceptionName, $message, $code);
-        }
     }
 }
