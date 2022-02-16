@@ -203,6 +203,22 @@ $jwks = ['keys' => []];
 JWT::decode($payload, JWK::parseKeySet($jwks));
 ```
 
+Miscellaneous
+-------------
+
+#### Casting to array
+
+The return value of `JWT::decode` is the generic PHP object `stdClass`. If you'd like to handle with arrays
+instead, you can do the following:
+
+```php
+// return type is stdClass
+$decoded = JWT::decode($payload, $keys);
+
+// cast to array
+$decoded = json_decode(json_encode($decoded), true);
+```
+
 Changelog
 ---------
 
