@@ -7,6 +7,7 @@ use DomainException;
 use Exception;
 use InvalidArgumentException;
 use OpenSSLAsymmetricKey;
+use TypeError;
 use UnexpectedValueException;
 use DateTime;
 use stdClass;
@@ -229,6 +230,8 @@ class JWT
                     throw new DomainException($e->getMessage(), 0, $e);
                 }
         }
+
+        throw new DomainException('Algorithm not supported');
     }
 
     /**
