@@ -3,17 +3,18 @@
 namespace Firebase\JWT;
 
 use OpenSSLAsymmetricKey;
+use OpenSSLCertificate;
 use TypeError;
 use InvalidArgumentException;
 
 class Key
 {
     /**
-     * @param string|OpenSSLAsymmetricKey $keyMaterial
+     * @param string|OpenSSLAsymmetricKey|OpenSSLCertificate|array $keyMaterial
      * @param string $algorithm
      */
     public function __construct(
-        private string|OpenSSLAsymmetricKey $keyMaterial,
+        private string|OpenSSLAsymmetricKey|OpenSSLCertificate|array $keyMaterial,
         private string $algorithm
     ) {
         if (empty($keyMaterial)) {
@@ -36,9 +37,9 @@ class Key
     }
 
     /**
-     * @return string|OpenSSLAsymmetricKey
+     * @return string|OpenSSLAsymmetricKey|OpenSSLCertificate|array
      */
-    public function getKeyMaterial(): mixed
+    public function getKeyMaterial(): string|OpenSSLAsymmetricKey|OpenSSLCertificate|array
     {
         return $this->keyMaterial;
     }
