@@ -10,7 +10,7 @@ use InvalidArgumentException;
 class Key
 {
     /**
-     * @param string|OpenSSLAsymmetricKey|OpenSSLCertificate|array $keyMaterial
+     * @param string|OpenSSLAsymmetricKey|OpenSSLCertificate|array<mixed> $keyMaterial
      * @param string $algorithm
      */
     public function __construct(
@@ -37,7 +37,7 @@ class Key
     }
 
     /**
-     * @return string|OpenSSLAsymmetricKey|OpenSSLCertificate|array
+     * @return string|OpenSSLAsymmetricKey|OpenSSLCertificate|array<mixed>
      */
     public function getKeyMaterial(): string|OpenSSLAsymmetricKey|OpenSSLCertificate|array
     {
