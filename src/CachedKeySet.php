@@ -7,29 +7,64 @@ use Psr\Http\Client\ClientInterface;
 use Psr\Http\Message\RequestFactoryInterface;
 use Psr\Http\Message\RequestInterface;
 use Psr\Cache\CacheItemPoolInterface;
+use Psr\Cache\CacheItemInterface;
 use LogicException;
 use OutOfBoundsException;
 use RuntimeException;
 
+/**
+ * @template-implements ArrayAccess<string, Key>
+ */
 class CachedKeySet implements ArrayAccess
 {
+    /**
+     * @var string
+     */
     private $jwkUri;
+    /**
+     * @var ClientInterface
+     */
     private $httpClient;
+    /**
+     * @var RequestFactoryInterface
+     */
     private $httpFactory;
+    /**
+     * @var CacheItemPoolInterface
+     */
     private $cache;
+    /**
+     * @var int
+     */
     private $expiresAfter;
 
+    /**
+     * @var ?CacheItemInterface
+     */
     private $cacheItem;
+    /**
+     * @var array<string, Key>
+     */
     private $keySet;
+    /**
+     * @var string
+     */
+    private $cacheKey;
+    /**
+     * @var string
+     */
     private $cacheKeyPrefix = 'jwk';
+    /**
+     * @var int
+     */
     private $maxKeyLength = 64;
 
     public function __construct(
-        $jwkUri,
+        string $jwkUri,
         ClientInterface $httpClient,
         RequestFactoryInterface $httpFactory,
         CacheItemPoolInterface $cache,
-        $expiresAfter = null
+        int $expiresAfter = null
     ) {
         $this->jwkUri = $jwkUri;
         $this->cacheKey = $this->getCacheKey($jwkUri);
@@ -39,7 +74,11 @@ class CachedKeySet implements ArrayAccess
         $this->expiresAfter = $expiresAfter;
     }
 
-    public function offsetGet($keyId)
+    /**
+     * @param string $keyId
+     * @return Key
+     */
+    public function offsetGet($keyId): Key
     {
         if (!$this->keyIdExists($keyId)) {
             throw new OutOfBoundsException('Key ID not found');
@@ -47,22 +86,33 @@ class CachedKeySet implements ArrayAccess
         return $this->keySet[$keyId];
     }
 
-    public function offsetExists($keyId)
+    /**
+     * @param string $keyId
+     * @return bool
+     */
+    public function offsetExists($keyId): bool
     {
         return $this->keyIdExists($keyId);
     }
 
-    public function offsetSet($offset, $value)
+    /**
+     * @param string $offset
+     * @param Key $value
+     */
+    public function offsetSet($offset, $value): void
     {
         throw new LogicException('Method not implemented');
     }
 
-    public function offsetUnset($offset)
+    /**
+     * @param string $offset
+     */
+    public function offsetUnset($offset): void
     {
         throw new LogicException('Method not implemented');
     }
 
-    private function keyIdExists($keyId)
+    private function keyIdExists(string $keyId): bool
     {
         $keySetToCache = null;
         if (null === $this->keySet) {
@@ -97,18 +147,18 @@ class CachedKeySet implements ArrayAccess
         return true;
     }
 
-    private function getCacheItem()
+    private function getCacheItem(): CacheItemInterface
     {
-        if ($this->cacheItem) {
-            return $this->cacheItem;
+        if (is_null($this->cacheItem)) {
+            $this->cacheItem = $this->cache->getItem($this->cacheKey);
         }
 
-        return $this->cacheItem = $this->cache->getItem($this->cacheKey);
+        return $this->cacheItem;
     }
 
-    private function getCacheKey($jwkUri)
+    private function getCacheKey(string $jwkUri): string
     {
-        if (is_null($jwkUri)) {
+        if (empty($jwkUri)) {
             throw new RuntimeException('JWK URI is empty');
         }
 
