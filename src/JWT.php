@@ -39,12 +39,12 @@ class JWT
      *
      * @var int
      */
-    /* array */ public static $leeway = 0;
+    public static $leeway = 0;
 
     /**
      * @var array<string, string[]>
      */
-    /* array */ public static $supported_algs = [
+    public static $supported_algs = [
         'ES384' => ['openssl', 'SHA384'],
         'ES256' => ['openssl', 'SHA256'],
         'HS256' => ['hash_hmac', 'SHA256'],
@@ -320,7 +320,7 @@ class JWT
      *
      * @throws DomainException Provided string was invalid JSON
      */
-    public static function jsonDecode(string $input)/*:  mixed */
+    public static function jsonDecode(string $input)
     {
         $obj = \json_decode($input, false, 512, JSON_BIGINT_AS_STRING);
 
