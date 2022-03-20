@@ -19,9 +19,7 @@ class Key
      * @param string $algorithm
      */
     public function __construct(
-        /* private string|OpenSSLAsymmetricKey|OpenSSLCertificate */
         $keyMaterial,
-        /* private */
         string $algorithm
     ) {
         if (
@@ -57,9 +55,9 @@ class Key
     }
 
     /**
-     * @return string|OpenSSLAsymmetricKey|OpenSSLCertificate
+     * @return string|resource|OpenSSLAsymmetricKey|OpenSSLCertificate
      */
-    public function getKeyMaterial()/*: string|OpenSSLAsymmetricKey|OpenSSLCertificate */
+    public function getKeyMaterial()/*: string|resource|OpenSSLAsymmetricKey|OpenSSLCertificate */
     {
         return $this->keyMaterial;
     }

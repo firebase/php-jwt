@@ -81,7 +81,6 @@ class JWT
      */
     public static function decode(
         string $jwt,
-        /* Key|array|ArrayAccess */
         $keyOrKeyArray
     ): stdClass {
         // Validate JWT
@@ -95,24 +94,18 @@ class JWT
             throw new UnexpectedValueException('Wrong number of segments');
         }
         list($headb64, $bodyb64, $cryptob64) = $tks;
-        if (false === ($headerRaw = static::urlsafeB64Decode($headb64))) {
-            throw new UnexpectedValueException('Invalid header encoding');
-        }
+        $headerRaw = static::urlsafeB64Decode($headb64);
         if (null === ($header = static::jsonDecode($headerRaw))) {
             throw new UnexpectedValueException('Invalid header encoding');
         }
-        if (false === ($payloadRaw = static::urlsafeB64Decode($bodyb64))) {
-            throw new UnexpectedValueException('Invalid claims encoding');
-        }
+        $payloadRaw = static::urlsafeB64Decode($bodyb64);
         if (null === ($payload = static::jsonDecode($payloadRaw))) {
             throw new UnexpectedValueException('Invalid claims encoding');
         }
         if (!$payload instanceof stdClass) {
             throw new UnexpectedValueException('Payload must be a JSON object');
         }
-        if (false === ($sig = static::urlsafeB64Decode($cryptob64))) {
-            throw new UnexpectedValueException('Invalid signature encoding');
-        }
+        $sig = static::urlsafeB64Decode($cryptob64);
         if (empty($header->alg)) {
             throw new UnexpectedValueException('Empty algorithm');
         }
@@ -175,7 +168,6 @@ class JWT
      */
     public static function encode(
         array $payload,
-        /* string|resource|OpenSSLAsymmetricKey */
         $key,
         string $alg,
         string $keyId = null,
@@ -203,7 +195,7 @@ class JWT
      * Sign a string with a given key and algorithm.
      *
      * @param string $msg  The message to sign
-     * @param string|OpenSSLAsymmetricKey|OpenSSLCertificate|array<mixed>  $key  The secret key.
+     * @param string|resource|OpenSSLAsymmetricKey|OpenSSLCertificate  $key  The secret key.
      * @param string $alg  Supported algorithms are 'ES384','ES256', 'HS256', 'HS384',
      *                    'HS512', 'RS256', 'RS384', and 'RS512'
      *
@@ -213,7 +205,6 @@ class JWT
      */
     public static function sign(
         string $msg,
-        /* string|resource|OpenSSLAsymmetricKey */
         $key,
         string $alg
     ): string {
@@ -229,7 +220,7 @@ class JWT
                 return \hash_hmac($algorithm, $msg, $key, true);
             case 'openssl':
                 $signature = '';
-                $success = \openssl_sign($msg, $signature, $key, $algorithm); // @phpstan-ignore-line
+                $success = \openssl_sign($msg, $signature, $key, $algorithm);
                 if (!$success) {
                     throw new DomainException("OpenSSL unable to sign data");
                 }
@@ -275,7 +266,6 @@ class JWT
     private static function verify(
         string $msg,
         string $signature,
-        /* string|resource|OpenSSLAsymmetricKey */
         $keyMaterial,
         string $alg
     ): bool {
@@ -286,7 +276,7 @@ class JWT
         list($function, $algorithm) = static::$supported_algs[$alg];
         switch ($function) {
             case 'openssl':
-                $success = \openssl_verify($msg, $signature, $keyMaterial, $algorithm); // @phpstan-ignore-line
+                $success = \openssl_verify($msg, $signature, $keyMaterial, $algorithm);
                 if ($success === 1) {
                     return true;
                 } elseif ($success === 0) {
@@ -386,11 +376,7 @@ class JWT
             $padlen = 4 - $remainder;
             $input .= \str_repeat('=', $padlen);
         }
-        $base64 = \base64_decode(\strtr($input, '-_', '+/'));
-        if (false === $base64) {
-            throw new InvalidArgumentException('input contains invalid characters for base64');
-        }
-        return $base64;
+        return \base64_decode(\strtr($input, '-_', '+/'));
     }
 
     /**
@@ -417,7 +403,6 @@ class JWT
      * @return Key
      */
     private static function getKey(
-        /* Key|array|ArrayAccess */
         $keyOrKeyArray,
         ?string $kid
     ): Key {
