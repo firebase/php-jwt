@@ -347,11 +347,11 @@ class JWT
      *
      * @param array<mixed> $input A PHP array
      *
-     * @return string|false JSON representation of the PHP array
+     * @return string JSON representation of the PHP array
      *
      * @throws DomainException Provided object could not be encoded to valid JSON
      */
-    public static function jsonEncode(array $input): string|false
+    public static function jsonEncode(array $input): string
     {
         if (PHP_VERSION_ID >= 50400) {
             $json = \json_encode($input, \JSON_UNESCAPED_SLASHES);
@@ -364,6 +364,9 @@ class JWT
         } elseif ($json === 'null' && $input !== null) {
             throw new DomainException('Null result with non-null input');
         }
+        if ($json === false) {
+            throw new DomainException('Provided object could not be encoded to valid JSON');
+        }
         return $json;
     }
 
@@ -373,15 +376,21 @@ class JWT
      * @param string $input A Base64 encoded string
      *
      * @return string A decoded string
+     *
+     * @throws InvalidArgumentException invalid base64 characters
      */
-    public static function urlsafeB64Decode(string $input): string|false
+    public static function urlsafeB64Decode(string $input): string
     {
         $remainder = \strlen($input) % 4;
         if ($remainder) {
             $padlen = 4 - $remainder;
             $input .= \str_repeat('=', $padlen);
         }
-        return \base64_decode(\strtr($input, '-_', '+/'));
+        $base64 = \base64_decode(\strtr($input, '-_', '+/'));
+        if (false === $base64) {
+            throw new InvalidArgumentException('input contains invalid characters for base64');
+        }
+        return $base64;
     }
 
     /**
