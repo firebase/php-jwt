@@ -23,7 +23,7 @@ class JWK
     /**
      * Parse a set of JWK keys
      *
-     * @param array $jwks The JSON Web Key Set as an associative array
+     * @param array<mixed> $jwks The JSON Web Key Set as an associative array
      *
      * @return array<string, Key> An associative array of key IDs (kid) to Key objects
      *
@@ -48,7 +48,7 @@ class JWK
         foreach ($jwks['keys'] as $k => $v) {
             $kid = isset($v['kid']) ? $v['kid'] : $k;
             if ($key = self::parseKey($v)) {
-                $keys[$kid] = $key;
+                $keys[(string) $kid] = $key;
             }
         }
 
@@ -62,7 +62,7 @@ class JWK
     /**
      * Parse a JWK key
      *
-     * @param array $jwk An individual JWK
+     * @param array<mixed> $jwk An individual JWK
      *
      * @return Key The key object for the JWK
      *
@@ -124,22 +124,22 @@ class JWK
      *
      * @uses encodeLength
      */
-    private static function createPemFromModulusAndExponent($n, $e)
-    {
-        $modulus = JWT::urlsafeB64Decode($n);
-        $publicExponent = JWT::urlsafeB64Decode($e);
+    private static function createPemFromModulusAndExponent(
+        string $n,
+        string $e
+    ): string {
+        $mod = JWT::urlsafeB64Decode($n);
+        $exp = JWT::urlsafeB64Decode($e);
 
-        $components = [
-            'modulus' => \pack('Ca*a*', 2, self::encodeLength(\strlen($modulus)), $modulus),
-            'publicExponent' => \pack('Ca*a*', 2, self::encodeLength(\strlen($publicExponent)), $publicExponent)
-        ];
+        $modulus = \pack('Ca*a*', 2, self::encodeLength(\strlen($mod)), $mod);
+        $publicExponent = \pack('Ca*a*', 2, self::encodeLength(\strlen($exp)), $exp);
 
         $rsaPublicKey = \pack(
             'Ca*a*a*',
             48,
-            self::encodeLength(\strlen($components['modulus']) + \strlen($components['publicExponent'])),
-            $components['modulus'],
-            $components['publicExponent']
+            self::encodeLength(\strlen($modulus) + \strlen($publicExponent)),
+            $modulus,
+            $publicExponent
         );
 
         // sequence(oid(1.2.840.113549.1.1.1), null)) = rsaEncryption.
@@ -170,7 +170,7 @@ class JWK
      * @param int $length
      * @return string
      */
-    private static function encodeLength($length)
+    private static function encodeLength(int $length): string
     {
         if ($length <= 0x7F) {
             return \chr($length);

@@ -10,7 +10,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        php: [ "8.0", "8.1"]
+        php: [ "7.1", "7.2", "7.3", "7.4", "8.0", "8.1"]
     name: PHP ${{matrix.php }} Unit Test
     steps:
       - uses: actions/checkout@v2
@@ -41,3 +41,17 @@ jobs:
           composer require friendsofphp/php-cs-fixer
           vendor/bin/php-cs-fixer fix --diff --dry-run .
           vendor/bin/php-cs-fixer fix --rules=native_function_invocation --allow-risky=yes --diff src
+
+  staticanalysis:
+    runs-on: ubuntu-latest
+    name: PHPStan Static Analysis
+    steps:
+    - uses: actions/checkout@v2
+    - name: Install PHP
+      uses: shivammathur/setup-php@v2
+      with:
+        php-version: '8.0'
+    - name: Run Script
+      run: |
+        composer global require phpstan/phpstan
+        ~/.composer/vendor/bin/phpstan analyse
