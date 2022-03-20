@@ -128,12 +128,8 @@ class JWK
         string $n,
         string $e
     ): string {
-        if (false === ($mod = JWT::urlsafeB64Decode($n))) {
-            throw new UnexpectedValueException('Invalid JWK encoding');
-        }
-        if (false === ($exp = JWT::urlsafeB64Decode($e))) {
-            throw new UnexpectedValueException('Invalid header encoding');
-        }
+        $mod = JWT::urlsafeB64Decode($n);
+        $exp = JWT::urlsafeB64Decode($e);
 
         $modulus = \pack('Ca*a*', 2, self::encodeLength(\strlen($mod)), $mod);
         $publicExponent = \pack('Ca*a*', 2, self::encodeLength(\strlen($exp)), $exp);

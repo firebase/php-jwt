@@ -57,7 +57,7 @@ class Key
     /**
      * @return string|resource|OpenSSLAsymmetricKey|OpenSSLCertificate
      */
-    public function getKeyMaterial()/*: string|resource|OpenSSLAsymmetricKey|OpenSSLCertificate */
+    public function getKeyMaterial()
     {
         return $this->keyMaterial;
     }
