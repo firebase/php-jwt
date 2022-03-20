@@ -7,6 +7,7 @@ use DomainException;
 use Exception;
 use InvalidArgumentException;
 use OpenSSLAsymmetricKey;
+use OpenSSLCertificate;
 use TypeError;
 use UnexpectedValueException;
 use DateTime;
@@ -162,11 +163,10 @@ class JWT
     /**
      * Converts and signs a PHP object or array into a JWT string.
      *
-     * @param array<mixed>                         $payload PHP array
-     * @param string|resource|OpenSSLAsymmetricKey $key     The secret key.
-     *                                                      If the algorithm used is asymmetric, this is the private key
-     * @param string                               $keyId
-     * @param array<string, string>                $head    An array with header elements to attach
+     * @param array<mixed>          $payload PHP array
+     * @param string|OpenSSLAsymmetricKey|OpenSSLCertificate|array<mixed> $key The secret key.
+     * @param string                $keyId
+     * @param array<string, string> $head    An array with header elements to attach
      *
      * @return string A signed JWT
      *
@@ -202,10 +202,10 @@ class JWT
     /**
      * Sign a string with a given key and algorithm.
      *
-     * @param string                               $msg  The message to sign
-     * @param string|resource|OpenSSLAsymmetricKey $key  The secret key.
-     * @param string                               $alg  Supported algorithms are 'ES384','ES256', 'HS256', 'HS384',
-     *                                                   'HS512', 'RS256', 'RS384', and 'RS512'
+     * @param string $msg  The message to sign
+     * @param string|OpenSSLAsymmetricKey|OpenSSLCertificate|array<mixed>  $key  The secret key.
+     * @param string $alg  Supported algorithms are 'ES384','ES256', 'HS256', 'HS384',
+     *                    'HS512', 'RS256', 'RS384', and 'RS512'
      *
      * @return string An encrypted message
      *
@@ -263,10 +263,10 @@ class JWT
      * Verify a signature with the message, key and method. Not all methods
      * are symmetric, so we must have a separate verify and sign method.
      *
-     * @param string                               $msg         The original message (header and body)
-     * @param string                               $signature   The original signature
-     * @param string|resource|OpenSSLAsymmetricKey $keyMaterial For HS*, a string key works. for RS*, must be an instance of OpenSSLAsymmetricKey
-     * @param string                               $alg         The algorithm
+     * @param string $msg         The original message (header and body)
+     * @param string $signature   The original signature
+     * @param string|OpenSSLAsymmetricKey|OpenSSLCertificate|array<mixed>  $keyMaterial For HS*, a string key works. for RS*, must be an instance of OpenSSLAsymmetricKey
+     * @param string $alg         The algorithm
      *
      * @return bool
      *
