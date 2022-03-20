@@ -276,7 +276,7 @@ class JWT
         list($function, $algorithm) = static::$supported_algs[$alg];
         switch ($function) {
             case 'openssl':
-                $success = \openssl_verify($msg, $signature, $keyMaterial, $algorithm);
+                $success = \openssl_verify($msg, $signature, $keyMaterial, $algorithm); // @phpstan-ignore-line
                 if ($success === 1) {
                     return true;
                 } elseif ($success === 0) {
