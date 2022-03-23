@@ -258,6 +258,11 @@ $decoded = json_decode(json_encode($decoded), true);
 Changelog
 ---------
 
+#### 6.1.0 / 2022-03-23
+
+ - Drop support for PHP 5.3, 5.4, 5.5, 5.6, and 7.0
+ - Add parameter typing and return types where possible
+
 #### 6.0.0 / 2022-01-24
 
  - **Backwards-Compatibility Breaking Changes**: See the [Release Notes](https://github.com/firebase/php-jwt/releases/tag/v6.0.0) for more information.

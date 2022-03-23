@@ -42,6 +42,15 @@ class JWT
     public static $leeway = 0;
 
     /**
+     * Allow the current timestamp to be specified.
+     * Useful for fixing a value within unit testing.
+     * Will default to PHP time() value if null.
+     *
+     * @var ?int
+     */
+    public static $timestamp = null;
+
+    /**
      * @var array<string, string[]>
      */
     public static $supported_algs = [
@@ -84,7 +93,7 @@ class JWT
         $keyOrKeyArray
     ): stdClass {
         // Validate JWT
-        $timestamp = \time();
+        $timestamp = \is_null(static::$timestamp) ? \time() : static::$timestamp;
 
         if (empty($keyOrKeyArray)) {
             throw new InvalidArgumentException('Key may not be empty');
