@@ -33,7 +33,7 @@
     "require-dev": {
         "phpunit/phpunit": "^7.5||^9.5",
         "psr/cache": "^1.0||^2.0",
-        "guzzlehttp/guzzle": "^7.4",
+        "guzzlehttp/guzzle": "^6.5||^7.4",
         "phpspec/prophecy-phpunit": "^1.1"
     }
 }
