@@ -305,7 +305,7 @@ final class TestMemoryCacheItemPool implements CacheItemPoolInterface
     private $items;
     private $deferredItems;
 
-    public function getItem(string $key): CacheItemInterface
+    public function getItem($key): CacheItemInterface
     {
         return current($this->getItems([$key]));
     }
@@ -321,7 +321,7 @@ final class TestMemoryCacheItemPool implements CacheItemPoolInterface
         return $items;
     }
 
-    public function hasItem(string $key): bool
+    public function hasItem($key): bool
     {
         return isset($this->items[$key]) && $this->items[$key]->isHit();
     }
@@ -334,7 +334,7 @@ final class TestMemoryCacheItemPool implements CacheItemPoolInterface
         return true;
     }
 
-    public function deleteItem(string $key): bool
+    public function deleteItem($key): bool
     {
         return $this->deleteItems([$key]);
     }
@@ -379,12 +379,14 @@ final class TestMemoryCacheItemPool implements CacheItemPoolInterface
  */
 final class TestMemoryCacheItem implements CacheItemInterface
 {
+    private $key;
     private $value;
     private $expiration;
     private $isHit = false;
 
-    public function __construct(private string $key)
+    public function __construct(string $key)
     {
+        $this->key = $key;
     }
 
     public function getKey(): string
@@ -410,7 +412,7 @@ final class TestMemoryCacheItem implements CacheItemInterface
         return $this->currentTime()->getTimestamp() < $this->expiration->getTimestamp();
     }
 
-    public function set(mixed $value): static
+    public function set($value)
     {
         $this->isHit = true;
         $this->value = $value;
@@ -418,13 +420,13 @@ final class TestMemoryCacheItem implements CacheItemInterface
         return $this;
     }
 
-    public function expiresAt(?\DateTimeInterface $expiration): static
+    public function expiresAt($expiration)
     {
         $this->expiration = $expiration;
         return $this;
     }
 
-    public function expiresAfter(\DateInterval|int|null $time): static
+    public function expiresAfter($time)
     {
         $this->expiration = $this->currentTime()->add(new \DateInterval("PT{$time}S"));
         return $this;
