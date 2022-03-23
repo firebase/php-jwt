@@ -8,14 +8,11 @@ use Psr\Http\Message\RequestFactoryInterface;
 use Psr\Cache\CacheItemPoolInterface;
 use Psr\Cache\CacheItemInterface;
 use Prophecy\Argument;
-use Prophecy\PhpUnit\ProphecyTrait;
 use LogicException;
 use OutOfBoundsException;
 
 class CachedKeySetTest extends TestCase
 {
-    use ProphecyTrait;
-
     private $testJwkUri = 'httpjwkuri';
     private $testJwkUriKey = 'jwkhttpjwkuri';
     private $testJwk1 = '{"keys": [{"kid":"foo","kty":"RSA","alg":"foo","n":"","e":""}]}';
