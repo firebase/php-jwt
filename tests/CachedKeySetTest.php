@@ -211,12 +211,21 @@ class CachedKeySetTest extends TestCase
     /**
      * @dataProvider provideFullIntegration
      */
-    public function testFullIntegration($jwkUri, $kid)
+    public function testFullIntegration($jwkUri)
     {
+        // Create cache and http objects
         $cache = new TestMemoryCacheItemPool();
         $http = new \GuzzleHttp\Client();
         $factory = new \GuzzleHttp\Psr7\HttpFactory();
 
+        // Determine "kid" dynamically, because these constantly change
+        $response = $http->get($jwkUri);
+        $json = (string) $response->getBody();
+        $keys = json_decode($json, true);
+        $kid = $keys['keys'][0]['kid'] ?? null;
+        $this->assertNotNull($kid);
+
+        // Instantiate the cached key set
         $cachedKeySet = new CachedKeySet(
             $jwkUri,
             $http,
@@ -230,7 +239,7 @@ class CachedKeySetTest extends TestCase
     public function provideFullIntegration()
     {
         return [
-            [$this->googleRsaUri, '182e450a35a2081faa1d9ae1d2d75a0f23d91df8'],
+            [$this->googleRsaUri],
             // [$this->googleEcUri, 'LYyP2g']
         ];
     }
