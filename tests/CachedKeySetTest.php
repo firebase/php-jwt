@@ -210,6 +210,9 @@ class CachedKeySetTest extends TestCase
      */
     public function testFullIntegration($jwkUri)
     {
+        if (!class_exists(\GuzzleHttp\Psr7\HttpFactory::class)) {
+            self::markTestSkipped('Guzzle 7 only');
+        }
         // Create cache and http objects
         $cache = new TestMemoryCacheItemPool();
         $http = new \GuzzleHttp\Client();
