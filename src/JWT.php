@@ -368,12 +368,25 @@ class JWT
      */
     public static function urlsafeB64Decode(string $input): string|false
     {
+        return \base64_decode(self::urlsafeToStandardB64($input));
+    }
+
+    /**
+     * Convert a string from URL-safe Base64 to standard Base64.
+     *
+     * @param string $input A Base64 encoded string with URL-safe characters (-_ and no padding)
+     *
+     * @return string A Base64 encoded string with standard characters (+/) and padding (=), when
+     * needed.
+     */
+    public static function urlsafeToStandardB64(string $input): string
+    {
         $remainder = \strlen($input) % 4;
         if ($remainder) {
             $padlen = 4 - $remainder;
             $input .= \str_repeat('=', $padlen);
         }
-        return \base64_decode(\strtr($input, '-_', '+/'));
+        return \strtr($input, '-_', '+/');
     }
 
     /**

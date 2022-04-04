@@ -161,7 +161,7 @@ class JWK
                     throw new UnexpectedValueException('x not set');
                 }
 
-                $publicKey = \base64_encode(JWT::urlsafeB64Decode($jwk['x']));
+                $publicKey = JWT::urlsafeToStandardB64($jwk['x']);
                 $alg = self::OKP_CURVES[$jwk['crv']];
                 return new Key($publicKey, $alg);
             default:
