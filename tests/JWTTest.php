@@ -321,6 +321,21 @@ class JWTTest extends TestCase
         $this->assertEquals($decoded, $expected);
     }
 
+    public function testDecodeWithoutKid()
+    {
+        $privateKeyFile = __DIR__ . '/data/ecdsa-private.pem';
+        $publicKeyFile = __DIR__ . '/data/ecdsa-public.pem';
+        $privateKey = file_get_contents($privateKeyFile);
+        $payload = ['foo' => 'bar'];
+        $encoded = JWT::encode($payload, $privateKey, 'ES256');
+
+        // Verify decoding succeeds
+        $publicKey = file_get_contents($publicKeyFile);
+        $decoded = JWT::decode($encoded, $publicKey);
+
+        $this->assertEquals('bar', $decoded->foo);
+    }
+
     /**
      * @runInSeparateProcess
      * @dataProvider provideEncodeDecode
