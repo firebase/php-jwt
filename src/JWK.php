@@ -31,6 +31,11 @@ class JWK
         // 'P-521' => '1.3.132.0.35', // Len: 132 (not supported)
     ];
 
+    // 'crv' identifier => JWT 'alg'
+    private const OKP_CURVES = [
+        'Ed25519' => 'EdDSA',
+    ];
+
     /**
      * Parse a set of JWK keys
      *
@@ -93,9 +98,10 @@ class JWK
             throw new UnexpectedValueException('JWK must contain a "kty" parameter');
         }
 
-        if (!isset($jwk['alg'])) {
-            // The "alg" parameter is optional in a KTY, but is required for parsing in
-            // this library. Add it manually to your JWK array if it doesn't already exist.
+        $ktyRequiringAlg = ['RSA', 'EC'];
+        if (!isset($jwk['alg']) && \in_array($jwk['kty'], $ktyRequiringAlg, true)) {
+            // The "alg" parameter is optional in a KTY, but is required for parsing certain key
+            // types in this library. Add it manually to your JWK array if it doesn't already exist.
             // @see https://datatracker.ietf.org/doc/html/rfc7517#section-4.4
             throw new UnexpectedValueException('JWK must contain an "alg" parameter');
         }
@@ -137,8 +143,28 @@ class JWK
 
                 $publicKey = self::createPemFromCrvAndXYCoordinates($jwk['crv'], $jwk['x'], $jwk['y']);
                 return new Key($publicKey, $jwk['alg']);
+            case 'OKP':
+                if (isset($jwk['d'])) {
+                    // The key is actually a private key
+                    throw new UnexpectedValueException('Key data must be for a public key');
+                }
+
+                if (! isset($jwk['crv'])) {
+                    throw new UnexpectedValueException('crv not set');
+                }
+
+                if (!isset(self::OKP_CURVES[$jwk['crv']])) {
+                    throw new DomainException('Unrecognised or unsupported OKP curve');
+                }
+
+                if (empty($jwk['x'])) {
+                    throw new UnexpectedValueException('x not set');
+                }
+
+                $publicKey = \base64_encode(JWT::urlsafeB64Decode($jwk['x']));
+                $alg = self::OKP_CURVES[$jwk['crv']];
+                return new Key($publicKey, $alg);
             default:
-                // Currently only RSA is supported
                 break;
         }
 

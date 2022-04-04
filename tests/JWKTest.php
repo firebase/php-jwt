@@ -139,6 +139,7 @@ class JWKTest extends TestCase
         return [
             ['rsa1-private.pem', 'rsa-jwkset.json', 'RS256'],
             ['ecdsa256-private.pem', 'ec-jwkset.json', 'ES256'],
+            ['ed25519-1.sec', 'ed25519-jwkset.json', 'EdDSA'],
         ];
     }
 

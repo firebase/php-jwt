@@ -198,7 +198,7 @@ class JWT
      *
      * @param string $msg  The message to sign
      * @param string|OpenSSLAsymmetricKey|OpenSSLCertificate|array<mixed>  $key  The secret key.
-     * @param string $alg  Supported algorithms are 'ES384','ES256', 'HS256', 'HS384',
+     * @param string $alg  Supported algorithms are 'EdDSA', 'ES384', 'ES256', 'HS256', 'HS384',
      *                    'HS512', 'RS256', 'RS384', and 'RS512'
      *
      * @return string An encrypted message
@@ -258,7 +258,7 @@ class JWT
      *
      * @param string $msg         The original message (header and body)
      * @param string $signature   The original signature
-     * @param string|OpenSSLAsymmetricKey|OpenSSLCertificate|array<mixed>  $keyMaterial For HS*, a string key works. for RS*, must be an instance of OpenSSLAsymmetricKey
+     * @param string|OpenSSLAsymmetricKey|OpenSSLCertificate|array<mixed>  $keyMaterial For Ed*, ES*, HS*, a string key works. for RS*, must be an instance of OpenSSLAsymmetricKey
      * @param string $alg         The algorithm
      *
      * @return bool
