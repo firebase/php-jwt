@@ -167,6 +167,8 @@ class JWT
      *
      * @param array<mixed>          $payload PHP array
      * @param string|resource|OpenSSLAsymmetricKey|OpenSSLCertificate $key The secret key.
+     * @param string                $alg     Supported algorithms are 'ES384','ES256', 'HS256', 'HS384',
+     *                                       'HS512', 'RS256', 'RS384', and 'RS512'
      * @param string                $keyId
      * @param array<string, string> $head    An array with header elements to attach
      *
