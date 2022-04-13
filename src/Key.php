@@ -9,14 +9,28 @@ use InvalidArgumentException;
 
 class Key
 {
+    /** @var string|resource|OpenSSLAsymmetricKey|OpenSSLCertificate */
+    private $keyMaterial;
+    /** @var string */
+    private $algorithm;
+
     /**
-     * @param string|OpenSSLAsymmetricKey|OpenSSLCertificate|array<mixed> $keyMaterial
+     * @param string|resource|OpenSSLAsymmetricKey|OpenSSLCertificate $keyMaterial
      * @param string $algorithm
      */
     public function __construct(
-        private string|OpenSSLAsymmetricKey|OpenSSLCertificate|array $keyMaterial,
-        private string $algorithm
+        $keyMaterial,
+        string $algorithm
     ) {
+        if (
+            !is_string($keyMaterial)
+            && !$keyMaterial instanceof OpenSSLAsymmetricKey
+            && !$keyMaterial instanceof OpenSSLCertificate
+            && !is_resource($keyMaterial)
+        ) {
+            throw new TypeError('Key material must be a string, resource, or OpenSSLAsymmetricKey');
+        }
+
         if (empty($keyMaterial)) {
             throw new InvalidArgumentException('Key material must not be empty');
         }
@@ -24,6 +38,10 @@ class Key
         if (empty($algorithm)) {
             throw new InvalidArgumentException('Algorithm must not be empty');
         }
+
+        // TODO: Remove in PHP 8.0 in favor of class constructor property promotion
+        $this->keyMaterial = $keyMaterial;
+        $this->algorithm = $algorithm;
     }
 
     /**
@@ -37,9 +55,9 @@ class Key
     }
 
     /**
-     * @return string|OpenSSLAsymmetricKey|OpenSSLCertificate|array<mixed>
+     * @return string|resource|OpenSSLAsymmetricKey|OpenSSLCertificate
      */
-    public function getKeyMaterial(): string|OpenSSLAsymmetricKey|OpenSSLCertificate|array
+    public function getKeyMaterial()
     {
         return $this->keyMaterial;
     }

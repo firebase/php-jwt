@@ -224,24 +224,18 @@ class JWK
         string $n,
         string $e
     ): string {
-        if (false === ($modulus = JWT::urlsafeB64Decode($n))) {
-            throw new UnexpectedValueException('Invalid JWK encoding');
-        }
-        if (false === ($publicExponent = JWT::urlsafeB64Decode($e))) {
-            throw new UnexpectedValueException('Invalid header encoding');
-        }
+        $mod = JWT::urlsafeB64Decode($n);
+        $exp = JWT::urlsafeB64Decode($e);
 
-        $components = [
-            'modulus' => \pack('Ca*a*', 2, self::encodeLength(\strlen($modulus)), $modulus),
-            'publicExponent' => \pack('Ca*a*', 2, self::encodeLength(\strlen($publicExponent)), $publicExponent)
-        ];
+        $modulus = \pack('Ca*a*', 2, self::encodeLength(\strlen($mod)), $mod);
+        $publicExponent = \pack('Ca*a*', 2, self::encodeLength(\strlen($exp)), $exp);
 
         $rsaPublicKey = \pack(
             'Ca*a*a*',
             48,
-            self::encodeLength(\strlen($components['modulus']) + \strlen($components['publicExponent'])),
-            $components['modulus'],
-            $components['publicExponent']
+            self::encodeLength(\strlen($modulus) + \strlen($publicExponent)),
+            $modulus,
+            $publicExponent
         );
 
         // sequence(oid(1.2.840.113549.1.1.1), null)) = rsaEncryption.
