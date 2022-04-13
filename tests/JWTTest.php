@@ -321,6 +321,15 @@ class JWTTest extends TestCase
         $this->assertEquals($decoded, $expected);
     }
 
+    public function testDecodesEmptyArrayAsObject()
+    {
+        $key = 'yma6Hq4XQegCVND8ef23OYgxSrC3IKqk';
+        $payload = [];
+        $jwt = JWT::encode($payload, $key, 'HS256');
+        $decoded = JWT::decode($jwt, new Key($key, 'HS256'));
+        $this->assertEquals((object) $payload, $decoded);
+    }
+
     /**
      * @runInSeparateProcess
      * @dataProvider provideEncodeDecode
