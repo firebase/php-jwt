@@ -36,7 +36,6 @@ class CachedKeySet implements ArrayAccess
      * @var int
      */
     private $expiresAfter;
-
     /**
      * @var ?CacheItemInterface
      */
