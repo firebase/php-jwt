@@ -216,7 +216,7 @@ the following advantages:
 use Firebase\JWT\CachedKeySet;
 use Firebase\JWT\JWT;
 
-// The URI for the JWK keys you wish to cash the results from
+// The URI for the JWK keys you wish to cache the results from
 $jwkUri = 'https://www.gstatic.com/iap/verify/public_key-jwk';
 
 // Create an HTTP client (can be any PSR-7 compatible HTTP client)
