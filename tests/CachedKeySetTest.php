@@ -2,6 +2,7 @@
 
 namespace Firebase\JWT;
 
+use GuzzleHttp\Exception\RequestException;
 use PHPUnit\Framework\TestCase;
 use Psr\Http\Client\ClientInterface;
 use Psr\Http\Message\RequestFactoryInterface;
@@ -205,6 +206,29 @@ class CachedKeySetTest extends TestCase
         $this->assertEquals("foo", $result->sub);
     }
 
+    public function testRateLimit()
+    {
+        // We request the key 11 times, HTTP should only be called 10 times
+        $shouldBeCalledTimes = 10;
+
+        // Instantiate the cached key set
+        $cachedKeySet = new CachedKeySet(
+            $this->testJwkUri,
+            $this->getMockHttpClient($this->testJwk1, $shouldBeCalledTimes),
+            $factory = $this->getMockHttpFactory($shouldBeCalledTimes),
+            new TestMemoryCacheItemPool(),
+            10,  // expires after seconds
+            true // enable rate limiting
+        );
+
+        $invalidKid = 'invalidkey';
+        for ($i = 0; $i < 10; $i++) {
+            $this->assertFalse(isset($cachedKeySet[$invalidKid]));
+        }
+        // The 11th time does not call HTTP
+        $this->assertFalse(isset($cachedKeySet[$invalidKid]));
+    }
+
     /**
      * @dataProvider provideFullIntegration
      */
@@ -244,32 +268,32 @@ class CachedKeySetTest extends TestCase
         ];
     }
 
-    private function getMockHttpClient($testJwk)
+    private function getMockHttpClient($testJwk, int $timesCalled = 1)
     {
         $body = $this->prophesize('Psr\Http\Message\StreamInterface');
         $body->__toString()
-            ->shouldBeCalledOnce()
+            ->shouldBeCalledTimes($timesCalled)
             ->willReturn($testJwk);
 
         $response = $this->prophesize('Psr\Http\Message\ResponseInterface');
         $response->getBody()
-            ->shouldBeCalledOnce()
+            ->shouldBeCalledTimes($timesCalled)
             ->willReturn($body->reveal());
 
         $http = $this->prophesize(ClientInterface::class);
         $http->sendRequest(Argument::any())
-            ->shouldBeCalledOnce()
+            ->shouldBeCalledTimes($timesCalled)
             ->willReturn($response->reveal());
 
         return $http->reveal();
     }
 
-    private function getMockHttpFactory()
+    private function getMockHttpFactory(int $timesCalled = 1)
     {
         $request = $this->prophesize('Psr\Http\Message\RequestInterface');
         $factory = $this->prophesize(RequestFactoryInterface::class);
         $factory->createRequest('get', $this->testJwkUri)
-            ->shouldBeCalledOnce()
+            ->shouldBeCalledTimes($timesCalled)
             ->willReturn($request->reveal());
 
         return $factory->reveal();

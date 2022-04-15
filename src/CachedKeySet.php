@@ -56,20 +56,34 @@ class CachedKeySet implements ArrayAccess
      * @var int
      */
     private $maxKeyLength = 64;
+    /**
+     * @var bool
+     */
+    private $rateLimit;
+    /**
+     * @var string
+     */
+    private $rateLimitCacheKey;
+    /**
+     * @var int
+     */
+    private $maxCallsPerMinute = 10;
 
     public function __construct(
         string $jwkUri,
         ClientInterface $httpClient,
         RequestFactoryInterface $httpFactory,
         CacheItemPoolInterface $cache,
-        int $expiresAfter = null
+        int $expiresAfter = null,
+        bool $rateLimit = false
     ) {
         $this->jwkUri = $jwkUri;
-        $this->cacheKey = $this->getCacheKey($jwkUri);
         $this->httpClient = $httpClient;
         $this->httpFactory = $httpFactory;
         $this->cache = $cache;
         $this->expiresAfter = $expiresAfter;
+        $this->rateLimit = $rateLimit;
+        $this->setCacheKeys();
     }
 
     /**
@@ -123,6 +137,9 @@ class CachedKeySet implements ArrayAccess
         }
 
         if (!isset($this->keySet[$keyId])) {
+            if ($this->rateLimitExceeded()) {
+                return false;
+            }
             $request = $this->httpFactory->createRequest('get', $this->jwkUri);
             $jwkResponse = $this->httpClient->sendRequest($request);
             $jwk = json_decode((string) $jwkResponse->getBody(), true);
@@ -145,6 +162,26 @@ class CachedKeySet implements ArrayAccess
         return true;
     }
 
+    private function rateLimitExceeded(): bool
+    {
+        if (!$this->rateLimit) {
+            return false;
+        }
+
+        $cacheItem = $this->cache->getItem($this->rateLimitCacheKey);
+        if (!$cacheItem->isHit()) {
+            $cacheItem->expiresAfter(1); // # of calls are cached each minute
+        }
+
+        $callsPerMinute = (int) $cacheItem->get();
+        if (++$callsPerMinute > $this->maxCallsPerMinute) {
+            return true;
+        }
+        $cacheItem->set($callsPerMinute);
+        $this->cache->save($cacheItem);
+        return false;
+    }
+
     private function getCacheItem(): CacheItemInterface
     {
         if (is_null($this->cacheItem)) {
@@ -154,14 +191,14 @@ class CachedKeySet implements ArrayAccess
         return $this->cacheItem;
     }
 
-    private function getCacheKey(string $jwkUri): string
+    private function setCacheKeys(): void
     {
-        if (empty($jwkUri)) {
+        if (empty($this->jwkUri)) {
             throw new RuntimeException('JWK URI is empty');
         }
 
         // ensure we do not have illegal characters
-        $key = preg_replace('|[^a-zA-Z0-9_\.!]|', '', $jwkUri);
+        $key = preg_replace('|[^a-zA-Z0-9_\.!]|', '', $this->jwkUri);
 
         // add prefix
         $key = $this->cacheKeyPrefix . $key;
@@ -171,6 +208,18 @@ class CachedKeySet implements ArrayAccess
             $key = substr(hash('sha256', $key), 0, $this->maxKeyLength);
         }
 
-        return $key;
+        $this->cacheKey = $key;
+
+        if ($this->rateLimit) {
+            // add prefix
+            $rateLimitKey = $this->cacheKeyPrefix . 'ratelimit' . $key;
+
+            // Hash keys if they exceed $maxKeyLength of 64
+            if (strlen($rateLimitKey) > $this->maxKeyLength) {
+                $rateLimitKey = substr(hash('sha256', $rateLimitKey), 0, $this->maxKeyLength);
+            }
+
+            $this->rateLimitCacheKey = $rateLimitKey;
+        }
     }
 }
