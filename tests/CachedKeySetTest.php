@@ -11,16 +11,32 @@ use Psr\Cache\CacheItemInterface;
 use Prophecy\Argument;
 use LogicException;
 use OutOfBoundsException;
+use RuntimeException;
 
 class CachedKeySetTest extends TestCase
 {
-    private $testJwkUri = 'httpjwkuri';
-    private $testJwkUriKey = 'jwkhttpjwkuri';
-    private $testJwk1 = '{"keys": [{"kid":"foo","kty":"RSA","alg":"foo","n":"","e":""}]}';
-    private $testJwk2 = '{"keys": [{"kid":"bar","kty":"RSA","alg":"bar","n":"","e":""}]}';
+    private $testJwksUri = 'https://jwk.uri';
+    private $testJwksUriKey = 'jwkshttpsjwk.uri';
+    private $testJwks1 = '{"keys": [{"kid":"foo","kty":"RSA","alg":"foo","n":"","e":""}]}';
+    private $testJwks2 = '{"keys": [{"kid":"bar","kty":"RSA","alg":"bar","n":"","e":""}]}';
 
     private $googleRsaUri = 'https://www.googleapis.com/oauth2/v3/certs';
     // private $googleEcUri = 'https://www.gstatic.com/iap/verify/public_key-jwk';
+
+    public function testEmptyUriThrowsException()
+    {
+        $this->expectException(RuntimeException::class);
+        $this->expectExceptionMessage('JWKS URI is empty');
+
+        $cachedKeySet = new CachedKeySet(
+            '',
+            $this->prophesize(ClientInterface::class)->reveal(),
+            $this->prophesize(RequestFactoryInterface::class)->reveal(),
+            $this->prophesize(CacheItemPoolInterface::class)->reveal()
+        );
+
+        $cachedKeySet['foo'];
+    }
 
     public function testOffsetSetThrowsException()
     {
@@ -28,7 +44,7 @@ class CachedKeySetTest extends TestCase
         $this->expectExceptionMessage('Method not implemented');
 
         $cachedKeySet = new CachedKeySet(
-            $this->testJwkUri,
+            $this->testJwksUri,
             $this->prophesize(ClientInterface::class)->reveal(),
             $this->prophesize(RequestFactoryInterface::class)->reveal(),
             $this->prophesize(CacheItemPoolInterface::class)->reveal()
@@ -43,7 +59,7 @@ class CachedKeySetTest extends TestCase
         $this->expectExceptionMessage('Method not implemented');
 
         $cachedKeySet = new CachedKeySet(
-            $this->testJwkUri,
+            $this->testJwksUri,
             $this->prophesize(ClientInterface::class)->reveal(),
             $this->prophesize(RequestFactoryInterface::class)->reveal(),
             $this->prophesize(CacheItemPoolInterface::class)->reveal()
@@ -58,8 +74,8 @@ class CachedKeySetTest extends TestCase
         $this->expectExceptionMessage('Key ID not found');
 
         $cachedKeySet = new CachedKeySet(
-            $this->testJwkUri,
-            $this->getMockHttpClient($this->testJwk1),
+            $this->testJwksUri,
+            $this->getMockHttpClient($this->testJwks1),
             $this->getMockHttpFactory(),
             $this->getMockEmptyCache()
         );
@@ -71,8 +87,8 @@ class CachedKeySetTest extends TestCase
     public function testWithExistingKeyId()
     {
         $cachedKeySet = new CachedKeySet(
-            $this->testJwkUri,
-            $this->getMockHttpClient($this->testJwk1),
+            $this->testJwksUri,
+            $this->getMockHttpClient($this->testJwks1),
             $this->getMockHttpFactory(),
             $this->getMockEmptyCache()
         );
@@ -86,16 +102,16 @@ class CachedKeySetTest extends TestCase
         $cacheItem->isHit()
             ->willReturn(true);
         $cacheItem->get()
-            ->willReturn(JWK::parseKeySet(json_decode($this->testJwk1, true)));
+            ->willReturn(JWK::parseKeySet(json_decode($this->testJwks1, true)));
 
         $cache = $this->prophesize(CacheItemPoolInterface::class);
-        $cache->getItem($this->testJwkUriKey)
+        $cache->getItem($this->testJwksUriKey)
             ->willReturn($cacheItem->reveal());
         $cache->save(Argument::any())
             ->willReturn(true);
 
         $cachedKeySet = new CachedKeySet(
-            $this->testJwkUri,
+            $this->testJwksUri,
             $this->prophesize(ClientInterface::class)->reveal(),
             $this->prophesize(RequestFactoryInterface::class)->reveal(),
             $cache->reveal()
@@ -112,7 +128,7 @@ class CachedKeySetTest extends TestCase
             ->willReturn(true);
         $cacheItem->get()
             ->shouldBeCalledOnce()
-            ->willReturn(JWK::parseKeySet(json_decode($this->testJwk1, true)));
+            ->willReturn(JWK::parseKeySet(json_decode($this->testJwks1, true)));
         $cacheItem->set(Argument::any())
             ->shouldBeCalledOnce()
             ->will(function () {
@@ -120,7 +136,7 @@ class CachedKeySetTest extends TestCase
             });
 
         $cache = $this->prophesize(CacheItemPoolInterface::class);
-        $cache->getItem($this->testJwkUriKey)
+        $cache->getItem($this->testJwksUriKey)
             ->shouldBeCalledOnce()
             ->willReturn($cacheItem->reveal());
         $cache->save(Argument::any())
@@ -128,8 +144,8 @@ class CachedKeySetTest extends TestCase
             ->willReturn(true);
 
         $cachedKeySet = new CachedKeySet(
-            $this->testJwkUri,
-            $this->getMockHttpClient($this->testJwk2), // updated JWK
+            $this->testJwksUri,
+            $this->getMockHttpClient($this->testJwks2), // updated JWK
             $this->getMockHttpFactory(),
             $cache->reveal()
         );
@@ -159,15 +175,15 @@ class CachedKeySetTest extends TestCase
             });
 
         $cache = $this->prophesize(CacheItemPoolInterface::class);
-        $cache->getItem($this->testJwkUriKey)
+        $cache->getItem($this->testJwksUriKey)
             ->shouldBeCalledOnce()
             ->willReturn($cacheItem->reveal());
         $cache->save(Argument::any())
             ->shouldBeCalledOnce();
 
         $cachedKeySet = new CachedKeySet(
-            $this->testJwkUri,
-            $this->getMockHttpClient($this->testJwk1),
+            $this->testJwksUri,
+            $this->getMockHttpClient($this->testJwks1),
             $this->getMockHttpFactory(),
             $cache->reveal(),
             $expiresAfter
@@ -191,11 +207,11 @@ class CachedKeySetTest extends TestCase
             ));
 
         $cache = $this->prophesize(CacheItemPoolInterface::class);
-        $cache->getItem($this->testJwkUriKey)
+        $cache->getItem($this->testJwksUriKey)
             ->willReturn($cacheItem->reveal());
 
         $cachedKeySet = new CachedKeySet(
-            $this->testJwkUri,
+            $this->testJwksUri,
             $this->prophesize(ClientInterface::class)->reveal(),
             $this->prophesize(RequestFactoryInterface::class)->reveal(),
             $cache->reveal()
@@ -213,8 +229,8 @@ class CachedKeySetTest extends TestCase
 
         // Instantiate the cached key set
         $cachedKeySet = new CachedKeySet(
-            $this->testJwkUri,
-            $this->getMockHttpClient($this->testJwk1, $shouldBeCalledTimes),
+            $this->testJwksUri,
+            $this->getMockHttpClient($this->testJwks1, $shouldBeCalledTimes),
             $factory = $this->getMockHttpFactory($shouldBeCalledTimes),
             new TestMemoryCacheItemPool(),
             10,  // expires after seconds
@@ -268,12 +284,12 @@ class CachedKeySetTest extends TestCase
         ];
     }
 
-    private function getMockHttpClient($testJwk, int $timesCalled = 1)
+    private function getMockHttpClient($testJwks, int $timesCalled = 1)
     {
         $body = $this->prophesize('Psr\Http\Message\StreamInterface');
         $body->__toString()
             ->shouldBeCalledTimes($timesCalled)
-            ->willReturn($testJwk);
+            ->willReturn($testJwks);
 
         $response = $this->prophesize('Psr\Http\Message\ResponseInterface');
         $response->getBody()
@@ -292,7 +308,7 @@ class CachedKeySetTest extends TestCase
     {
         $request = $this->prophesize('Psr\Http\Message\RequestInterface');
         $factory = $this->prophesize(RequestFactoryInterface::class);
-        $factory->createRequest('get', $this->testJwkUri)
+        $factory->createRequest('get', $this->testJwksUri)
             ->shouldBeCalledTimes($timesCalled)
             ->willReturn($request->reveal());
 
@@ -311,7 +327,7 @@ class CachedKeySetTest extends TestCase
             });
 
         $cache = $this->prophesize(CacheItemPoolInterface::class);
-        $cache->getItem($this->testJwkUriKey)
+        $cache->getItem($this->testJwksUriKey)
             ->shouldBeCalledOnce()
             ->willReturn($cacheItem->reveal());
         $cache->save(Argument::any())

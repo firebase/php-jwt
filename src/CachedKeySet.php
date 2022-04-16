@@ -19,7 +19,7 @@ class CachedKeySet implements ArrayAccess
     /**
      * @var string
      */
-    private $jwkUri;
+    private $jwksUri;
     /**
      * @var ClientInterface
      */
@@ -51,7 +51,7 @@ class CachedKeySet implements ArrayAccess
     /**
      * @var string
      */
-    private $cacheKeyPrefix = 'jwk';
+    private $cacheKeyPrefix = 'jwks';
     /**
      * @var int
      */
@@ -70,14 +70,14 @@ class CachedKeySet implements ArrayAccess
     private $maxCallsPerMinute = 10;
 
     public function __construct(
-        string $jwkUri,
+        string $jwksUri,
         ClientInterface $httpClient,
         RequestFactoryInterface $httpFactory,
         CacheItemPoolInterface $cache,
         int $expiresAfter = null,
         bool $rateLimit = false
     ) {
-        $this->jwkUri = $jwkUri;
+        $this->jwksUri = $jwksUri;
         $this->httpClient = $httpClient;
         $this->httpFactory = $httpFactory;
         $this->cache = $cache;
@@ -140,10 +140,10 @@ class CachedKeySet implements ArrayAccess
             if ($this->rateLimitExceeded()) {
                 return false;
             }
-            $request = $this->httpFactory->createRequest('get', $this->jwkUri);
-            $jwkResponse = $this->httpClient->sendRequest($request);
-            $jwk = json_decode((string) $jwkResponse->getBody(), true);
-            $this->keySet = $keySetToCache = JWK::parseKeySet($jwk);
+            $request = $this->httpFactory->createRequest('get', $this->jwksUri);
+            $jwksResponse = $this->httpClient->sendRequest($request);
+            $jwks = json_decode((string) $jwksResponse->getBody(), true);
+            $this->keySet = $keySetToCache = JWK::parseKeySet($jwks);
 
             if (!isset($this->keySet[$keyId])) {
                 return false;
@@ -193,12 +193,12 @@ class CachedKeySet implements ArrayAccess
 
     private function setCacheKeys(): void
     {
-        if (empty($this->jwkUri)) {
-            throw new RuntimeException('JWK URI is empty');
+        if (empty($this->jwksUri)) {
+            throw new RuntimeException('JWKS URI is empty');
         }
 
         // ensure we do not have illegal characters
-        $key = preg_replace('|[^a-zA-Z0-9_\.!]|', '', $this->jwkUri);
+        $key = preg_replace('|[^a-zA-Z0-9_\.!]|', '', $this->jwksUri);
 
         // add prefix
         $key = $this->cacheKeyPrefix . $key;
