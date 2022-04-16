@@ -418,7 +418,7 @@ final class TestMemoryCacheItem implements CacheItemInterface
         return $this->key;
     }
 
-    public function get(): mixed
+    public function get()
     {
         return $this->isHit() ? $this->value : null;
     }
