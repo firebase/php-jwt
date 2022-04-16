@@ -167,6 +167,8 @@ class JWT
      *
      * @param array<mixed>          $payload PHP array
      * @param string|resource|OpenSSLAsymmetricKey|OpenSSLCertificate $key The secret key.
+     * @param string                $alg     Supported algorithms are 'ES384','ES256', 'HS256', 'HS384',
+     *                                       'HS512', 'RS256', 'RS384', and 'RS512'
      * @param string                $keyId
      * @param array<string, string> $head    An array with header elements to attach
      *
@@ -353,7 +355,7 @@ class JWT
     public static function jsonEncode(array $input): string
     {
         if (PHP_VERSION_ID >= 50400) {
-            $json = \json_encode($input, \JSON_UNESCAPED_SLASHES);
+            $json = \json_encode($input, \JSON_UNESCAPED_SLASHES|\JSON_FORCE_OBJECT);
         } else {
             // PHP 5.3 only
             $json = \json_encode($input);
