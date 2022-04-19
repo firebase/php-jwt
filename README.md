@@ -235,7 +235,7 @@ $keySet = new CachedKeySet(
     $httpFactory,
     $cacheItemPool
     null, // $expiresAfter int seconds to set the JWKS to expire
-    true, // $rateLimit    true to enable rate limit of 10 RPS on lookup of invalid keys
+    true  // $rateLimit    true to enable rate limit of 10 RPS on lookup of invalid keys
 );
 
 $decoded = JWT::decode($payload, $keySet);
