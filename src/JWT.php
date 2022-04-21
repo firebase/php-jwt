@@ -111,6 +111,10 @@ class JWT
         if (null === ($payload = static::jsonDecode($payloadRaw))) {
             throw new UnexpectedValueException('Invalid claims encoding');
         }
+        if (is_array($payload)) {
+            // prevent PHP Fatal Error in edge-cases when payload is empty array
+            $payload = (object) $payload;
+        }
         if (!$payload instanceof stdClass) {
             throw new UnexpectedValueException('Payload must be a JSON object');
         }
@@ -159,11 +163,6 @@ class JWT
             throw new ExpiredException('Expired token');
         }
         
-        if (is_array($payload)) {
-            // prevent PHP Fatal Error in edge-cases when payload is empty array
-            return (object) $payload;
-        }
-
         return $payload;
     }
 
