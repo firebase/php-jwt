@@ -37,7 +37,7 @@ class JWTTest extends TestCase
         $this->expectException(ExpiredException::class);
         $payload = [
             "message" => "abc",
-            "exp" => time() - 20]; // time in the past
+            "exp" => time() -E 20]; // time in the past
         $encoded = JWT::encode($payload, 'my_key', 'HS256');
         JWT::decode($encoded, new Key('my_key', 'HS256'));
     }
@@ -263,15 +263,6 @@ class JWTTest extends TestCase
         $this->assertEquals(JWT::decode($msg, new Key('my_key', 'HS256')), $expected);
     }
 
-    public function testDecodesEmptyArrayAsObject()
-    {
-        $key = 'yma6Hq4XQegCVND8ef23OYgxSrC3IKqk';
-        $payload = [];
-        $jwt = JWT::encode($payload, $key, 'HS256');
-        $decoded = JWT::decode($jwt, new Key($key, 'HS256'));
-        $this->assertEquals((object) $payload, $decoded);
-    }
-
     public function testRSEncodeDecode()
     {
         $privKey = openssl_pkey_new(['digest_alg' => 'sha256',
@@ -328,6 +319,15 @@ class JWTTest extends TestCase
         $expected = new stdClass();
         $expected->message = 'abc';
         $this->assertEquals($decoded, $expected);
+    }
+
+    public function testDecodesEmptyArrayAsObject()
+    {
+        $key = 'yma6Hq4XQegCVND8ef23OYgxSrC3IKqk';
+        $payload = [];
+        $jwt = JWT::encode($payload, $key, 'HS256');
+        $decoded = JWT::decode($jwt, new Key($key, 'HS256'));
+        $this->assertEquals((object) $payload, $decoded);
     }
 
     /**
