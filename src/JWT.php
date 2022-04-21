@@ -158,6 +158,11 @@ class JWT
         if (isset($payload->exp) && ($timestamp - static::$leeway) >= $payload->exp) {
             throw new ExpiredException('Expired token');
         }
+        
+        if (is_array($payload)) {
+            // prevent PHP Fatal Error in edge-cases when payload is empty array
+            return (object) $payload;
+        }
 
         return $payload;
     }
