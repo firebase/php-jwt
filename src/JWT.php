@@ -355,7 +355,7 @@ class JWT
     public static function jsonEncode(array $input): string
     {
         if (PHP_VERSION_ID >= 50400) {
-            $json = \json_encode($input, \JSON_UNESCAPED_SLASHES|\JSON_FORCE_OBJECT);
+            $json = \json_encode($input, \JSON_UNESCAPED_SLASHES);
         } else {
             // PHP 5.3 only
             $json = \json_encode($input);
