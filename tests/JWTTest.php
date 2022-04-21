@@ -336,7 +336,7 @@ class JWTTest extends TestCase
         $payload = ['foo' => [1,2,3]];
         $jwt = JWT::encode($payload, $key, 'HS256');
         $decoded = JWT::decode($jwt, new Key($key, 'HS256'));
-        $this->assertEquals($payload['foo'], $decoded['foo']);
+        $this->assertEquals($payload['foo'], $decoded->foo);
     }
 
     /**
