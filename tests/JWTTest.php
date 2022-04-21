@@ -263,6 +263,15 @@ class JWTTest extends TestCase
         $this->assertEquals(JWT::decode($msg, new Key('my_key', 'HS256')), $expected);
     }
 
+    public function testDecodesEmptyArrayAsObject()
+    {
+        $key = 'yma6Hq4XQegCVND8ef23OYgxSrC3IKqk';
+        $payload = [];
+        $jwt = JWT::encode($payload, $key, 'HS256');
+        $decoded = JWT::decode($jwt, new Key($key, 'HS256'));
+        $this->assertEquals((object) $payload, $decoded);
+    }
+
     public function testRSEncodeDecode()
     {
         $privKey = openssl_pkey_new(['digest_alg' => 'sha256',
