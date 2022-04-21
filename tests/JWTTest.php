@@ -37,7 +37,7 @@ class JWTTest extends TestCase
         $this->expectException(ExpiredException::class);
         $payload = [
             "message" => "abc",
-            "exp" => time() -E 20]; // time in the past
+            "exp" => time() - 20]; // time in the past
         $encoded = JWT::encode($payload, 'my_key', 'HS256');
         JWT::decode($encoded, new Key('my_key', 'HS256'));
     }
