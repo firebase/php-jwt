@@ -111,6 +111,10 @@ class JWT
         if (null === ($payload = static::jsonDecode($payloadRaw))) {
             throw new UnexpectedValueException('Invalid claims encoding');
         }
+        if (is_array($payload)) {
+            // prevent PHP Fatal Error in edge-cases when payload is empty array
+            $payload = (object) $payload;
+        }
         if (!$payload instanceof stdClass) {
             throw new UnexpectedValueException('Payload must be a JSON object');
         }
@@ -355,7 +359,7 @@ class JWT
     public static function jsonEncode(array $input): string
     {
         if (PHP_VERSION_ID >= 50400) {
-            $json = \json_encode($input, \JSON_UNESCAPED_SLASHES|\JSON_FORCE_OBJECT);
+            $json = \json_encode($input, \JSON_UNESCAPED_SLASHES);
         } else {
             // PHP 5.3 only
             $json = \json_encode($input);
