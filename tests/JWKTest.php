@@ -2,8 +2,8 @@
 
 namespace Firebase\JWT;
 
-use PHPUnit\Framework\TestCase;
 use InvalidArgumentException;
+use PHPUnit\Framework\TestCase;
 use UnexpectedValueException;
 
 class JWKTest extends TestCase
@@ -69,7 +69,7 @@ class JWKTest extends TestCase
         $jwkSet['keys'][0]['d'] = null;
 
         $keys = JWK::parseKeySet($jwkSet);
-        $this->assertTrue(is_array($keys));
+        $this->assertTrue(\is_array($keys));
     }
 
     public function testParseJwkKeySet()
@@ -79,7 +79,7 @@ class JWKTest extends TestCase
             true
         );
         $keys = JWK::parseKeySet($jwkSet);
-        $this->assertTrue(is_array($keys));
+        $this->assertTrue(\is_array($keys));
         $this->assertArrayHasKey('jwk1', $keys);
         self::$keys = $keys;
     }
@@ -125,7 +125,7 @@ class JWKTest extends TestCase
 
         $result = JWT::decode($msg, self::$keys);
 
-        $this->assertEquals("foo", $result->sub);
+        $this->assertEquals('foo', $result->sub);
     }
 
     /**
@@ -139,6 +139,6 @@ class JWKTest extends TestCase
 
         $result = JWT::decode($msg, self::$keys);
 
-        $this->assertEquals("bar", $result->sub);
+        $this->assertEquals('bar', $result->sub);
     }
 }
