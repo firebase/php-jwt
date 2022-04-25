@@ -221,7 +221,7 @@ use Firebase\JWT\JWT;
 $jwkUri = 'https://www.gstatic.com/iap/verify/public_key-jwk';
 
 // Create an HTTP client (can be any PSR-7 compatible HTTP client)
-$httpClient = new GuzzleHttp\Client(); 
+$httpClient = new GuzzleHttp\Client();
 
 // Create an HTTP request factory (can be any PSR-17 compatible HTTP request factory)
 $httpFactory = new GuzzleHttp\Psr\HttpFactory();
@@ -238,7 +238,7 @@ $keySet = new CachedKeySet(
     true  // $rateLimit    true to enable rate limit of 10 RPS on lookup of invalid keys
 );
 
-$decoded = JWT::decode($payload, $keySet);
+$decoded = JWT::decode($jwt, $keySet);
 ```
 
 Miscellaneous

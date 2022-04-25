@@ -248,7 +248,7 @@ class CachedKeySetTest extends TestCase
     /**
      * @dataProvider provideFullIntegration
      */
-    public function testFullIntegration($jwkUri)
+    public function testFullIntegration(string $jwkUri): void
     {
         if (!class_exists(\GuzzleHttp\Psr7\HttpFactory::class)) {
             self::markTestSkipped('Guzzle 7 only');
@@ -274,6 +274,9 @@ class CachedKeySetTest extends TestCase
         );
 
         $this->assertArrayHasKey($kid, $cachedKeySet);
+        $key = $cachedKeySet[$kid];
+        $this->assertInstanceOf(Key::class, $key);
+        $this->assertEquals($keys['keys'][0]['alg'], $key->getAlgorithm());
     }
 
     public function provideFullIntegration()

@@ -11,9 +11,6 @@ use LogicException;
 use OutOfBoundsException;
 use RuntimeException;
 
-/**
- * @template-implements ArrayAccess<string, Key>
- */
 class CachedKeySet implements ArrayAccess
 {
     /**
