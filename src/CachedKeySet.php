@@ -30,7 +30,7 @@ class CachedKeySet implements ArrayAccess
      */
     private $cache;
     /**
-     * @var int
+     * @var ?int
      */
     private $expiresAfter;
     /**
