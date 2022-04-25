@@ -233,7 +233,7 @@ $keySet = new CachedKeySet(
     $jwkUri,
     $httpClient,
     $httpFactory,
-    $cacheItemPool
+    $cacheItemPool,
     null, // $expiresAfter int seconds to set the JWKS to expire
     true  // $rateLimit    true to enable rate limit of 10 RPS on lookup of invalid keys
 );
