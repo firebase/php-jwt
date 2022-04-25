@@ -241,7 +241,6 @@ $keySet = new CachedKeySet(
 $decoded = JWT::decode($payload, $keySet);
 ```
 
-
 Miscellaneous
 -------------
 
