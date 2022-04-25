@@ -11,6 +11,9 @@ use LogicException;
 use OutOfBoundsException;
 use RuntimeException;
 
+/**
+ * @implements ArrayAccess<string, Key>
+ */
 class CachedKeySet implements ArrayAccess
 {
     /**
