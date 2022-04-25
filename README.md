@@ -209,7 +209,7 @@ Using Cached Key Sets
 The `CachedKeySet` class can be used to fetch and cache JWKS (JSON Web Key Sets) from a public URI.
 This has the following advantages:
 
-1. The results are cached for performance
+1. The results are cached for performance.
 2. If an unrecognized key is requested, the cache is refreshed, to accomodate for key rotation.
 3. If rate limiting is enabled, the JWKS URI will not make more than 10 requests a second.
 
