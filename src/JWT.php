@@ -2,16 +2,15 @@
 
 namespace Firebase\JWT;
 
-use ArrayAccess;
+use DateTime;
 use DomainException;
 use Exception;
 use InvalidArgumentException;
 use OpenSSLAsymmetricKey;
 use OpenSSLCertificate;
+use stdClass;
 use TypeError;
 use UnexpectedValueException;
-use DateTime;
-use stdClass;
 
 /**
  * JSON Web Token implementation, based on this spec:
@@ -111,7 +110,7 @@ class JWT
         if (null === ($payload = static::jsonDecode($payloadRaw))) {
             throw new UnexpectedValueException('Invalid claims encoding');
         }
-        if (is_array($payload)) {
+        if (\is_array($payload)) {
             // prevent PHP Fatal Error in edge-cases when payload is empty array
             $payload = (object) $payload;
         }
@@ -229,7 +228,7 @@ class JWT
         list($function, $algorithm) = static::$supported_algs[$alg];
         switch ($function) {
             case 'hash_hmac':
-                if (!is_string($key)) {
+                if (!\is_string($key)) {
                     throw new InvalidArgumentException('key must be a string when using hmac');
                 }
                 return \hash_hmac($algorithm, $msg, $key, true);
@@ -246,10 +245,10 @@ class JWT
                 }
                 return $signature;
             case 'sodium_crypto':
-                if (!function_exists('sodium_crypto_sign_detached')) {
+                if (!\function_exists('sodium_crypto_sign_detached')) {
                     throw new DomainException('libsodium is not available');
                 }
-                if (!is_string($key)) {
+                if (!\is_string($key)) {
                     throw new InvalidArgumentException('key must be a string when using EdDSA');
                 }
                 try {
@@ -302,10 +301,10 @@ class JWT
                     'OpenSSL error: ' . \openssl_error_string()
                 );
             case 'sodium_crypto':
-              if (!function_exists('sodium_crypto_sign_verify_detached')) {
+              if (!\function_exists('sodium_crypto_sign_verify_detached')) {
                   throw new DomainException('libsodium is not available');
               }
-              if (!is_string($keyMaterial)) {
+              if (!\is_string($keyMaterial)) {
                   throw new InvalidArgumentException('key must be a string when using EdDSA');
               }
               try {
@@ -318,7 +317,7 @@ class JWT
               }
             case 'hash_hmac':
             default:
-                if (!is_string($keyMaterial)) {
+                if (!\is_string($keyMaterial)) {
                     throw new InvalidArgumentException('key must be a string when using hmac');
                 }
                 $hash = \hash_hmac($algorithm, $msg, $keyMaterial, true);

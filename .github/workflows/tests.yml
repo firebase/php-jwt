@@ -38,9 +38,8 @@ jobs:
           php-version: "8.0"
       - name: Run Script
         run: |
-          composer require friendsofphp/php-cs-fixer
-          vendor/bin/php-cs-fixer fix --diff --dry-run .
-          vendor/bin/php-cs-fixer fix --rules=native_function_invocation --allow-risky=yes --diff src
+          composer global require friendsofphp/php-cs-fixer
+          ~/.composer/vendor/bin/php-cs-fixer fix --diff --dry-run --allow-risky=yes .
 
   staticanalysis:
     runs-on: ubuntu-latest
