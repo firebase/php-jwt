@@ -3,12 +3,12 @@
 namespace Firebase\JWT;
 
 use ArrayAccess;
-use Psr\Http\Client\ClientInterface;
-use Psr\Http\Message\RequestFactoryInterface;
-use Psr\Cache\CacheItemPoolInterface;
-use Psr\Cache\CacheItemInterface;
 use LogicException;
 use OutOfBoundsException;
+use Psr\Cache\CacheItemInterface;
+use Psr\Cache\CacheItemPoolInterface;
+use Psr\Http\Client\ClientInterface;
+use Psr\Http\Message\RequestFactoryInterface;
 use RuntimeException;
 
 /**
@@ -184,7 +184,7 @@ class CachedKeySet implements ArrayAccess
 
     private function getCacheItem(): CacheItemInterface
     {
-        if (is_null($this->cacheItem)) {
+        if (\is_null($this->cacheItem)) {
             $this->cacheItem = $this->cache->getItem($this->cacheKey);
         }
 
@@ -204,7 +204,7 @@ class CachedKeySet implements ArrayAccess
         $key = $this->cacheKeyPrefix . $key;
 
         // Hash keys if they exceed $maxKeyLength of 64
-        if (strlen($key) > $this->maxKeyLength) {
+        if (\strlen($key) > $this->maxKeyLength) {
             $key = substr(hash('sha256', $key), 0, $this->maxKeyLength);
         }
 
@@ -215,7 +215,7 @@ class CachedKeySet implements ArrayAccess
             $rateLimitKey = $this->cacheKeyPrefix . 'ratelimit' . $key;
 
             // Hash keys if they exceed $maxKeyLength of 64
-            if (strlen($rateLimitKey) > $this->maxKeyLength) {
+            if (\strlen($rateLimitKey) > $this->maxKeyLength) {
                 $rateLimitKey = substr(hash('sha256', $rateLimitKey), 0, $this->maxKeyLength);
             }
 

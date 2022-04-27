@@ -2,6 +2,7 @@
 
 namespace Firebase\JWT;
 
+use ArrayAccess;
 use DateTime;
 use DomainException;
 use Exception;
@@ -9,7 +10,6 @@ use InvalidArgumentException;
 use OpenSSLAsymmetricKey;
 use OpenSSLCertificate;
 use stdClass;
-use TypeError;
 use UnexpectedValueException;
 
 /**

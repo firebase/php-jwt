@@ -2,15 +2,14 @@
 
 namespace Firebase\JWT;
 
-use GuzzleHttp\Exception\RequestException;
-use PHPUnit\Framework\TestCase;
-use Psr\Http\Client\ClientInterface;
-use Psr\Http\Message\RequestFactoryInterface;
-use Psr\Cache\CacheItemPoolInterface;
-use Psr\Cache\CacheItemInterface;
-use Prophecy\Argument;
 use LogicException;
 use OutOfBoundsException;
+use PHPUnit\Framework\TestCase;
+use Prophecy\Argument;
+use Psr\Cache\CacheItemInterface;
+use Psr\Cache\CacheItemPoolInterface;
+use Psr\Http\Client\ClientInterface;
+use Psr\Http\Message\RequestFactoryInterface;
 use RuntimeException;
 
 class CachedKeySetTest extends TestCase
@@ -219,7 +218,7 @@ class CachedKeySetTest extends TestCase
 
         $result = JWT::decode($msg, $cachedKeySet);
 
-        $this->assertEquals("foo", $result->sub);
+        $this->assertEquals('foo', $result->sub);
     }
 
     public function testRateLimit()
