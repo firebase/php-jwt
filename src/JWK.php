@@ -24,6 +24,8 @@ class JWK
      * Parse a set of JWK keys
      *
      * @param array<mixed> $jwks The JSON Web Key Set as an associative array
+     * @param string       $defaultAlg The algorithm for the Key object if "alg" is not set in the
+     *                                 JSON Web Key Set
      *
      * @return array<string, Key> An associative array of key IDs (kid) to Key objects
      *
@@ -33,7 +35,7 @@ class JWK
      *
      * @uses parseKey
      */
-    public static function parseKeySet(array $jwks): array
+    public static function parseKeySet(array $jwks, string $defaultAlg = null): array
     {
         $keys = [];
 
@@ -47,7 +49,7 @@ class JWK
 
         foreach ($jwks['keys'] as $k => $v) {
             $kid = isset($v['kid']) ? $v['kid'] : $k;
-            if ($key = self::parseKey($v)) {
+            if ($key = self::parseKey($v, $defaultAlg)) {
                 $keys[(string) $kid] = $key;
             }
         }
@@ -63,6 +65,8 @@ class JWK
      * Parse a JWK key
      *
      * @param array<mixed> $jwk An individual JWK
+     * @param string       $defaultAlg The algorithm for the Key object if "alg" is not set in the
+     *                                 JSON Web Key Set
      *
      * @return Key The key object for the JWK
      *
@@ -72,7 +76,7 @@ class JWK
      *
      * @uses createPemFromModulusAndExponent
      */
-    public static function parseKey(array $jwk): ?Key
+    public static function parseKey(array $jwk, string $defaultAlg = null): ?Key
     {
         if (empty($jwk)) {
             throw new InvalidArgumentException('JWK must not be empty');
@@ -83,10 +87,14 @@ class JWK
         }
 
         if (!isset($jwk['alg'])) {
-            // The "alg" parameter is optional in a KTY, but is required for parsing in
-            // this library. Add it manually to your JWK array if it doesn't already exist.
-            // @see https://datatracker.ietf.org/doc/html/rfc7517#section-4.4
-            throw new UnexpectedValueException('JWK must contain an "alg" parameter');
+            if (is_null($defaultAlg)) {
+                // The "alg" parameter is optional in a KTY, but an algorithm is required
+                // for parsing in this library. Use the $defaultAlg parameter when parsing the
+                // key set in order to prevent this error.
+                // @see https://datatracker.ietf.org/doc/html/rfc7517#section-4.4
+                throw new UnexpectedValueException('JWK must contain an "alg" parameter');
+            }
+            $jwk['alg'] = $defaultAlg;
         }
 
         switch ($jwk['kty']) {

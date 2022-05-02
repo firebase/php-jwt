@@ -58,6 +58,18 @@ class JWKTest extends TestCase
         JWK::parseKeySet($jwkSet);
     }
 
+    public function testParsePrivateKeyWithoutAlgWithDefaultAlgParameter()
+    {
+        $jwkSet = json_decode(
+            file_get_contents(__DIR__ . '/data/rsa-jwkset.json'),
+            true
+        );
+        unset($jwkSet['keys'][0]['alg']);
+
+        $jwks = JWK::parseKeySet($jwkSet, 'foo');
+        $this->assertEquals('foo', $jwks['jwk1']->getAlgorithm());
+    }
+
     public function testParseKeyWithEmptyDValue()
     {
         $jwkSet = json_decode(
