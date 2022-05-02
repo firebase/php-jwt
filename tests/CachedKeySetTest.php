@@ -18,6 +18,7 @@ class CachedKeySetTest extends TestCase
     private $testJwksUriKey = 'jwkshttpsjwk.uri';
     private $testJwks1 = '{"keys": [{"kid":"foo","kty":"RSA","alg":"foo","n":"","e":""}]}';
     private $testJwks2 = '{"keys": [{"kid":"bar","kty":"RSA","alg":"bar","n":"","e":""}]}';
+    private $testJwks3 = '{"keys": [{"kid":"baz","kty":"RSA","n":"","e":""}]}';
 
     private $googleRsaUri = 'https://www.googleapis.com/oauth2/v3/certs';
     // private $googleEcUri = 'https://www.gstatic.com/iap/verify/public_key-jwk';
@@ -93,6 +94,21 @@ class CachedKeySetTest extends TestCase
         );
         $this->assertInstanceOf(Key::class, $cachedKeySet['foo']);
         $this->assertEquals('foo', $cachedKeySet['foo']->getAlgorithm());
+    }
+
+    public function testWithDefaultAlg()
+    {
+        $cachedKeySet = new CachedKeySet(
+            $this->testJwksUri,
+            $this->getMockHttpClient($this->testJwks3),
+            $this->getMockHttpFactory(),
+            $this->getMockEmptyCache(),
+            null,
+            false,
+            'baz256'
+        );
+        $this->assertInstanceOf(Key::class, $cachedKeySet['baz']);
+        $this->assertEquals('baz256', $cachedKeySet['baz']->getAlgorithm());
     }
 
     public function testKeyIdIsCached()

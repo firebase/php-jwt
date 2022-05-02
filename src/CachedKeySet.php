@@ -68,6 +68,10 @@ class CachedKeySet implements ArrayAccess
      * @var int
      */
     private $maxCallsPerMinute = 10;
+    /**
+     * @var string|null
+     */
+    private $defaultAlg;
 
     public function __construct(
         string $jwksUri,
@@ -75,7 +79,8 @@ class CachedKeySet implements ArrayAccess
         RequestFactoryInterface $httpFactory,
         CacheItemPoolInterface $cache,
         int $expiresAfter = null,
-        bool $rateLimit = false
+        bool $rateLimit = false,
+        string $defaultAlg = null
     ) {
         $this->jwksUri = $jwksUri;
         $this->httpClient = $httpClient;
@@ -83,6 +88,7 @@ class CachedKeySet implements ArrayAccess
         $this->cache = $cache;
         $this->expiresAfter = $expiresAfter;
         $this->rateLimit = $rateLimit;
+        $this->defaultAlg = $defaultAlg;
         $this->setCacheKeys();
     }
 
@@ -143,7 +149,7 @@ class CachedKeySet implements ArrayAccess
             $request = $this->httpFactory->createRequest('get', $this->jwksUri);
             $jwksResponse = $this->httpClient->sendRequest($request);
             $jwks = json_decode((string) $jwksResponse->getBody(), true);
-            $this->keySet = $keySetToCache = JWK::parseKeySet($jwks);
+            $this->keySet = $keySetToCache = JWK::parseKeySet($jwks, $this->defaultAlg);
 
             if (!isset($this->keySet[$keyId])) {
                 return false;
