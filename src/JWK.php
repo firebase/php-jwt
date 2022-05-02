@@ -87,7 +87,7 @@ class JWK
         }
 
         if (!isset($jwk['alg'])) {
-            if (is_null($defaultAlg)) {
+            if (\is_null($defaultAlg)) {
                 // The "alg" parameter is optional in a KTY, but an algorithm is required
                 // for parsing in this library. Use the $defaultAlg parameter when parsing the
                 // key set in order to prevent this error.
