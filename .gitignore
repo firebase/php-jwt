@@ -4,3 +4,4 @@ phpunit.phar.asc
 composer.phar
 composer.lock
 .phpunit.result.cache
+.php-cs-fixer.cache

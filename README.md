@@ -29,13 +29,13 @@ Example
 use Firebase\JWT\JWT;
 use Firebase\JWT\Key;
 
-$key = "example_key";
-$payload = array(
-    "iss" => "http://example.org",
-    "aud" => "http://example.com",
-    "iat" => 1356999524,
-    "nbf" => 1357000000
-);
+$key = 'example_key';
+$payload = [
+    'iss' => 'http://example.org',
+    'aud' => 'http://example.com',
+    'iat' => 1356999524,
+    'nbf' => 1357000000
+];
 
 /**
  * IMPORTANT:
@@ -98,12 +98,12 @@ ehde/zUxo6UvS7UrBQIDAQAB
 -----END PUBLIC KEY-----
 EOD;
 
-$payload = array(
-    "iss" => "example.org",
-    "aud" => "example.com",
-    "iat" => 1356999524,
-    "nbf" => 1357000000
-);
+$payload = [
+    'iss' => 'example.org',
+    'aud' => 'example.com',
+    'iat' => 1356999524,
+    'nbf' => 1357000000
+];
 
 $jwt = JWT::encode($payload, $privateKey, 'RS256');
 echo "Encode:\n" . print_r($jwt, true) . "\n";
@@ -139,12 +139,12 @@ $privateKey = openssl_pkey_get_private(
     $passphrase
 );
 
-$payload = array(
-    "iss" => "example.org",
-    "aud" => "example.com",
-    "iat" => 1356999524,
-    "nbf" => 1357000000
-);
+$payload = [
+    'iss' => 'example.org',
+    'aud' => 'example.com',
+    'iat' => 1356999524,
+    'nbf' => 1357000000
+];
 
 $jwt = JWT::encode($payload, $privateKey, 'RS256');
 echo "Encode:\n" . print_r($jwt, true) . "\n";
@@ -173,12 +173,12 @@ $privateKey = base64_encode(sodium_crypto_sign_secretkey($keyPair));
 
 $publicKey = base64_encode(sodium_crypto_sign_publickey($keyPair));
 
-$payload = array(
-    "iss" => "example.org",
-    "aud" => "example.com",
-    "iat" => 1356999524,
-    "nbf" => 1357000000
-);
+$payload = [
+    'iss' => 'example.org',
+    'aud' => 'example.com',
+    'iat' => 1356999524,
+    'nbf' => 1357000000
+];
 
 $jwt = JWT::encode($payload, $privateKey, 'EdDSA');
 echo "Encode:\n" . print_r($jwt, true) . "\n";
@@ -201,6 +201,45 @@ $jwks = ['keys' => []];
 // JWK::parseKeySet($jwks) returns an associative array of **kid** to Firebase\JWT\Key
 // objects. Pass this as the second parameter to JWT::decode.
 JWT::decode($payload, JWK::parseKeySet($jwks));
+```
+
+Using Cached Key Sets
+---------------------
+
+The `CachedKeySet` class can be used to fetch and cache JWKS (JSON Web Key Sets) from a public URI.
+This has the following advantages:
+
+1. The results are cached for performance.
+2. If an unrecognized key is requested, the cache is refreshed, to accomodate for key rotation.
+3. If rate limiting is enabled, the JWKS URI will not make more than 10 requests a second.
+
+```php
+use Firebase\JWT\CachedKeySet;
+use Firebase\JWT\JWT;
+
+// The URI for the JWKS you wish to cache the results from
+$jwksUri = 'https://www.gstatic.com/iap/verify/public_key-jwk';
+
+// Create an HTTP client (can be any PSR-7 compatible HTTP client)
+$httpClient = new GuzzleHttp\Client();
+
+// Create an HTTP request factory (can be any PSR-17 compatible HTTP request factory)
+$httpFactory = new GuzzleHttp\Psr\HttpFactory();
+
+// Create a cache item pool (can be any PSR-6 compatible cache item pool)
+$cacheItemPool = Phpfastcache\CacheManager::getInstance('files');
+
+$keySet = new CachedKeySet(
+    $jwksUri,
+    $httpClient,
+    $httpFactory,
+    $cacheItemPool,
+    null, // $expiresAfter int seconds to set the JWKS to expire
+    true  // $rateLimit    true to enable rate limit of 10 RPS on lookup of invalid keys
+);
+
+$jwt = 'eyJhbGci...'; // Some JWT signed by a key from the $jwkUri above
+$decoded = JWT::decode($jwt, $keySet);
 ```
 
 Miscellaneous

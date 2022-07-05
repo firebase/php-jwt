@@ -2,8 +2,8 @@
 
 namespace Firebase\JWT;
 
-use PHPUnit\Framework\TestCase;
 use InvalidArgumentException;
+use PHPUnit\Framework\TestCase;
 use UnexpectedValueException;
 
 class JWKTest extends TestCase
@@ -58,6 +58,18 @@ class JWKTest extends TestCase
         JWK::parseKeySet($jwkSet);
     }
 
+    public function testParsePrivateKeyWithoutAlgWithDefaultAlgParameter()
+    {
+        $jwkSet = json_decode(
+            file_get_contents(__DIR__ . '/data/rsa-jwkset.json'),
+            true
+        );
+        unset($jwkSet['keys'][0]['alg']);
+
+        $jwks = JWK::parseKeySet($jwkSet, 'foo');
+        $this->assertEquals('foo', $jwks['jwk1']->getAlgorithm());
+    }
+
     public function testParseKeyWithEmptyDValue()
     {
         $jwkSet = json_decode(
@@ -69,7 +81,7 @@ class JWKTest extends TestCase
         $jwkSet['keys'][0]['d'] = null;
 
         $keys = JWK::parseKeySet($jwkSet);
-        $this->assertTrue(is_array($keys));
+        $this->assertTrue(\is_array($keys));
     }
 
     public function testParseJwkKeySet()
@@ -79,7 +91,7 @@ class JWKTest extends TestCase
             true
         );
         $keys = JWK::parseKeySet($jwkSet);
-        $this->assertTrue(is_array($keys));
+        $this->assertTrue(\is_array($keys));
         $this->assertArrayHasKey('jwk1', $keys);
         self::$keys = $keys;
     }
@@ -131,7 +143,7 @@ class JWKTest extends TestCase
         $keys = JWK::parseKeySet($jwkSet);
         $result = JWT::decode($msg, $keys);
 
-        $this->assertEquals("foo", $result->sub);
+        $this->assertEquals('foo', $result->sub);
     }
 
     public function provideDecodeByJwkKeySet()
@@ -153,6 +165,6 @@ class JWKTest extends TestCase
 
         $result = JWT::decode($msg, self::$keys);
 
-        $this->assertEquals("bar", $result->sub);
+        $this->assertEquals('bar', $result->sub);
     }
 }

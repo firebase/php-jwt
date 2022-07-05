@@ -3,15 +3,14 @@
 namespace Firebase\JWT;
 
 use ArrayAccess;
+use DateTime;
 use DomainException;
 use Exception;
 use InvalidArgumentException;
 use OpenSSLAsymmetricKey;
 use OpenSSLCertificate;
-use TypeError;
-use UnexpectedValueException;
-use DateTime;
 use stdClass;
+use UnexpectedValueException;
 
 /**
  * JSON Web Token implementation, based on this spec:
@@ -69,7 +68,7 @@ class JWT
      * Decodes a JWT string into a PHP object.
      *
      * @param string                 $jwt            The JWT
-     * @param Key|array<string, Key> $keyOrKeyArray  The Key or associative array of key IDs (kid) to Key objects.
+     * @param Key|array<string,Key> $keyOrKeyArray  The Key or associative array of key IDs (kid) to Key objects.
      *                                               If the algorithm used is asymmetric, this is the public key
      *                                               Each Key object contains an algorithm and matching key.
      *                                               Supported algorithms are 'ES384','ES256', 'HS256', 'HS384',
@@ -110,6 +109,10 @@ class JWT
         $payloadRaw = static::urlsafeB64Decode($bodyb64);
         if (null === ($payload = static::jsonDecode($payloadRaw))) {
             throw new UnexpectedValueException('Invalid claims encoding');
+        }
+        if (\is_array($payload)) {
+            // prevent PHP Fatal Error in edge-cases when payload is empty array
+            $payload = (object) $payload;
         }
         if (!$payload instanceof stdClass) {
             throw new UnexpectedValueException('Payload must be a JSON object');
@@ -225,7 +228,7 @@ class JWT
         list($function, $algorithm) = static::$supported_algs[$alg];
         switch ($function) {
             case 'hash_hmac':
-                if (!is_string($key)) {
+                if (!\is_string($key)) {
                     throw new InvalidArgumentException('key must be a string when using hmac');
                 }
                 return \hash_hmac($algorithm, $msg, $key, true);
@@ -233,7 +236,7 @@ class JWT
                 $signature = '';
                 $success = \openssl_sign($msg, $signature, $key, $algorithm); // @phpstan-ignore-line
                 if (!$success) {
-                    throw new DomainException("OpenSSL unable to sign data");
+                    throw new DomainException('OpenSSL unable to sign data');
                 }
                 if ($alg === 'ES256') {
                     $signature = self::signatureFromDER($signature, 256);
@@ -242,10 +245,10 @@ class JWT
                 }
                 return $signature;
             case 'sodium_crypto':
-                if (!function_exists('sodium_crypto_sign_detached')) {
+                if (!\function_exists('sodium_crypto_sign_detached')) {
                     throw new DomainException('libsodium is not available');
                 }
-                if (!is_string($key)) {
+                if (!\is_string($key)) {
                     throw new InvalidArgumentException('key must be a string when using EdDSA');
                 }
                 try {
@@ -298,10 +301,10 @@ class JWT
                     'OpenSSL error: ' . \openssl_error_string()
                 );
             case 'sodium_crypto':
-              if (!function_exists('sodium_crypto_sign_verify_detached')) {
+              if (!\function_exists('sodium_crypto_sign_verify_detached')) {
                   throw new DomainException('libsodium is not available');
               }
-              if (!is_string($keyMaterial)) {
+              if (!\is_string($keyMaterial)) {
                   throw new InvalidArgumentException('key must be a string when using EdDSA');
               }
               try {
@@ -314,7 +317,7 @@ class JWT
               }
             case 'hash_hmac':
             default:
-                if (!is_string($keyMaterial)) {
+                if (!\is_string($keyMaterial)) {
                     throw new InvalidArgumentException('key must be a string when using hmac');
                 }
                 $hash = \hash_hmac($algorithm, $msg, $keyMaterial, true);
@@ -406,7 +409,7 @@ class JWT
     /**
      * Determine if an algorithm has been provided for each Key
      *
-     * @param Key|array<string, Key> $keyOrKeyArray
+     * @param Key|ArrayAccess<string,Key>|array<string,Key> $keyOrKeyArray
      * @param string|null            $kid
      *
      * @throws UnexpectedValueException
@@ -421,15 +424,12 @@ class JWT
             return $keyOrKeyArray;
         }
 
-        foreach ($keyOrKeyArray as $keyId => $key) {
-            if (!$key instanceof Key) {
-                throw new TypeError(
-                    '$keyOrKeyArray must be an instance of Firebase\JWT\Key key or an '
-                    . 'array of Firebase\JWT\Key keys'
-                );
-            }
+        if ($keyOrKeyArray instanceof CachedKeySet) {
+            // Skip "isset" check, as this will automatically refresh if not set
+            return $keyOrKeyArray[$kid];
         }
-        if (!isset($kid)) {
+
+        if (empty($kid)) {
             throw new UnexpectedValueException('"kid" empty, unable to lookup correct key');
         }
         if (!isset($keyOrKeyArray[$kid])) {

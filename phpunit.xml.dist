@@ -8,7 +8,7 @@
          convertWarningsToExceptions="true"
          processIsolation="false"
          stopOnFailure="false"
-         bootstrap="tests/bootstrap.php"
+         bootstrap="vendor/autoload.php"
 >
     <testsuites>
         <testsuite name="PHP JSON Web Token Test Suite">
