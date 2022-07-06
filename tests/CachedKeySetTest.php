@@ -210,7 +210,7 @@ class CachedKeySetTest extends TestCase
     public function testJwtVerify()
     {
         $privKey1 = file_get_contents(__DIR__ . '/data/rsa1-private.pem');
-        $payload = array('sub' => 'foo', 'exp' => strtotime('+10 seconds'));
+        $payload = ['sub' => 'foo', 'exp' => strtotime('+10 seconds')];
         $msg = JWT::encode($payload, $privKey1, 'RS256', 'jwk1');
 
         $cacheItem = $this->prophesize(CacheItemInterface::class);
