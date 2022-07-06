@@ -162,11 +162,9 @@ class JWK
             $rsaOID . $rsaPublicKey
         );
 
-        $rsaPublicKey = "-----BEGIN PUBLIC KEY-----\r\n" .
+        return "-----BEGIN PUBLIC KEY-----\r\n" .
             \chunk_split(\base64_encode($rsaPublicKey), 64) .
             '-----END PUBLIC KEY-----';
-
-        return $rsaPublicKey;
     }
 
     /**
