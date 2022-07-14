@@ -179,7 +179,7 @@ class JWK
                 ) .
                 self::encodeDER(
                     self::ASN1_BIT_STRING,
-                    chr(0x00) . chr(0x04)
+                    \chr(0x00) . \chr(0x04)
                     . JWT::urlsafeB64Decode($x)
                     . JWT::urlsafeB64Decode($y)
                 )
@@ -295,21 +295,21 @@ class JWK
         // Get the first octet
         $first = (int) array_shift($octets);
         $second = (int) array_shift($octets);
-        $oid = chr($first * 40 + $second);
+        $oid = \chr($first * 40 + $second);
 
         // Iterate over subsequent octets
         foreach ($octets as $octet) {
             if ($octet == 0) {
-                $oid .= chr(0x00);
+                $oid .= \chr(0x00);
                 continue;
             }
             $bin = '';
 
             while ($octet) {
-                $bin .= chr(0x80 | ($octet & 0x7f));
+                $bin .= \chr(0x80 | ($octet & 0x7f));
                 $octet >>= 7;
             }
-            $bin[0] = $bin[0] & chr(0x7f);
+            $bin[0] = $bin[0] & \chr(0x7f);
 
             // Convert to big endian if necessary
             if (pack('V', 65534) == pack('L', 65534)) {
