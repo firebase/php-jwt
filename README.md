@@ -263,8 +263,8 @@ Changelog
 
 #### 6.2.0 / 2022-05-14
 
- - Added`Cached Key Sets`([#397](https://github.com/firebase/php-jwt/pull/397))!! See[the README](https://github.com/firebase/php-jwt#using-cached-key-sets)for usage instructions
- - Added`$allowedAlg`parameter to`JWT::parseKey`and`JWT::parseKeySet`([#426](https://github.com/firebase/php-jwt/pull/426)). This will allow users to parse JWKS which do not populate the`alg`parameter without having to manually edit the JSON.
+ - Added `Cached Key Sets` ([#397](https://github.com/firebase/php-jwt/pull/397))
+ - Added `$defaultAlg` parameter to `JWT::parseKey` and `JWT::parseKeySet` ([#426](https://github.com/firebase/php-jwt/pull/426)). 
 
 #### 6.1.0 / 2022-03-23
 
