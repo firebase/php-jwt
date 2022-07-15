@@ -117,7 +117,7 @@ class CachedKeySetTest extends TestCase
         $cacheItem->isHit()
             ->willReturn(true);
         $cacheItem->get()
-            ->willReturn(JWK::parseKeySet(json_decode($this->testJwks1, true)));
+            ->willReturn($this->testJwks1);
 
         $cache = $this->prophesize(CacheItemPoolInterface::class);
         $cache->getItem($this->testJwksUriKey)
@@ -143,7 +143,7 @@ class CachedKeySetTest extends TestCase
             ->willReturn(true);
         $cacheItem->get()
             ->shouldBeCalledOnce()
-            ->willReturn(JWK::parseKeySet(json_decode($this->testJwks1, true)));
+            ->willReturn($this->testJwks1);
         $cacheItem->set(Argument::any())
             ->shouldBeCalledOnce()
             ->will(function () {
@@ -217,9 +217,8 @@ class CachedKeySetTest extends TestCase
         $cacheItem->isHit()
             ->willReturn(true);
         $cacheItem->get()
-            ->willReturn(JWK::parseKeySet(
-                json_decode(file_get_contents(__DIR__ . '/data/rsa-jwkset.json'), true)
-            ));
+            ->willReturn(file_get_contents(__DIR__ . '/data/rsa-jwkset.json')
+            );
 
         $cache = $this->prophesize(CacheItemPoolInterface::class);
         $cache->getItem($this->testJwksUriKey)
