@@ -263,7 +263,7 @@ Changelog
 
 #### 6.2.0 / 2022-05-14
 
- - Added `Cached Key Sets` ([#397](https://github.com/firebase/php-jwt/pull/397))
+ - Added `CachedKeySet` ([#397](https://github.com/firebase/php-jwt/pull/397))
  - Added `$defaultAlg` parameter to `JWT::parseKey` and `JWT::parseKeySet` ([#426](https://github.com/firebase/php-jwt/pull/426)). 
 
 #### 6.1.0 / 2022-03-23
