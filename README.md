@@ -261,6 +261,11 @@ $decoded = json_decode(json_encode($decoded), true);
 Changelog
 ---------
 
+#### 6.3.0 / 2022-07-15
+
+ - Added ES256 support to JWK parsing (#399)
+ - Fixed potential caching error in `CachedKeySet` by caching jwks as strings (#435)
+
 #### 6.2.0 / 2022-05-14
 
  - Added `CachedKeySet` ([#397](https://github.com/firebase/php-jwt/pull/397))
