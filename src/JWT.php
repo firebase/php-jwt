@@ -98,7 +98,7 @@ class JWT
             throw new InvalidArgumentException('Key may not be empty');
         }
         $tks = \explode('.', $jwt);
-        if (\count($tks) != 3) {
+        if (\count($tks) !== 3) {
             throw new UnexpectedValueException('Wrong number of segments');
         }
         list($headb64, $bodyb64, $cryptob64) = $tks;
@@ -136,7 +136,7 @@ class JWT
             // OpenSSL expects an ASN.1 DER sequence for ES256/ES384 signatures
             $sig = self::signatureToDER($sig);
         }
-        if (!self::verify("$headb64.$bodyb64", $sig, $key->getKeyMaterial(), $header->alg)) {
+        if (!self::verify("${headb64}.${bodyb64}", $sig, $key->getKeyMaterial(), $header->alg)) {
             throw new SignatureInvalidException('Signature verification failed');
         }
 
@@ -293,7 +293,8 @@ class JWT
                 $success = \openssl_verify($msg, $signature, $keyMaterial, $algorithm); // @phpstan-ignore-line
                 if ($success === 1) {
                     return true;
-                } elseif ($success === 0) {
+                }
+                if ($success === 0) {
                     return false;
                 }
                 // returns 1 on success, 0 on failure, -1 on error.
@@ -301,20 +302,20 @@ class JWT
                     'OpenSSL error: ' . \openssl_error_string()
                 );
             case 'sodium_crypto':
-              if (!\function_exists('sodium_crypto_sign_verify_detached')) {
-                  throw new DomainException('libsodium is not available');
-              }
-              if (!\is_string($keyMaterial)) {
-                  throw new InvalidArgumentException('key must be a string when using EdDSA');
-              }
-              try {
-                  // The last non-empty line is used as the key.
-                  $lines = array_filter(explode("\n", $keyMaterial));
-                  $key = base64_decode((string) end($lines));
-                  return sodium_crypto_sign_verify_detached($signature, $msg, $key);
-              } catch (Exception $e) {
-                  throw new DomainException($e->getMessage(), 0, $e);
-              }
+                if (!\function_exists('sodium_crypto_sign_verify_detached')) {
+                    throw new DomainException('libsodium is not available');
+                }
+                if (!\is_string($keyMaterial)) {
+                    throw new InvalidArgumentException('key must be a string when using EdDSA');
+                }
+                try {
+                    // The last non-empty line is used as the key.
+                    $lines = array_filter(explode("\n", $keyMaterial));
+                    $key = base64_decode((string) end($lines));
+                    return sodium_crypto_sign_verify_detached($signature, $msg, $key);
+                } catch (Exception $e) {
+                    throw new DomainException($e->getMessage(), 0, $e);
+                }
             case 'hash_hmac':
             default:
                 if (!\is_string($keyMaterial)) {
@@ -510,7 +511,7 @@ class JWT
     {
         // Separate the signature into r-value and s-value
         $length = max(1, (int) (\strlen($sig) / 2));
-        list($r, $s) = \str_split($sig, $length > 0 ? $length : 1);
+        list($r, $s) = \str_split($sig, $length);
 
         // Trim leading zeros
         $r = \ltrim($r, "\x00");
@@ -610,7 +611,7 @@ class JWT
         }
 
         // Value
-        if ($type == self::ASN1_BIT_STRING) {
+        if ($type === self::ASN1_BIT_STRING) {
             $pos++; // Skip the first contents octet (padding indicator)
             $data = \substr($der, $pos, $len - 1);
             $pos += $len - 1;

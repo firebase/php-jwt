@@ -127,17 +127,31 @@ class JWKTest extends TestCase
     }
 
     /**
-     * @depends testParseJwkKeySet
+     * @dataProvider provideDecodeByJwkKeySet
      */
-    public function testDecodeByJwkKeySet()
+    public function testDecodeByJwkKeySet($pemFile, $jwkFile, $alg)
     {
-        $privKey1 = file_get_contents(__DIR__ . '/data/rsa1-private.pem');
+        $privKey1 = file_get_contents(__DIR__ . '/data/' . $pemFile);
         $payload = ['sub' => 'foo', 'exp' => strtotime('+10 seconds')];
-        $msg = JWT::encode($payload, $privKey1, 'RS256', 'jwk1');
+        $msg = JWT::encode($payload, $privKey1, $alg, 'jwk1');
 
-        $result = JWT::decode($msg, self::$keys);
+        $jwkSet = json_decode(
+            file_get_contents(__DIR__ . '/data/' . $jwkFile),
+            true
+        );
+
+        $keys = JWK::parseKeySet($jwkSet);
+        $result = JWT::decode($msg, $keys);
 
         $this->assertEquals('foo', $result->sub);
+    }
+
+    public function provideDecodeByJwkKeySet()
+    {
+        return [
+            ['rsa1-private.pem', 'rsa-jwkset.json', 'RS256'],
+            ['ecdsa256-private.pem', 'ec-jwkset.json', 'ES256'],
+        ];
     }
 
     /**
