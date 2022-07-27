@@ -89,7 +89,8 @@ class JWT
      */
     public static function decode(
         string $jwt,
-        $keyOrKeyArray
+        $keyOrKeyArray,
+        &$headers = null
     ): stdClass {
         // Validate JWT
         $timestamp = \is_null(static::$timestamp) ? \time() : static::$timestamp;
@@ -106,6 +107,11 @@ class JWT
         if (null === ($header = static::jsonDecode($headerRaw))) {
             throw new UnexpectedValueException('Invalid header encoding');
         }
+
+        if ($headers !== null) {
+            $headers = $header;
+        }
+
         $payloadRaw = static::urlsafeB64Decode($bodyb64);
         if (null === ($payload = static::jsonDecode($payloadRaw))) {
             throw new UnexpectedValueException('Invalid claims encoding');
