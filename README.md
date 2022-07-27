@@ -44,9 +44,15 @@ $payload = [
  * for a list of spec-compliant algorithms.
  */
 $jwt = JWT::encode($payload, $key, 'HS256');
-$decoded = JWT::decode($jwt, new Key($key, 'HS256'));
+/**
+ * The third parameter allow you to get header values in a stdClass object (you need to instance it before).
+ * It is optional.
+ */
+$headers = new stdClass();
+$decoded = JWT::decode($jwt, new Key($key, 'HS256'), $headers);
 
 print_r($decoded);
+print_r($headers);
 
 /*
  NOTE: This will now be an object instead of an associative array. To get
