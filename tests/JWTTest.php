@@ -394,4 +394,19 @@ class JWTTest extends TestCase
 
         $this->assertEquals('bar', $decoded->foo);
     }
+
+    public function testGetHeaders()
+    {
+        $payload = [
+            'message' => 'abc',
+            'exp' => time() + JWT::$leeway + 20, // time in the future
+        ];
+        $headers = new stdClass();
+
+        $encoded = JWT::encode($payload, 'my_key', 'HS256');
+        JWT::decode($encoded, new Key('my_key', 'HS256'), $headers);
+
+        $this->assertEquals($headers->typ, 'JWT');
+        $this->assertEquals($headers->alg, 'HS256');
+    }
 }
