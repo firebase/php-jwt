@@ -136,7 +136,7 @@ class JWT
             // OpenSSL expects an ASN.1 DER sequence for ES256/ES384 signatures
             $sig = self::signatureToDER($sig);
         }
-        if (!self::verify("${headb64}.${bodyb64}", $sig, $key->getKeyMaterial(), $header->alg)) {
+        if (!self::verify("{$headb64}.{$bodyb64}", $sig, $key->getKeyMaterial(), $header->alg)) {
             throw new SignatureInvalidException('Signature verification failed');
         }
 
