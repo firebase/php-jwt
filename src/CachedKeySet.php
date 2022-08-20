@@ -16,62 +16,33 @@ use RuntimeException;
  */
 class CachedKeySet implements ArrayAccess
 {
-    /**
-     * @var string
-     */
-    private $jwksUri;
-    /**
-     * @var ClientInterface
-     */
-    private $httpClient;
-    /**
-     * @var RequestFactoryInterface
-     */
-    private $httpFactory;
-    /**
-     * @var CacheItemPoolInterface
-     */
-    private $cache;
-    /**
-     * @var ?int
-     */
-    private $expiresAfter;
-    /**
-     * @var ?CacheItemInterface
-     */
-    private $cacheItem;
-    /**
-     * @var array<string, Key>
-     */
-    private $keySet;
-    /**
-     * @var string
-     */
-    private $cacheKey;
-    /**
-     * @var string
-     */
-    private $cacheKeyPrefix = 'jwks';
-    /**
-     * @var int
-     */
-    private $maxKeyLength = 64;
-    /**
-     * @var bool
-     */
-    private $rateLimit;
-    /**
-     * @var string
-     */
-    private $rateLimitCacheKey;
-    /**
-     * @var int
-     */
-    private $maxCallsPerMinute = 10;
-    /**
-     * @var string|null
-     */
-    private $defaultAlg;
+    private string $jwksUri;
+
+    private ClientInterface $httpClient;
+
+    private RequestFactoryInterface $httpFactory;
+
+    private CacheItemPoolInterface $cache;
+
+    private ?int $expiresAfter;
+
+    private ?CacheItemInterface $cacheItem = null;
+
+    private ?array $keySet = null;
+
+    private string $cacheKey;
+
+    private string $cacheKeyPrefix = 'jwks';
+
+    private int $maxKeyLength = 64;
+
+    private bool $rateLimit;
+
+    private string $rateLimitCacheKey;
+
+    private int $maxCallsPerMinute = 10;
+
+    private ?string $defaultAlg;
 
     public function __construct(
         string $jwksUri,

@@ -6,6 +6,7 @@ use LogicException;
 use OutOfBoundsException;
 use PHPUnit\Framework\TestCase;
 use Prophecy\Argument;
+use Prophecy\PhpUnit\ProphecyTrait;
 use Psr\Cache\CacheItemInterface;
 use Psr\Cache\CacheItemPoolInterface;
 use Psr\Http\Client\ClientInterface;
@@ -14,16 +15,18 @@ use RuntimeException;
 
 class CachedKeySetTest extends TestCase
 {
-    private $testJwksUri = 'https://jwk.uri';
-    private $testJwksUriKey = 'jwkshttpsjwk.uri';
-    private $testJwks1 = '{"keys": [{"kid":"foo","kty":"RSA","alg":"foo","n":"","e":""}]}';
-    private $testJwks2 = '{"keys": [{"kid":"bar","kty":"RSA","alg":"bar","n":"","e":""}]}';
-    private $testJwks3 = '{"keys": [{"kid":"baz","kty":"RSA","n":"","e":""}]}';
+    use ProphecyTrait;
 
-    private $googleRsaUri = 'https://www.googleapis.com/oauth2/v3/certs';
+    private string $testJwksUri = 'https://jwk.uri';
+    private string $testJwksUriKey = 'jwkshttpsjwk.uri';
+    private string $testJwks1 = '{"keys": [{"kid":"foo","kty":"RSA","alg":"foo","n":"","e":""}]}';
+    private string $testJwks2 = '{"keys": [{"kid":"bar","kty":"RSA","alg":"bar","n":"","e":""}]}';
+    private string $testJwks3 = '{"keys": [{"kid":"baz","kty":"RSA","n":"","e":""}]}';
+
+    private string $googleRsaUri = 'https://www.googleapis.com/oauth2/v3/certs';
     // private $googleEcUri = 'https://www.gstatic.com/iap/verify/public_key-jwk';
 
-    public function testEmptyUriThrowsException()
+    public function testEmptyUriThrowsException(): void
     {
         $this->expectException(RuntimeException::class);
         $this->expectExceptionMessage('JWKS URI is empty');
@@ -38,7 +41,7 @@ class CachedKeySetTest extends TestCase
         $cachedKeySet['foo'];
     }
 
-    public function testOffsetSetThrowsException()
+    public function testOffsetSetThrowsException(): void
     {
         $this->expectException(LogicException::class);
         $this->expectExceptionMessage('Method not implemented');
@@ -53,7 +56,7 @@ class CachedKeySetTest extends TestCase
         $cachedKeySet['foo'] = 'bar';
     }
 
-    public function testOffsetUnsetThrowsException()
+    public function testOffsetUnsetThrowsException(): void
     {
         $this->expectException(LogicException::class);
         $this->expectExceptionMessage('Method not implemented');
@@ -68,7 +71,7 @@ class CachedKeySetTest extends TestCase
         unset($cachedKeySet['foo']);
     }
 
-    public function testOutOfBoundsThrowsException()
+    public function testOutOfBoundsThrowsException(): void
     {
         $this->expectException(OutOfBoundsException::class);
         $this->expectExceptionMessage('Key ID not found');
@@ -84,7 +87,7 @@ class CachedKeySetTest extends TestCase
         $cachedKeySet['bar'];
     }
 
-    public function testWithExistingKeyId()
+    public function testWithExistingKeyId(): void
     {
         $cachedKeySet = new CachedKeySet(
             $this->testJwksUri,
@@ -96,7 +99,7 @@ class CachedKeySetTest extends TestCase
         $this->assertEquals('foo', $cachedKeySet['foo']->getAlgorithm());
     }
 
-    public function testWithDefaultAlg()
+    public function testWithDefaultAlg(): void
     {
         $cachedKeySet = new CachedKeySet(
             $this->testJwksUri,
@@ -111,7 +114,7 @@ class CachedKeySetTest extends TestCase
         $this->assertEquals('baz256', $cachedKeySet['baz']->getAlgorithm());
     }
 
-    public function testKeyIdIsCached()
+    public function testKeyIdIsCached(): void
     {
         $cacheItem = $this->prophesize(CacheItemInterface::class);
         $cacheItem->isHit()
@@ -135,7 +138,7 @@ class CachedKeySetTest extends TestCase
         $this->assertEquals('foo', $cachedKeySet['foo']->getAlgorithm());
     }
 
-    public function testCachedKeyIdRefresh()
+    public function testCachedKeyIdRefresh(): void
     {
         $cacheItem = $this->prophesize(CacheItemInterface::class);
         $cacheItem->isHit()
@@ -171,7 +174,7 @@ class CachedKeySetTest extends TestCase
         $this->assertEquals('bar', $cachedKeySet['bar']->getAlgorithm());
     }
 
-    public function testCacheItemWithExpiresAfter()
+    public function testCacheItemWithExpiresAfter(): void
     {
         $expiresAfter = 10;
         $cacheItem = $this->prophesize(CacheItemInterface::class);
@@ -207,7 +210,7 @@ class CachedKeySetTest extends TestCase
         $this->assertEquals('foo', $cachedKeySet['foo']->getAlgorithm());
     }
 
-    public function testJwtVerify()
+    public function testJwtVerify(): void
     {
         $privKey1 = file_get_contents(__DIR__ . '/data/rsa1-private.pem');
         $payload = ['sub' => 'foo', 'exp' => strtotime('+10 seconds')];
@@ -236,7 +239,7 @@ class CachedKeySetTest extends TestCase
         $this->assertEquals('foo', $result->sub);
     }
 
-    public function testRateLimit()
+    public function testRateLimit(): void
     {
         // We request the key 11 times, HTTP should only be called 10 times
         $shouldBeCalledTimes = 10;
@@ -293,7 +296,7 @@ class CachedKeySetTest extends TestCase
         $this->assertEquals($keys['keys'][0]['alg'], $key->getAlgorithm());
     }
 
-    public function provideFullIntegration()
+    public function provideFullIntegration(): array
     {
         return [
             [$this->googleRsaUri],
@@ -301,7 +304,7 @@ class CachedKeySetTest extends TestCase
         ];
     }
 
-    private function getMockHttpClient($testJwks, int $timesCalled = 1)
+    private function getMockHttpClient($testJwks, int $timesCalled = 1): object
     {
         $body = $this->prophesize('Psr\Http\Message\StreamInterface');
         $body->__toString()
@@ -321,7 +324,7 @@ class CachedKeySetTest extends TestCase
         return $http->reveal();
     }
 
-    private function getMockHttpFactory(int $timesCalled = 1)
+    private function getMockHttpFactory(int $timesCalled = 1): object
     {
         $request = $this->prophesize('Psr\Http\Message\RequestInterface');
         $factory = $this->prophesize(RequestFactoryInterface::class);
@@ -332,7 +335,7 @@ class CachedKeySetTest extends TestCase
         return $factory->reveal();
     }
 
-    private function getMockEmptyCache()
+    private function getMockEmptyCache(): object
     {
         $cacheItem = $this->prophesize(CacheItemInterface::class);
         $cacheItem->isHit()

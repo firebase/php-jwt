@@ -12,7 +12,7 @@ class Key
     /** @var string|resource|OpenSSLAsymmetricKey|OpenSSLCertificate */
     private $keyMaterial;
     /** @var string */
-    private $algorithm;
+    private string $algorithm;
 
     /**
      * @param string|resource|OpenSSLAsymmetricKey|OpenSSLCertificate $keyMaterial

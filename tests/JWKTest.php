@@ -12,7 +12,7 @@ class JWKTest extends TestCase
     private static $privKey1;
     private static $privKey2;
 
-    public function testMissingKty()
+    public function testMissingKty(): void
     {
         $this->expectException(UnexpectedValueException::class);
         $this->expectExceptionMessage('JWK must contain a "kty" parameter');
@@ -21,7 +21,7 @@ class JWKTest extends TestCase
         $keys = JWK::parseKeySet(['keys' => [$badJwk]]);
     }
 
-    public function testInvalidAlgorithm()
+    public function testInvalidAlgorithm(): void
     {
         $this->expectException(UnexpectedValueException::class);
         $this->expectExceptionMessage('No supported algorithms found in JWK Set');
@@ -30,7 +30,7 @@ class JWKTest extends TestCase
         $keys = JWK::parseKeySet(['keys' => [$badJwk]]);
     }
 
-    public function testParsePrivateKey()
+    public function testParsePrivateKey(): void
     {
         $this->expectException(UnexpectedValueException::class);
         $this->expectExceptionMessage('RSA private keys are not supported');
@@ -44,7 +44,7 @@ class JWKTest extends TestCase
         JWK::parseKeySet($jwkSet);
     }
 
-    public function testParsePrivateKeyWithoutAlg()
+    public function testParsePrivateKeyWithoutAlg(): void
     {
         $this->expectException(UnexpectedValueException::class);
         $this->expectExceptionMessage('JWK must contain an "alg" parameter');
@@ -58,7 +58,7 @@ class JWKTest extends TestCase
         JWK::parseKeySet($jwkSet);
     }
 
-    public function testParsePrivateKeyWithoutAlgWithDefaultAlgParameter()
+    public function testParsePrivateKeyWithoutAlgWithDefaultAlgParameter(): void
     {
         $jwkSet = json_decode(
             file_get_contents(__DIR__ . '/data/rsa-jwkset.json'),
@@ -70,7 +70,7 @@ class JWKTest extends TestCase
         $this->assertEquals('foo', $jwks['jwk1']->getAlgorithm());
     }
 
-    public function testParseKeyWithEmptyDValue()
+    public function testParseKeyWithEmptyDValue(): void
     {
         $jwkSet = json_decode(
             file_get_contents(__DIR__ . '/data/rsa-jwkset.json'),
@@ -84,7 +84,7 @@ class JWKTest extends TestCase
         $this->assertTrue(\is_array($keys));
     }
 
-    public function testParseJwkKeySet()
+    public function testParseJwkKeySet(): void
     {
         $jwkSet = json_decode(
             file_get_contents(__DIR__ . '/data/rsa-jwkset.json'),
@@ -96,7 +96,7 @@ class JWKTest extends TestCase
         self::$keys = $keys;
     }
 
-    public function testParseJwkKey_empty()
+    public function testParseJwkKey_empty(): void
     {
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('JWK must not be empty');
@@ -104,7 +104,7 @@ class JWKTest extends TestCase
         JWK::parseKeySet(['keys' => [[]]]);
     }
 
-    public function testParseJwkKeySet_empty()
+    public function testParseJwkKeySet_empty(): void
     {
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('JWK Set did not contain any keys');
@@ -115,7 +115,7 @@ class JWKTest extends TestCase
     /**
      * @depends testParseJwkKeySet
      */
-    public function testDecodeByJwkKeySetTokenExpired()
+    public function testDecodeByJwkKeySetTokenExpired(): void
     {
         $privKey1 = file_get_contents(__DIR__ . '/data/rsa1-private.pem');
         $payload = ['exp' => strtotime('-1 hour')];
@@ -129,7 +129,7 @@ class JWKTest extends TestCase
     /**
      * @dataProvider provideDecodeByJwkKeySet
      */
-    public function testDecodeByJwkKeySet($pemFile, $jwkFile, $alg)
+    public function testDecodeByJwkKeySet($pemFile, $jwkFile, $alg): void
     {
         $privKey1 = file_get_contents(__DIR__ . '/data/' . $pemFile);
         $payload = ['sub' => 'foo', 'exp' => strtotime('+10 seconds')];
@@ -146,7 +146,7 @@ class JWKTest extends TestCase
         $this->assertEquals('foo', $result->sub);
     }
 
-    public function provideDecodeByJwkKeySet()
+    public function provideDecodeByJwkKeySet(): array
     {
         return [
             ['rsa1-private.pem', 'rsa-jwkset.json', 'RS256'],
@@ -157,7 +157,7 @@ class JWKTest extends TestCase
     /**
      * @depends testParseJwkKeySet
      */
-    public function testDecodeByMultiJwkKeySet()
+    public function testDecodeByMultiJwkKeySet(): void
     {
         $privKey2 = file_get_contents(__DIR__ . '/data/rsa2-private.pem');
         $payload = ['sub' => 'bar', 'exp' => strtotime('+10 seconds')];

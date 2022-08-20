@@ -35,24 +35,20 @@ class JWT
      * When checking nbf, iat or expiration times,
      * we want to provide some extra leeway time to
      * account for clock skew.
-     *
-     * @var int
      */
-    public static $leeway = 0;
+    public static int $leeway = 0;
 
     /**
      * Allow the current timestamp to be specified.
      * Useful for fixing a value within unit testing.
      * Will default to PHP time() value if null.
-     *
-     * @var ?int
      */
-    public static $timestamp = null;
+    public static ?int $timestamp = null;
 
     /**
      * @var array<string, string[]>
      */
-    public static $supported_algs = [
+    public static array $supported_algs = [
         'ES384' => ['openssl', 'SHA384'],
         'ES256' => ['openssl', 'SHA256'],
         'HS256' => ['hash_hmac', 'SHA256'],
@@ -172,7 +168,7 @@ class JWT
      * @param string|resource|OpenSSLAsymmetricKey|OpenSSLCertificate $key The secret key.
      * @param string                $alg     Supported algorithms are 'ES384','ES256', 'HS256', 'HS384',
      *                                       'HS512', 'RS256', 'RS384', and 'RS512'
-     * @param string                $keyId
+     * @param string|null           $keyId
      * @param array<string, string> $head    An array with header elements to attach
      *
      * @return string A signed JWT
@@ -480,9 +476,7 @@ class JWT
             JSON_ERROR_UTF8 => 'Malformed UTF-8 characters' //PHP >= 5.3.3
         ];
         throw new DomainException(
-            isset($messages[$errno])
-            ? $messages[$errno]
-            : 'Unknown JSON error: ' . $errno
+            $messages[$errno] ?? 'Unknown JSON error: ' . $errno
         );
     }
 
