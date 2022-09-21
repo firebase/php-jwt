@@ -49,9 +49,9 @@ class ExceptionCodes
     public const JWK_EC_D_IS_NOT_SET = 40;
     public const JWT_EC_CRV_IS_EMPTY = 41;
     public const JWK_UNSUPPORTED_EC_CURVE = 42;
-    public const JWT_X_AND_Y_ARE_EMPTY = 42;
+    public const JWT_X_AND_Y_ARE_EMPTY = 43;
 
-    public const KEY_MATERIAL_IS_INVALID = 43;
-    public const KEY_MATERIAL_IS_EMPTY = 44;
-    public const KEY_ALGORITHM_IS_EMPTY = 45;
+    public const KEY_MATERIAL_IS_INVALID = 44;
+    public const KEY_MATERIAL_IS_EMPTY = 45;
+    public const KEY_ALGORITHM_IS_EMPTY = 46;
 }
