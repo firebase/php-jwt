@@ -50,11 +50,17 @@ class JWK
         $keys = [];
 
         if (!isset($jwks['keys'])) {
-            throw new UnexpectedValueException('"keys" member must exist in the JWK Set');
+            throw new UnexpectedValueException(
+                '"keys" member must exist in the JWK Set',
+                ExceptionCodes::JWK_MISSING_KEYS
+            );
         }
 
         if (empty($jwks['keys'])) {
-            throw new InvalidArgumentException('JWK Set did not contain any keys');
+            throw new InvalidArgumentException(
+                'JWK Set did not contain any keys',
+                ExceptionCodes::JWT_KEYS_IS_EMPTY
+            );
         }
 
         foreach ($jwks['keys'] as $k => $v) {
@@ -65,7 +71,11 @@ class JWK
         }
 
         if (0 === \count($keys)) {
-            throw new UnexpectedValueException('No supported algorithms found in JWK Set');
+            throw new UnexpectedValueException(
+                'No supported algorithms found in JWK Set',
+                ExceptionCodes::JWT_ALGORITHM_NOT_SUPPORTED
+
+            );
         }
 
         return $keys;
@@ -89,11 +99,17 @@ class JWK
     public static function parseKey(array $jwk, string $defaultAlg = null): ?Key
     {
         if (empty($jwk)) {
-            throw new InvalidArgumentException('JWK must not be empty');
+            throw new InvalidArgumentException(
+                'JWK must not be empty',
+                ExceptionCodes::JWK_IS_EMPTY
+            );
         }
 
         if (!isset($jwk['kty'])) {
-            throw new UnexpectedValueException('JWK must contain a "kty" parameter');
+            throw new UnexpectedValueException(
+                'JWK must contain a "kty" parameter',
+                ExceptionCodes::JWT_MISSING_KTY_PARAMETER
+            );
         }
 
         if (!isset($jwk['alg'])) {
@@ -102,7 +118,10 @@ class JWK
                 // for parsing in this library. Use the $defaultAlg parameter when parsing the
                 // key set in order to prevent this error.
                 // @see https://datatracker.ietf.org/doc/html/rfc7517#section-4.4
-                throw new UnexpectedValueException('JWK must contain an "alg" parameter');
+                throw new UnexpectedValueException(
+                    'JWK must contain an "alg" parameter',
+                    ExceptionCodes::JWT_MISSING_ALG_PARAMETER
+                );
             }
             $jwk['alg'] = $defaultAlg;
         }
@@ -110,36 +129,55 @@ class JWK
         switch ($jwk['kty']) {
             case 'RSA':
                 if (!empty($jwk['d'])) {
-                    throw new UnexpectedValueException('RSA private keys are not supported');
+                    throw new UnexpectedValueException(
+                        'RSA private keys are not supported',
+                        ExceptionCodes::JWT_RSA_KEYS_NOT_SUPPORTED
+                    );
                 }
                 if (!isset($jwk['n']) || !isset($jwk['e'])) {
-                    throw new UnexpectedValueException('RSA keys must contain values for both "n" and "e"');
+                    throw new UnexpectedValueException(
+                        'RSA keys must contain values for both "n" and "e"',
+                        ExceptionCodes::JWT_RSA_KEYS_MISSING_N_AND_E
+                    );
                 }
 
                 $pem = self::createPemFromModulusAndExponent($jwk['n'], $jwk['e']);
                 $publicKey = \openssl_pkey_get_public($pem);
                 if (false === $publicKey) {
                     throw new DomainException(
-                        'OpenSSL error: ' . \openssl_error_string()
+                        'OpenSSL error: ' . \openssl_error_string(),
+                        ExceptionCodes::JWT_OPEN_SSL_ERROR
                     );
                 }
                 return new Key($publicKey, $jwk['alg']);
             case 'EC':
                 if (isset($jwk['d'])) {
                     // The key is actually a private key
-                    throw new UnexpectedValueException('Key data must be for a public key');
+                    throw new UnexpectedValueException(
+                        'Key data must be for a public key',
+                        ExceptionCodes::JWK_EC_D_IS_NOT_SET
+                    );
                 }
 
                 if (empty($jwk['crv'])) {
-                    throw new UnexpectedValueException('crv not set');
+                    throw new UnexpectedValueException(
+                        'crv not set',
+                        ExceptionCodes::JWT_EC_CRV_IS_EMPTY
+                    );
                 }
 
                 if (!isset(self::EC_CURVES[$jwk['crv']])) {
-                    throw new DomainException('Unrecognised or unsupported EC curve');
+                    throw new DomainException(
+                        'Unrecognised or unsupported EC curve',
+                        ExceptionCodes::JWK_UNSUPPORTED_EC_CURVE
+                    );
                 }
 
                 if (empty($jwk['x']) || empty($jwk['y'])) {
-                    throw new UnexpectedValueException('x and y not set');
+                    throw new UnexpectedValueException(
+                        'x and y not set',
+                        ExceptionCodes::JWT_X_AND_Y_ARE_EMPTY
+                    );
                 }
 
                 $publicKey = self::createPemFromCrvAndXYCoordinates($jwk['crv'], $jwk['x'], $jwk['y']);

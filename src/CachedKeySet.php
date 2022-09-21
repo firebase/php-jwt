@@ -99,7 +99,10 @@ class CachedKeySet implements ArrayAccess
     public function offsetGet($keyId): Key
     {
         if (!$this->keyIdExists($keyId)) {
-            throw new OutOfBoundsException('Key ID not found');
+            throw new OutOfBoundsException(
+                'Key ID not found',
+                ExceptionCodes::KEY_ID_NOT_FOUND
+            );
         }
         return $this->keySet[$keyId];
     }
@@ -119,7 +122,10 @@ class CachedKeySet implements ArrayAccess
      */
     public function offsetSet($offset, $value): void
     {
-        throw new LogicException('Method not implemented');
+        throw new LogicException(
+            'Method not implemented',
+            ExceptionCodes::OFFSET_SET_METHOD_NOT_IMPLEMENTED
+        );
     }
 
     /**
@@ -127,7 +133,10 @@ class CachedKeySet implements ArrayAccess
      */
     public function offsetUnset($offset): void
     {
-        throw new LogicException('Method not implemented');
+        throw new LogicException(
+            'Method not implemented',
+            ExceptionCodes::OFFSET_UNSET_METHOD_NOT_IMPLEMENTED
+        );
     }
 
     private function keyIdExists(string $keyId): bool
@@ -198,7 +207,10 @@ class CachedKeySet implements ArrayAccess
     private function setCacheKeys(): void
     {
         if (empty($this->jwksUri)) {
-            throw new RuntimeException('JWKS URI is empty');
+            throw new RuntimeException(
+                'JWKS URI is empty',
+                ExceptionCodes::JWKS_URI_IS_EMPTY
+            );
         }
 
         // ensure we do not have illegal characters
