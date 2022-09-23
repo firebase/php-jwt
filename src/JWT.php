@@ -166,7 +166,7 @@ class JWT
     }
 
     /**
-     * Converts and signs a PHP object or array into a JWT string.
+     * Converts and signs a PHP array into a JWT string.
      *
      * @param array<mixed>          $payload PHP array
      * @param string|resource|OpenSSLAsymmetricKey|OpenSSLCertificate $key The secret key.
