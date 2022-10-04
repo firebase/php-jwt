@@ -55,6 +55,7 @@ class JWT
     public static $supported_algs = [
         'ES384' => ['openssl', 'SHA384'],
         'ES256' => ['openssl', 'SHA256'],
+        'ES256K' => ['openssl', 'SHA256'],
         'HS256' => ['hash_hmac', 'SHA256'],
         'HS384' => ['hash_hmac', 'SHA384'],
         'HS512' => ['hash_hmac', 'SHA512'],
