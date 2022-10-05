@@ -76,7 +76,7 @@ class JWT
      *
      * @return stdClass The JWT's payload as a PHP object
      *
-     * @throws InvalidArgumentException     Provided key/key-array was empty
+     * @throws InvalidArgumentException     Provided key/key-array was empty or malformed
      * @throws DomainException              Provided JWT is malformed
      * @throws UnexpectedValueException     Provided JWT was invalid
      * @throws SignatureInvalidException    Provided JWT was invalid because the signature verification failed
