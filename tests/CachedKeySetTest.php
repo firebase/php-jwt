@@ -325,7 +325,7 @@ class CachedKeySetTest extends TestCase
     {
         $request = $this->prophesize('Psr\Http\Message\RequestInterface');
         $factory = $this->prophesize(RequestFactoryInterface::class);
-        $factory->createRequest('get', $this->testJwksUri)
+        $factory->createRequest('GET', $this->testJwksUri)
             ->shouldBeCalledTimes($timesCalled)
             ->willReturn($request->reveal());
 
