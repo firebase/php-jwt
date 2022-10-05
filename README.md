@@ -280,7 +280,6 @@ try {
     // provided JWT algorithm does not match provided key OR
     // provided key ID in key/key-array is empty or invalid.
 }
-
 ```
 
 All exceptions in the `Firebase\JWT` namespace extend `UnexpectedValueException`, and can be simplified
