@@ -133,8 +133,8 @@ class JWT
             // See issue #351
             throw new UnexpectedValueException('Incorrect key for this algorithm');
         }
-        if ($header->alg === 'ES256' || $header->alg === 'ES384') {
-            // OpenSSL expects an ASN.1 DER sequence for ES256/ES384 signatures
+        if (in_array($header->alg, ['ES256', 'ES256K', 'ES384'])) {
+            // OpenSSL expects an ASN.1 DER sequence for ES256/ES256K/ES384 signatures
             $sig = self::signatureToDER($sig);
         }
         if (!self::verify("${headb64}.${bodyb64}", $sig, $key->getKeyMaterial(), $header->alg)) {
@@ -171,8 +171,8 @@ class JWT
      *
      * @param array<mixed>          $payload PHP array
      * @param string|resource|OpenSSLAsymmetricKey|OpenSSLCertificate $key The secret key.
-     * @param string                $alg     Supported algorithms are 'ES384','ES256', 'HS256', 'HS384',
-     *                                       'HS512', 'RS256', 'RS384', and 'RS512'
+     * @param string                $alg     Supported algorithms are 'ES384','ES256', 'ES256K', 'HS256',
+     *                                       'HS384', 'HS512', 'RS256', 'RS384', and 'RS512'
      * @param string                $keyId
      * @param array<string, string> $head    An array with header elements to attach
      *
@@ -211,8 +211,8 @@ class JWT
      *
      * @param string $msg  The message to sign
      * @param string|resource|OpenSSLAsymmetricKey|OpenSSLCertificate  $key  The secret key.
-     * @param string $alg  Supported algorithms are 'ES384','ES256', 'HS256', 'HS384',
-     *                    'HS512', 'RS256', 'RS384', and 'RS512'
+     * @param string $alg  Supported algorithms are 'ES384','ES256', 'ES256K', 'HS256',
+     *                    'HS384', 'HS512', 'RS256', 'RS384', and 'RS512'
      *
      * @return string An encrypted message
      *
@@ -239,7 +239,7 @@ class JWT
                 if (!$success) {
                     throw new DomainException('OpenSSL unable to sign data');
                 }
-                if ($alg === 'ES256') {
+                if ($alg === 'ES256' || $alg === 'ES256K') {
                     $signature = self::signatureFromDER($signature, 256);
                 } elseif ($alg === 'ES384') {
                     $signature = self::signatureFromDER($signature, 384);
