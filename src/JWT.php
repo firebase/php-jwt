@@ -163,7 +163,7 @@ class JWT
         if (!self::verify("{$headb64}.{$bodyb64}", $sig, $key->getKeyMaterial(), $header->alg)) {
             throw new SignatureInvalidException(
                 'Signature verification failed',
-                SignatureInvalidException::SIGNATURE_VERIFICATION_FAILED
+                ExceptionCodes::SIGNATURE_VERIFICATION_FAILED
             );
         }
 
@@ -172,7 +172,7 @@ class JWT
         if (isset($payload->nbf) && $payload->nbf > ($timestamp + static::$leeway)) {
             throw new BeforeValidException(
                 'Cannot handle token prior to ' . \date(DateTime::ISO8601, $payload->nbf),
-                BeforeValidException::NBF_PRIOR_TO_DATE
+                ExceptionCodes::NBF_PRIOR_TO_DATE
             );
         }
 
@@ -182,13 +182,13 @@ class JWT
         if (isset($payload->iat) && $payload->iat > ($timestamp + static::$leeway)) {
             throw new BeforeValidException(
                 'Cannot handle token prior to ' . \date(DateTime::ISO8601, $payload->iat),
-                BeforeValidException::IAT_PRIOR_TO_DATE
+                ExceptionCodes::IAT_PRIOR_TO_DATE
             );
         }
 
         // Check if this token has expired.
         if (isset($payload->exp) && ($timestamp - static::$leeway) >= $payload->exp) {
-            throw new ExpiredException('Expired token', ExpiredException::TOKEN_EXPIRED);
+            throw new ExpiredException('Expired token', ExceptionCodes::TOKEN_EXPIRED);
         }
 
         return $payload;
