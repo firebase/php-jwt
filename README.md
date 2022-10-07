@@ -245,6 +245,56 @@ $decoded = JWT::decode($jwt, $keySet);
 Miscellaneous
 -------------
 
+#### Exception Handling
+
+When a call to `JWT::decode` is invalid, it will throw one of the following exceptions:
+
+```php
+use Firebase\JWT\JWT;
+use Firebase\JWT\SignatureInvalidException;
+use Firebase\JWT\BeforeValidException;
+use Firebase\JWT\ExpiredException;
+use DomainException;
+use InvalidArgumentException;
+use UnexpectedValueException;
+
+try {
+    $decoded = JWT::decode($payload, $keys);
+} catch (InvalidArgumentException $e) {
+    // provided key/key-array is empty or malformed.
+} catch (DomainException $e) {
+    // provided algorithm is unsupported OR
+    // provided key is invalid OR
+    // unknown error thrown in openSSL or libsodium OR
+    // libsodium is required but not available.
+} catch (SignatureInvalidException $e) {
+    // provided JWT signature verification failed.
+} catch (BeforeValidException $e) {
+    // provided JWT is trying to be used before "nbf" claim OR
+    // provided JWT is trying to be used before "iat" claim.
+} catch (ExpiredException $e) {
+    // provided JWT is trying to be used after "exp" claim.
+} catch (UnexpectedValueException $e) {
+    // provided JWT is malformed OR
+    // provided JWT is missing an algorithm / using an unsupported algorithm OR
+    // provided JWT algorithm does not match provided key OR
+    // provided key ID in key/key-array is empty or invalid.
+}
+```
+
+All exceptions in the `Firebase\JWT` namespace extend `UnexpectedValueException`, and can be simplified
+like this:
+
+```php
+try {
+    $decoded = JWT::decode($payload, $keys);
+} catch (LogicException $e) {
+    // errors having to do with environmental setup or malformed JWT Keys
+} catch (UnexpectedValueException $e) {
+    // errors having to do with JWT signature and claims
+}
+```
+
 #### Casting to array
 
 The return value of `JWT::decode` is the generic PHP object `stdClass`. If you'd like to handle with arrays
@@ -269,7 +319,7 @@ Changelog
 #### 6.2.0 / 2022-05-14
 
  - Added `CachedKeySet` ([#397](https://github.com/firebase/php-jwt/pull/397))
- - Added `$defaultAlg` parameter to `JWT::parseKey` and `JWT::parseKeySet` ([#426](https://github.com/firebase/php-jwt/pull/426)). 
+ - Added `$defaultAlg` parameter to `JWT::parseKey` and `JWT::parseKeySet` ([#426](https://github.com/firebase/php-jwt/pull/426)).
 
 #### 6.1.0 / 2022-03-23
 
