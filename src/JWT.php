@@ -133,7 +133,7 @@ class JWT
             // See issue #351
             throw new UnexpectedValueException('Incorrect key for this algorithm');
         }
-        if (in_array($header->alg, ['ES256', 'ES256K', 'ES384'])) {
+        if (\in_array($header->alg, ['ES256', 'ES256K', 'ES384'], true)) {
             // OpenSSL expects an ASN.1 DER sequence for ES256/ES256K/ES384 signatures
             $sig = self::signatureToDER($sig);
         }
