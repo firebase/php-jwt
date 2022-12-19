@@ -77,7 +77,7 @@ class JWT
      *
      * @return stdClass The JWT's payload as a PHP object
      *
-     * @throws InvalidArgumentException     Provided key/key-array was empty
+     * @throws InvalidArgumentException     Provided key/key-array was empty or malformed
      * @throws DomainException              Provided JWT is malformed
      * @throws UnexpectedValueException     Provided JWT was invalid
      * @throws SignatureInvalidException    Provided JWT was invalid because the signature verification failed
@@ -137,7 +137,7 @@ class JWT
             // OpenSSL expects an ASN.1 DER sequence for ES256/ES256K/ES384 signatures
             $sig = self::signatureToDER($sig);
         }
-        if (!self::verify("${headb64}.${bodyb64}", $sig, $key->getKeyMaterial(), $header->alg)) {
+        if (!self::verify("{$headb64}.{$bodyb64}", $sig, $key->getKeyMaterial(), $header->alg)) {
             throw new SignatureInvalidException('Signature verification failed');
         }
 
@@ -167,7 +167,7 @@ class JWT
     }
 
     /**
-     * Converts and signs a PHP object or array into a JWT string.
+     * Converts and signs a PHP array into a JWT string.
      *
      * @param array<mixed>          $payload PHP array
      * @param string|resource|OpenSSLAsymmetricKey|OpenSSLCertificate $key The secret key.
@@ -256,6 +256,9 @@ class JWT
                     // The last non-empty line is used as the key.
                     $lines = array_filter(explode("\n", $key));
                     $key = base64_decode((string) end($lines));
+                    if (\strlen($key) === 0) {
+                        throw new DomainException('Key cannot be empty string');
+                    }
                     return sodium_crypto_sign_detached($msg, $key);
                 } catch (Exception $e) {
                     throw new DomainException($e->getMessage(), 0, $e);
@@ -313,6 +316,12 @@ class JWT
                     // The last non-empty line is used as the key.
                     $lines = array_filter(explode("\n", $keyMaterial));
                     $key = base64_decode((string) end($lines));
+                    if (\strlen($key) === 0) {
+                        throw new DomainException('Key cannot be empty string');
+                    }
+                    if (\strlen($signature) === 0) {
+                        throw new DomainException('Signature cannot be empty string');
+                    }
                     return sodium_crypto_sign_verify_detached($signature, $msg, $key);
                 } catch (Exception $e) {
                     throw new DomainException($e->getMessage(), 0, $e);
@@ -426,14 +435,15 @@ class JWT
             return $keyOrKeyArray;
         }
 
+        if (empty($kid)) {
+            throw new UnexpectedValueException('"kid" empty, unable to lookup correct key');
+        }
+
         if ($keyOrKeyArray instanceof CachedKeySet) {
             // Skip "isset" check, as this will automatically refresh if not set
             return $keyOrKeyArray[$kid];
         }
 
-        if (empty($kid)) {
-            throw new UnexpectedValueException('"kid" empty, unable to lookup correct key');
-        }
         if (!isset($keyOrKeyArray[$kid])) {
             throw new UnexpectedValueException('"kid" invalid, unable to lookup correct key');
         }
