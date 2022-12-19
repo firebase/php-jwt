@@ -1,5 +1,12 @@
 # Changelog
 
+## [6.3.2](https://github.com/firebase/php-jwt/compare/v6.3.1...v6.3.2) (2022-11-01)
+
+
+### Bug Fixes
+
+* check kid before using as array index ([bad1b04](https://github.com/firebase/php-jwt/commit/bad1b040d0c736bbf86814c6b5ae614f517cf7bd))
+
 ## [6.3.1](https://github.com/firebase/php-jwt/compare/v6.3.0...v6.3.1) (2022-11-01)
 
 
@@ -88,5 +95,3 @@ between signing and verifying entities. Thanks to [@lcabral](https://github.com/
   asymmetric keys are used together.
 - Update signature for `JWT::decode(...)` to require an array of supported
   algorithms to use when verifying token signatures.
-
-
