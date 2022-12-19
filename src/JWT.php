@@ -255,7 +255,7 @@ class JWT
                     // The last non-empty line is used as the key.
                     $lines = array_filter(explode("\n", $key));
                     $key = base64_decode((string) end($lines));
-                    if (strlen($key) === 0) {
+                    if (\strlen($key) === 0) {
                         throw new DomainException('Key cannot be empty string');
                     }
                     return sodium_crypto_sign_detached($msg, $key);
@@ -315,10 +315,10 @@ class JWT
                     // The last non-empty line is used as the key.
                     $lines = array_filter(explode("\n", $keyMaterial));
                     $key = base64_decode((string) end($lines));
-                    if (strlen($key) === 0) {
+                    if (\strlen($key) === 0) {
                         throw new DomainException('Key cannot be empty string');
                     }
-                    if (strlen($signature) === 0) {
+                    if (\strlen($signature) === 0) {
                         throw new DomainException('Signature cannot be empty string');
                     }
                     return sodium_crypto_sign_verify_detached($signature, $msg, $key);
