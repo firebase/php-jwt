@@ -93,7 +93,7 @@ class CachedKeySetTest extends TestCase
             $this->getMockEmptyCache()
         );
         $this->assertInstanceOf(Key::class, $cachedKeySet['foo']);
-        $this->assertEquals('foo', $cachedKeySet['foo']->getAlgorithm());
+        $this->assertSame('foo', $cachedKeySet['foo']->getAlgorithm());
     }
 
     public function testWithDefaultAlg()
@@ -108,7 +108,7 @@ class CachedKeySetTest extends TestCase
             'baz256'
         );
         $this->assertInstanceOf(Key::class, $cachedKeySet['baz']);
-        $this->assertEquals('baz256', $cachedKeySet['baz']->getAlgorithm());
+        $this->assertSame('baz256', $cachedKeySet['baz']->getAlgorithm());
     }
 
     public function testKeyIdIsCached()
@@ -132,7 +132,7 @@ class CachedKeySetTest extends TestCase
             $cache->reveal()
         );
         $this->assertInstanceOf(Key::class, $cachedKeySet['foo']);
-        $this->assertEquals('foo', $cachedKeySet['foo']->getAlgorithm());
+        $this->assertSame('foo', $cachedKeySet['foo']->getAlgorithm());
     }
 
     public function testCachedKeyIdRefresh()
@@ -165,10 +165,10 @@ class CachedKeySetTest extends TestCase
             $cache->reveal()
         );
         $this->assertInstanceOf(Key::class, $cachedKeySet['foo']);
-        $this->assertEquals('foo', $cachedKeySet['foo']->getAlgorithm());
+        $this->assertSame('foo', $cachedKeySet['foo']->getAlgorithm());
 
         $this->assertInstanceOf(Key::class, $cachedKeySet['bar']);
-        $this->assertEquals('bar', $cachedKeySet['bar']->getAlgorithm());
+        $this->assertSame('bar', $cachedKeySet['bar']->getAlgorithm());
     }
 
     public function testCacheItemWithExpiresAfter()
@@ -204,7 +204,7 @@ class CachedKeySetTest extends TestCase
             $expiresAfter
         );
         $this->assertInstanceOf(Key::class, $cachedKeySet['foo']);
-        $this->assertEquals('foo', $cachedKeySet['foo']->getAlgorithm());
+        $this->assertSame('foo', $cachedKeySet['foo']->getAlgorithm());
     }
 
     public function testJwtVerify()
@@ -233,7 +233,7 @@ class CachedKeySetTest extends TestCase
 
         $result = JWT::decode($msg, $cachedKeySet);
 
-        $this->assertEquals('foo', $result->sub);
+        $this->assertSame('foo', $result->sub);
     }
 
     public function testRateLimit()
@@ -290,7 +290,7 @@ class CachedKeySetTest extends TestCase
         $this->assertArrayHasKey($kid, $cachedKeySet);
         $key = $cachedKeySet[$kid];
         $this->assertInstanceOf(Key::class, $key);
-        $this->assertEquals($keys['keys'][0]['alg'], $key->getAlgorithm());
+        $this->assertSame($keys['keys'][0]['alg'], $key->getAlgorithm());
     }
 
     public function provideFullIntegration()
