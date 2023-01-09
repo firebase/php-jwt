@@ -146,7 +146,7 @@ class CachedKeySet implements ArrayAccess
             if ($this->rateLimitExceeded()) {
                 return false;
             }
-            $request = $this->httpFactory->createRequest('get', $this->jwksUri);
+            $request = $this->httpFactory->createRequest('GET', $this->jwksUri);
             $jwksResponse = $this->httpClient->sendRequest($request);
             $jwks = (string) $jwksResponse->getBody();
             $this->keySet = JWK::parseKeySet(json_decode($jwks, true), $this->defaultAlg);
