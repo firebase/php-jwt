@@ -522,7 +522,7 @@ class JWT
     {
         // Separate the signature into r-value and s-value
         $length = max(1, (int) (\strlen($sig) / 2));
-        list($r, $s) = \str_split($sig, $length);
+        list($r, $s) = \mb_str_split($sig, $length);
 
         // Trim leading zeros
         $r = \ltrim($r, "\x00");
