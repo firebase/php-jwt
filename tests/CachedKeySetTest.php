@@ -274,12 +274,13 @@ class CachedKeySetTest extends TestCase
         $payload = ['sub' => 'foo', 'exp' => strtotime('+10 seconds')];
         $msg = JWT::encode($payload, $privKey1, 'RS256', 'jwk1');
 
+        // format the cached value to match the expected format
         $cachedJwks = [];
         $rsaKeySet = file_get_contents(__DIR__ . '/data/rsa-jwkset.json');
-        // format the cached value to match the expected format
-        foreach(json_decode($rsaKeySet, true)['keys'] as $k => $v) {
+        foreach (json_decode($rsaKeySet, true)['keys'] as $k => $v) {
             $cachedJwks[$v['kid']] = $v;
         }
+
         $cacheItem = $this->prophesize(CacheItemInterface::class);
         $cacheItem->isHit()
             ->willReturn(true);

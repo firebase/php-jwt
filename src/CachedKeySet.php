@@ -9,6 +9,7 @@ use Psr\Cache\CacheItemInterface;
 use Psr\Cache\CacheItemPoolInterface;
 use Psr\Http\Client\ClientInterface;
 use Psr\Http\Message\RequestFactoryInterface;
+use InvalidArgumentException;
 use RuntimeException;
 use UnexpectedValueException;
 
@@ -42,7 +43,7 @@ class CachedKeySet implements ArrayAccess
      */
     private $cacheItem;
     /**
-     * @var array<string, array>
+     * @var array<string, array<mixed>>
      */
     private $keySet;
     /**
@@ -131,6 +132,9 @@ class CachedKeySet implements ArrayAccess
         throw new LogicException('Method not implemented');
     }
 
+    /**
+     * @return array<mixed>
+     */
     private function formatJwksForCache(string $jwks): array
     {
         $jwks = json_decode($jwks, true);
@@ -162,7 +166,7 @@ class CachedKeySet implements ArrayAccess
                 $this->keySet = $item->get();
                 // If the cached item is a string, the JWKS response was cached (previous behavior).
                 // Parse this into expected format array<kid, jwk> instead.
-                if (is_string($this->keySet)) {
+                if (\is_string($this->keySet)) {
                     $this->keySet = $this->formatJwksForCache($this->keySet);
                 }
             }
