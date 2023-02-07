@@ -73,7 +73,7 @@ class JWTTest extends TestCase
         ];
         $encoded = JWT::encode($payload, 'my_key', 'HS256');
         $decoded = JWT::decode($encoded, new Key('my_key', 'HS256'));
-        $this->assertEquals($decoded->message, 'abc');
+        $this->assertSame($decoded->message, 'abc');
     }
 
     public function testValidTokenWithLeeway()
@@ -85,7 +85,7 @@ class JWTTest extends TestCase
         ];
         $encoded = JWT::encode($payload, 'my_key', 'HS256');
         $decoded = JWT::decode($encoded, new Key('my_key', 'HS256'));
-        $this->assertEquals($decoded->message, 'abc');
+        $this->assertSame($decoded->message, 'abc');
         JWT::$leeway = 0;
     }
 
@@ -99,7 +99,7 @@ class JWTTest extends TestCase
         $this->expectException(ExpiredException::class);
         $encoded = JWT::encode($payload, 'my_key', 'HS256');
         $decoded = JWT::decode($encoded, new Key('my_key', 'HS256'));
-        $this->assertEquals($decoded->message, 'abc');
+        $this->assertSame($decoded->message, 'abc');
         JWT::$leeway = 0;
     }
 
@@ -113,7 +113,7 @@ class JWTTest extends TestCase
         ];
         $encoded = JWT::encode($payload, 'my_key', 'HS256');
         $decoded = JWT::decode($encoded, new Key('my_key', 'HS256'));
-        $this->assertEquals($decoded->message, 'abc');
+        $this->assertSame($decoded->message, 'abc');
     }
 
     public function testValidTokenWithNbfLeeway()
@@ -125,7 +125,7 @@ class JWTTest extends TestCase
         ];
         $encoded = JWT::encode($payload, 'my_key', 'HS256');
         $decoded = JWT::decode($encoded, new Key('my_key', 'HS256'));
-        $this->assertEquals($decoded->message, 'abc');
+        $this->assertSame($decoded->message, 'abc');
         JWT::$leeway = 0;
     }
 
@@ -151,7 +151,7 @@ class JWTTest extends TestCase
         ];
         $encoded = JWT::encode($payload, 'my_key', 'HS256');
         $decoded = JWT::decode($encoded, new Key('my_key', 'HS256'));
-        $this->assertEquals($decoded->message, 'abc');
+        $this->assertSame($decoded->message, 'abc');
         JWT::$leeway = 0;
     }
 
@@ -301,7 +301,7 @@ class JWTTest extends TestCase
 
         $pubKey = base64_encode(sodium_crypto_sign_publickey($keyPair));
         $decoded = JWT::decode($msg, new Key($pubKey, 'EdDSA'));
-        $this->assertEquals('bar', $decoded->foo);
+        $this->assertSame('bar', $decoded->foo);
     }
 
     public function testInvalidEdDsaEncodeDecode()
@@ -350,7 +350,7 @@ class JWTTest extends TestCase
         $payload = ['foo' => [1, 2, 3]];
         $jwt = JWT::encode($payload, $key, 'HS256');
         $decoded = JWT::decode($jwt, new Key($key, 'HS256'));
-        $this->assertEquals($payload['foo'], $decoded->foo);
+        $this->assertSame($payload['foo'], $decoded->foo);
     }
 
     /**
@@ -367,7 +367,7 @@ class JWTTest extends TestCase
         $publicKey = file_get_contents($publicKeyFile);
         $decoded = JWT::decode($encoded, new Key($publicKey, $alg));
 
-        $this->assertEquals('bar', $decoded->foo);
+        $this->assertSame('bar', $decoded->foo);
     }
 
     public function provideEncodeDecode()
@@ -393,6 +393,6 @@ class JWTTest extends TestCase
         // Verify decoding succeeds
         $decoded = JWT::decode($encoded, new Key($resource, 'RS512'));
 
-        $this->assertEquals('bar', $decoded->foo);
+        $this->assertSame('bar', $decoded->foo);
     }
 }
