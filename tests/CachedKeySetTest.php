@@ -6,6 +6,7 @@ use LogicException;
 use OutOfBoundsException;
 use PHPUnit\Framework\TestCase;
 use Prophecy\Argument;
+use Prophecy\PhpUnit\ProphecyTrait;
 use Psr\Cache\CacheItemInterface;
 use Psr\Cache\CacheItemPoolInterface;
 use Psr\Http\Client\ClientInterface;
@@ -14,6 +15,8 @@ use RuntimeException;
 
 class CachedKeySetTest extends TestCase
 {
+    use ProphecyTrait;
+
     private $testJwksUri = 'https://jwk.uri';
     private $testJwksUriKey = 'jwkshttpsjwk.uri';
     private $testJwks1 = '{"keys": [{"kid":"foo","kty":"RSA","alg":"foo","n":"","e":""}]}';

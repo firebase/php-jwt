@@ -20,7 +20,7 @@
     ],
     "license": "BSD-3-Clause",
     "require": {
-        "php": "^7.1||^8.0"
+        "php": "^7.4||^8.0"
     },
     "suggest": {
         "paragonie/sodium_compat": "Support EdDSA (Ed25519) signatures when libsodium is not present",
@@ -33,8 +33,8 @@
     },
     "require-dev": {
         "guzzlehttp/guzzle": "^6.5||^7.4",
-        "phpspec/prophecy-phpunit": "^1.1",
-        "phpunit/phpunit": "^7.5||^9.5",
+        "phpspec/prophecy-phpunit": "^2.0",
+        "phpunit/phpunit": "^9.5",
         "psr/cache": "^1.0||^2.0",
         "psr/http-client": "^1.0",
         "psr/http-factory": "^1.0"
