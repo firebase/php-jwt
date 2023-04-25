@@ -65,6 +65,32 @@ $decoded_array = (array) $decoded;
 JWT::$leeway = 60; // $leeway in seconds
 $decoded = JWT::decode($jwt, new Key($key, 'HS256'));
 ```
+Example encode/decode headers
+-------
+```php
+use Firebase\JWT\JWT;
+
+$key = 'example_key';
+$payload = [
+    'iss' => 'http://example.org',
+    'aud' => 'http://example.com',
+    'iat' => 1356999524,
+    'nbf' => 1357000000
+];
+
+$headers = [
+    'x-forwarded-for' => 'www.google.com'
+];
+
+// Encode headers in the JWT string
+$jwt = JWT::encode($payload, $key, 'HS256', null, $headers);
+
+// Decode headers from the JWT string
+list($headersB64, $payloadB64, $sig) = explode('.', $jwt);
+$decoded = json_decode(base64_decode($headersB64), true);
+
+print_r($decoded);
+```
 Example with RS256 (openssl)
 ----------------------------
 ```php
