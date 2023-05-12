@@ -5,14 +5,12 @@
 
 ### Bug Fixes
 
-* Allow KID index 0 ([be6eb58](https://github.com/firebase/php-jwt/commit/be6eb589e86b0f8ca9e050765b3375dfab5bf91e))
-* Allow KID index 0 ([4543842](https://github.com/firebase/php-jwt/commit/4543842ca47254de7d2d04b8771a8528690cb00a))
 * allow KID of '0' ([#505](https://github.com/firebase/php-jwt/issues/505)) ([9dc46a9](https://github.com/firebase/php-jwt/commit/9dc46a9c3e5801294249cfd2554c5363c9f9326a))
 
 
 ### Miscellaneous Chores
 
-* release 6.5.0 ([52cd980](https://github.com/firebase/php-jwt/commit/52cd98075cc2b53e780e0fd4e82a0f91f0dab25f))
+* drop support for PHP 7.3 ([#495](https://github.com/firebase/php-jwt/issues/495))
 
 ## [6.4.0](https://github.com/firebase/php-jwt/compare/v6.3.2...v6.4.0) (2023-02-08)
 
