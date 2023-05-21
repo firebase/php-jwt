@@ -215,7 +215,7 @@ class JWT
      *
      * @param string $msg  The message to sign
      * @param string|resource|OpenSSLAsymmetricKey|OpenSSLCertificate  $key  The secret key.
-     * @param string $alg  Supported algorithms are 'ES384','ES256', 'ES256K', 'HS256',
+     * @param string $alg  Supported algorithms are 'EdDSA', 'ES384', 'ES256', 'ES256K', 'HS256',
      *                    'HS384', 'HS512', 'RS256', 'RS384', and 'RS512'
      *
      * @return string An encrypted message
@@ -278,7 +278,7 @@ class JWT
      *
      * @param string $msg         The original message (header and body)
      * @param string $signature   The original signature
-     * @param string|resource|OpenSSLAsymmetricKey|OpenSSLCertificate  $keyMaterial For HS*, a string key works. for RS*, must be an instance of OpenSSLAsymmetricKey
+     * @param string|resource|OpenSSLAsymmetricKey|OpenSSLCertificate  $keyMaterial For Ed*, ES*, HS*, a string key works. for RS*, must be an instance of OpenSSLAsymmetricKey
      * @param string $alg         The algorithm
      *
      * @return bool
@@ -400,12 +400,27 @@ class JWT
      */
     public static function urlsafeB64Decode(string $input): string
     {
+        return \base64_decode(self::convertBase64urlToBase64($input));
+    }
+
+    /**
+     * Convert a string in the base64url (URL-safe Base64) encoding to standard base64.
+     *
+     * @param string $input A Base64 encoded string with URL-safe characters (-_ and no padding)
+     *
+     * @return string A Base64 encoded string with standard characters (+/) and padding (=), when
+     * needed.
+     *
+     * @see https://www.rfc-editor.org/rfc/rfc4648
+     */
+    public static function convertBase64urlToBase64(string $input): string
+    {
         $remainder = \strlen($input) % 4;
         if ($remainder) {
             $padlen = 4 - $remainder;
             $input .= \str_repeat('=', $padlen);
         }
-        return \base64_decode(\strtr($input, '-_', '+/'));
+        return \strtr($input, '-_', '+/');
     }
 
     /**

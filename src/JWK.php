@@ -31,6 +31,12 @@ class JWK
         // 'P-521' => '1.3.132.0.35', // Len: 132 (not supported)
     ];
 
+    // For keys with "kty" equal to "OKP" (Octet Key Pair), the "crv" parameter must contain the key subtype.
+    // This library supports the following subtypes:
+    private const OKP_SUBTYPES = [
+        'Ed25519' => true, // RFC 8037
+    ];
+
     /**
      * Parse a set of JWK keys
      *
@@ -145,8 +151,28 @@ class JWK
 
                 $publicKey = self::createPemFromCrvAndXYCoordinates($jwk['crv'], $jwk['x'], $jwk['y']);
                 return new Key($publicKey, $jwk['alg']);
+            case 'OKP':
+                if (isset($jwk['d'])) {
+                    // The key is actually a private key
+                    throw new UnexpectedValueException('Key data must be for a public key');
+                }
+
+                if (!isset($jwk['crv'])) {
+                    throw new UnexpectedValueException('crv not set');
+                }
+
+                if (empty(self::OKP_SUBTYPES[$jwk['crv']])) {
+                    throw new DomainException('Unrecognised or unsupported OKP key subtype');
+                }
+
+                if (empty($jwk['x'])) {
+                    throw new UnexpectedValueException('x not set');
+                }
+
+                // This library works internally with EdDSA keys (Ed25519) encoded in standard base64.
+                $publicKey = JWT::convertBase64urlToBase64($jwk['x']);
+                return new Key($publicKey, $jwk['alg']);
             default:
-                // Currently only RSA is supported
                 break;
         }
 
