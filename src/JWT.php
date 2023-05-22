@@ -69,11 +69,15 @@ class JWT
      * Decodes a JWT string into a PHP object.
      *
      * @param string                 $jwt            The JWT
-     * @param Key|array<string,Key> $keyOrKeyArray  The Key or associative array of key IDs (kid) to Key objects.
-     *                                               If the algorithm used is asymmetric, this is the public key
-     *                                               Each Key object contains an algorithm and matching key.
-     *                                               Supported algorithms are 'ES384','ES256', 'HS256', 'HS384',
-     *                                               'HS512', 'RS256', 'RS384', and 'RS512'
+     * @param Key|ArrayAccess<string,Key>|array<string,Key> $keyOrKeyArray  The Key or associative array of key IDs
+     *                                                                      (kid) to Key objects.
+     *                                                                      If the algorithm used is asymmetric, this is
+     *                                                                      the public key.
+     *                                                                      Each Key object contains an algorithm and
+     *                                                                      matching key.
+     *                                                                      Supported algorithms are 'ES384','ES256',
+     *                                                                      'HS256', 'HS384', 'HS512', 'RS256', 'RS384'
+     *                                                                      and 'RS512'.
      *
      * @return stdClass The JWT's payload as a PHP object
      *
@@ -376,7 +380,7 @@ class JWT
         }
         if ($errno = \json_last_error()) {
             self::handleJsonError($errno);
-        } elseif ($json === 'null' && $input !== null) {
+        } elseif ($json === 'null') {
             throw new DomainException('Null result with non-null input');
         }
         if ($json === false) {
@@ -435,7 +439,7 @@ class JWT
             return $keyOrKeyArray;
         }
 
-        if (empty($kid)) {
+        if (empty($kid) && $kid !== '0') {
             throw new UnexpectedValueException('"kid" empty, unable to lookup correct key');
         }
 

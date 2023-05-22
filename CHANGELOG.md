@@ -1,5 +1,17 @@
 # Changelog
 
+## [6.5.0](https://github.com/firebase/php-jwt/compare/v6.4.0...v6.5.0) (2023-05-12)
+
+
+### Bug Fixes
+
+* allow KID of '0' ([#505](https://github.com/firebase/php-jwt/issues/505)) ([9dc46a9](https://github.com/firebase/php-jwt/commit/9dc46a9c3e5801294249cfd2554c5363c9f9326a))
+
+
+### Miscellaneous Chores
+
+* drop support for PHP 7.3 ([#495](https://github.com/firebase/php-jwt/issues/495))
+
 ## [6.4.0](https://github.com/firebase/php-jwt/compare/v6.3.2...v6.4.0) (2023-02-08)
 
 
