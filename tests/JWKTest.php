@@ -67,7 +67,7 @@ class JWKTest extends TestCase
         unset($jwkSet['keys'][0]['alg']);
 
         $jwks = JWK::parseKeySet($jwkSet, 'foo');
-        $this->assertEquals('foo', $jwks['jwk1']->getAlgorithm());
+        $this->assertSame('foo', $jwks['jwk1']->getAlgorithm());
     }
 
     public function testParseKeyWithEmptyDValue()
@@ -143,7 +143,7 @@ class JWKTest extends TestCase
         $keys = JWK::parseKeySet($jwkSet);
         $result = JWT::decode($msg, $keys);
 
-        $this->assertEquals('foo', $result->sub);
+        $this->assertSame('foo', $result->sub);
     }
 
     public function provideDecodeByJwkKeySet()
@@ -165,6 +165,6 @@ class JWKTest extends TestCase
 
         $result = JWT::decode($msg, self::$keys);
 
-        $this->assertEquals('bar', $result->sub);
+        $this->assertSame('bar', $result->sub);
     }
 }

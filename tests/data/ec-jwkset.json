@@ -17,6 +17,15 @@
             "x": "mQa0q5FvxPRujxzFazQT1Mo2YJJzuKiXU3svOJ41jhw",
             "y": "jAz7UwIl2oOFk06kj42ZFMOXmGMFUGjKASvyYtibCH0",
             "alg": "ES256"
+        },
+        {
+            "kty": "EC",
+            "use": "sig",
+            "crv": "secp256k1",
+            "kid": "jwk3",
+            "x": "EFpwNuP322bU3WP1DtJgx67L0CUV1MxNixqPVMH2L9Q",
+            "y": "_fSTbijIJjpsqL16cIEvxxf3MaYMY8MbqEq066yV9ls",
+            "alg": "ES256K"
         }
     ]
 }

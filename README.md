@@ -65,6 +65,40 @@ $decoded_array = (array) $decoded;
 JWT::$leeway = 60; // $leeway in seconds
 $decoded = JWT::decode($jwt, new Key($key, 'HS256'));
 ```
+Example encode/decode headers
+-------
+Decoding the JWT headers without verifying the JWT first is NOT recommended, and is not supported by
+this library. This is because without verifying the JWT, the header values could have been tampered with.
+Any value pulled from an unverified header should be treated as if it could be any string sent in from an
+attacker.  If this is something you still want to do in your application for whatever reason, it's possible to
+decode the header values manually simply by calling `json_decode` and `base64_decode` on the JWT
+header part:
+```php
+use Firebase\JWT\JWT;
+
+$key = 'example_key';
+$payload = [
+    'iss' => 'http://example.org',
+    'aud' => 'http://example.com',
+    'iat' => 1356999524,
+    'nbf' => 1357000000
+];
+
+$headers = [
+    'x-forwarded-for' => 'www.google.com'
+];
+
+// Encode headers in the JWT string
+$jwt = JWT::encode($payload, $key, 'HS256', null, $headers);
+
+// Decode headers from the JWT string WITHOUT validation
+// **IMPORTANT**: This operation is vulnerable to attacks, as the JWT has not yet been verified.
+// These headers could be any value sent by an attacker.
+list($headersB64, $payloadB64, $sig) = explode('.', $jwt);
+$decoded = json_decode(base64_decode($headersB64), true);
+
+print_r($decoded);
+```
 Example with RS256 (openssl)
 ----------------------------
 ```php
@@ -73,28 +107,43 @@ use Firebase\JWT\Key;
 
 $privateKey = <<<EOD
 -----BEGIN RSA PRIVATE KEY-----
-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
+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
 -----END RSA PRIVATE KEY-----
 EOD;
 
 $publicKey = <<<EOD
 -----BEGIN PUBLIC KEY-----
-MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQC8kGa1pSjbSYZVebtTRBLxBz5H
-4i2p/llLCrEeQhta5kaQu/RnvuER4W8oDH3+3iuIYW4VQAzyqFpwuzjkDI+17t5t
-0tyazyZ8JXw+KgXTxldMPEL95+qVhgXvwtihXC1c5oGbRlEDvDF6Sa53rcFVsYJ4
-ehde/zUxo6UvS7UrBQIDAQAB
+MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAuzWHNM5f+amCjQztc5QT
+fJfzCC5J4nuW+L/aOxZ4f8J3FrewM2c/dufrnmedsApb0By7WhaHlcqCh/ScAPyJ
+hzkPYLae7bTVro3hok0zDITR8F6SJGL42JAEUk+ILkPI+DONM0+3vzk6Kvfe548t
+u4czCuqU8BGVOlnp6IqBHhAswNMM78pos/2z0CjPM4tbeXqSTTbNkXRboxjU29vS
+opcT51koWOgiTf3C7nJUoMWZHZI5HqnIhPAG9yv8HAgNk6CMk2CadVHDo4IxjxTz
+TTqo1SCSH2pooJl9O8at6kkRYsrZWwsKlOFE2LUce7ObnXsYihStBUDoeBQlGG/B
+wQIDAQAB
 -----END PUBLIC KEY-----
 EOD;
 
@@ -186,6 +235,44 @@ echo "Encode:\n" . print_r($jwt, true) . "\n";
 $decoded = JWT::decode($jwt, new Key($publicKey, 'EdDSA'));
 echo "Decode:\n" . print_r((array) $decoded, true) . "\n";
 ````
+
+Example with multiple keys
+--------------------------
+```php
+use Firebase\JWT\JWT;
+use Firebase\JWT\Key;
+
+// Example RSA keys from previous example
+// $privateKey1 = '...';
+// $publicKey1 = '...';
+
+// Example EdDSA keys from previous example
+// $privateKey2 = '...';
+// $publicKey2 = '...';
+
+$payload = [
+    'iss' => 'example.org',
+    'aud' => 'example.com',
+    'iat' => 1356999524,
+    'nbf' => 1357000000
+];
+
+$jwt1 = JWT::encode($payload, $privateKey1, 'RS256', 'kid1');
+$jwt2 = JWT::encode($payload, $privateKey2, 'EdDSA', 'kid2');
+echo "Encode 1:\n" . print_r($jwt1, true) . "\n";
+echo "Encode 2:\n" . print_r($jwt2, true) . "\n";
+
+$keys = [
+    'kid1' => new Key($publicKey1, 'RS256'),
+    'kid2' => new Key($publicKey2, 'EdDSA'),
+];
+
+$decoded1 = JWT::decode($jwt1, $keys);
+$decoded2 = JWT::decode($jwt2, $keys);
+
+echo "Decode 1:\n" . print_r((array) $decoded1, true) . "\n";
+echo "Decode 2:\n" . print_r((array) $decoded2, true) . "\n";
+```
 
 Using JWKs
 ----------
@@ -286,6 +373,8 @@ All exceptions in the `Firebase\JWT` namespace extend `UnexpectedValueException`
 like this:
 
 ```php
+use Firebase\JWT\JWT;
+use UnexpectedValueException;
 try {
     $decoded = JWT::decode($payload, $keys);
 } catch (LogicException $e) {
