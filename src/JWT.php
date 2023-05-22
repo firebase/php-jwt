@@ -448,7 +448,7 @@ class JWT
         }
         if ($errno = \json_last_error()) {
             self::handleJsonError($errno);
-        } elseif ($json === 'null' && $input !== null) {
+        } elseif ($json === 'null') {
             throw new DomainException(
                 'Null result with non-null input',
                 ExceptionCodes::ENCODED_JSON_IS_NULL
