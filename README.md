@@ -65,6 +65,40 @@ $decoded_array = (array) $decoded;
 JWT::$leeway = 60; // $leeway in seconds
 $decoded = JWT::decode($jwt, new Key($key, 'HS256'));
 ```
+Example encode/decode headers
+-------
+Decoding the JWT headers without verifying the JWT first is NOT recommended, and is not supported by
+this library. This is because without verifying the JWT, the header values could have been tampered with.
+Any value pulled from an unverified header should be treated as if it could be any string sent in from an
+attacker.  If this is something you still want to do in your application for whatever reason, it's possible to
+decode the header values manually simply by calling `json_decode` and `base64_decode` on the JWT
+header part:
+```php
+use Firebase\JWT\JWT;
+
+$key = 'example_key';
+$payload = [
+    'iss' => 'http://example.org',
+    'aud' => 'http://example.com',
+    'iat' => 1356999524,
+    'nbf' => 1357000000
+];
+
+$headers = [
+    'x-forwarded-for' => 'www.google.com'
+];
+
+// Encode headers in the JWT string
+$jwt = JWT::encode($payload, $key, 'HS256', null, $headers);
+
+// Decode headers from the JWT string WITHOUT validation
+// **IMPORTANT**: This operation is vulnerable to attacks, as the JWT has not yet been verified.
+// These headers could be any value sent by an attacker.
+list($headersB64, $payloadB64, $sig) = explode('.', $jwt);
+$decoded = json_decode(base64_decode($headersB64), true);
+
+print_r($decoded);
+```
 Example with RS256 (openssl)
 ----------------------------
 ```php
@@ -202,6 +236,44 @@ $decoded = JWT::decode($jwt, new Key($publicKey, 'EdDSA'));
 echo "Decode:\n" . print_r((array) $decoded, true) . "\n";
 ````
 
+Example with multiple keys
+--------------------------
+```php
+use Firebase\JWT\JWT;
+use Firebase\JWT\Key;
+
+// Example RSA keys from previous example
+// $privateKey1 = '...';
+// $publicKey1 = '...';
+
+// Example EdDSA keys from previous example
+// $privateKey2 = '...';
+// $publicKey2 = '...';
+
+$payload = [
+    'iss' => 'example.org',
+    'aud' => 'example.com',
+    'iat' => 1356999524,
+    'nbf' => 1357000000
+];
+
+$jwt1 = JWT::encode($payload, $privateKey1, 'RS256', 'kid1');
+$jwt2 = JWT::encode($payload, $privateKey2, 'EdDSA', 'kid2');
+echo "Encode 1:\n" . print_r($jwt1, true) . "\n";
+echo "Encode 2:\n" . print_r($jwt2, true) . "\n";
+
+$keys = [
+    'kid1' => new Key($publicKey1, 'RS256'),
+    'kid2' => new Key($publicKey2, 'EdDSA'),
+];
+
+$decoded1 = JWT::decode($jwt1, $keys);
+$decoded2 = JWT::decode($jwt2, $keys);
+
+echo "Decode 1:\n" . print_r((array) $decoded1, true) . "\n";
+echo "Decode 2:\n" . print_r((array) $decoded2, true) . "\n";
+```
+
 Using JWKs
 ----------
 
@@ -301,6 +373,8 @@ All exceptions in the `Firebase\JWT` namespace extend `UnexpectedValueException`
 like this:
 
 ```php
+use Firebase\JWT\JWT;
+use UnexpectedValueException;
 try {
     $decoded = JWT::decode($payload, $keys);
 } catch (LogicException $e) {

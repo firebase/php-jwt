@@ -204,10 +204,11 @@ class JWTTest extends TestCase
     public function testKIDChooser()
     {
         $keys = [
-            '1' => new Key('my_key', 'HS256'),
+            '0' => new Key('my_key0', 'HS256'),
+            '1' => new Key('my_key1', 'HS256'),
             '2' => new Key('my_key2', 'HS256')
         ];
-        $msg = JWT::encode(['message' => 'abc'], $keys['1']->getKeyMaterial(), 'HS256', '1');
+        $msg = JWT::encode(['message' => 'abc'], $keys['0']->getKeyMaterial(), 'HS256', '0');
         $decoded = JWT::decode($msg, $keys);
         $expected = new stdClass();
         $expected->message = 'abc';
@@ -217,10 +218,11 @@ class JWTTest extends TestCase
     public function testArrayAccessKIDChooser()
     {
         $keys = new ArrayObject([
-            '1' => new Key('my_key', 'HS256'),
+            '0' => new Key('my_key0', 'HS256'),
+            '1' => new Key('my_key1', 'HS256'),
             '2' => new Key('my_key2', 'HS256'),
         ]);
-        $msg = JWT::encode(['message' => 'abc'], $keys['1']->getKeyMaterial(), 'HS256', '1');
+        $msg = JWT::encode(['message' => 'abc'], $keys['0']->getKeyMaterial(), 'HS256', '0');
         $decoded = JWT::decode($msg, $keys);
         $expected = new stdClass();
         $expected->message = 'abc';
