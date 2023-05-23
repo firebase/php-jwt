@@ -400,7 +400,7 @@ class JWT
      */
     public static function urlsafeB64Decode(string $input): string
     {
-        return \base64_decode(self::convertBase64urlToBase64($input));
+        return \base64_decode(self::convertBase64UrlToBase64($input));
     }
 
     /**
@@ -413,7 +413,7 @@ class JWT
      *
      * @see https://www.rfc-editor.org/rfc/rfc4648
      */
-    public static function convertBase64urlToBase64(string $input): string
+    public static function convertBase64UrlToBase64(string $input): string
     {
         $remainder = \strlen($input) % 4;
         if ($remainder) {
