@@ -45,8 +45,8 @@ $payload = [
  */
 $jwt = JWT::encode($payload, $key, 'HS256');
 /**
- * The third parameter allow you to get header values in a stdClass object (you need to instance it before).
- * It is optional.
+ * Providing headers is optional. If provided with an instantiated object,
+ * headers will be populated.
  */
 $headers = new stdClass();
 $decoded = JWT::decode($jwt, new Key($key, 'HS256'), $headers);
