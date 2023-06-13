@@ -1,5 +1,17 @@
 # Changelog
 
+## [6.6.0](https://github.com/firebase/php-jwt/compare/v6.5.0...v6.6.0) (2023-06-13)
+
+
+### Features
+
+* allow get headers when decoding token ([#442](https://github.com/firebase/php-jwt/issues/442)) ([fb85f47](https://github.com/firebase/php-jwt/commit/fb85f47cfaeffdd94faf8defdf07164abcdad6c3))
+
+
+### Bug Fixes
+
+* only check iat if nbf is not used ([#493](https://github.com/firebase/php-jwt/issues/493)) ([398ccd2](https://github.com/firebase/php-jwt/commit/398ccd25ea12fa84b9e4f1085d5ff448c21ec797))
+
 ## [6.5.0](https://github.com/firebase/php-jwt/compare/v6.4.0...v6.5.0) (2023-05-12)
 
 
