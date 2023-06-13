@@ -95,7 +95,7 @@ class JWT
     public static function decode(
         string $jwt,
         $keyOrKeyArray,
-        &$headers = null
+        stdClass &$headers = null
     ): stdClass {
         // Validate JWT
         $timestamp = \is_null(static::$timestamp) ? \time() : static::$timestamp;
