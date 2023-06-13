@@ -112,7 +112,6 @@ class JWT
         if (null === ($header = static::jsonDecode($headerRaw))) {
             throw new UnexpectedValueException('Invalid header encoding');
         }
-
         if ($headers !== null) {
             $headers = $header;
         }
