@@ -6,6 +6,7 @@ use LogicException;
 use OutOfBoundsException;
 use PHPUnit\Framework\TestCase;
 use Prophecy\Argument;
+use Prophecy\PhpUnit\ProphecyTrait;
 use Psr\Cache\CacheItemInterface;
 use Psr\Cache\CacheItemPoolInterface;
 use Psr\Http\Client\ClientInterface;
@@ -14,14 +15,17 @@ use RuntimeException;
 
 class CachedKeySetTest extends TestCase
 {
+    use ProphecyTrait;
+
     private $testJwksUri = 'https://jwk.uri';
     private $testJwksUriKey = 'jwkshttpsjwk.uri';
     private $testJwks1 = '{"keys": [{"kid":"foo","kty":"RSA","alg":"foo","n":"","e":""}]}';
+    private $testCachedJwks1 = ['foo' => ['kid' => 'foo', 'kty' => 'RSA', 'alg' => 'foo', 'n' => '', 'e' => '']];
     private $testJwks2 = '{"keys": [{"kid":"bar","kty":"RSA","alg":"bar","n":"","e":""}]}';
     private $testJwks3 = '{"keys": [{"kid":"baz","kty":"RSA","n":"","e":""}]}';
 
     private $googleRsaUri = 'https://www.googleapis.com/oauth2/v3/certs';
-    // private $googleEcUri = 'https://www.gstatic.com/iap/verify/public_key-jwk';
+    private $googleEcUri = 'https://www.gstatic.com/iap/verify/public_key-jwk';
 
     public function testEmptyUriThrowsException()
     {
@@ -93,7 +97,7 @@ class CachedKeySetTest extends TestCase
             $this->getMockEmptyCache()
         );
         $this->assertInstanceOf(Key::class, $cachedKeySet['foo']);
-        $this->assertEquals('foo', $cachedKeySet['foo']->getAlgorithm());
+        $this->assertSame('foo', $cachedKeySet['foo']->getAlgorithm());
     }
 
     public function testWithDefaultAlg()
@@ -108,10 +112,70 @@ class CachedKeySetTest extends TestCase
             'baz256'
         );
         $this->assertInstanceOf(Key::class, $cachedKeySet['baz']);
-        $this->assertEquals('baz256', $cachedKeySet['baz']->getAlgorithm());
+        $this->assertSame('baz256', $cachedKeySet['baz']->getAlgorithm());
     }
 
     public function testKeyIdIsCached()
+    {
+        $cacheItem = $this->prophesize(CacheItemInterface::class);
+        $cacheItem->isHit()
+            ->willReturn(true);
+        $cacheItem->get()
+            ->willReturn($this->testCachedJwks1);
+
+        $cache = $this->prophesize(CacheItemPoolInterface::class);
+        $cache->getItem($this->testJwksUriKey)
+            ->willReturn($cacheItem->reveal());
+        $cache->save(Argument::any())
+            ->willReturn(true);
+
+        $cachedKeySet = new CachedKeySet(
+            $this->testJwksUri,
+            $this->prophesize(ClientInterface::class)->reveal(),
+            $this->prophesize(RequestFactoryInterface::class)->reveal(),
+            $cache->reveal()
+        );
+        $this->assertInstanceOf(Key::class, $cachedKeySet['foo']);
+        $this->assertSame('foo', $cachedKeySet['foo']->getAlgorithm());
+    }
+
+    public function testCachedKeyIdRefresh()
+    {
+        $cacheItem = $this->prophesize(CacheItemInterface::class);
+        $cacheItem->isHit()
+            ->shouldBeCalledOnce()
+            ->willReturn(true);
+        $cacheItem->get()
+            ->shouldBeCalledOnce()
+            ->willReturn($this->testCachedJwks1);
+        $cacheItem->set(Argument::any())
+            ->shouldBeCalledOnce()
+            ->will(function () {
+                return $this;
+            });
+
+        $cache = $this->prophesize(CacheItemPoolInterface::class);
+        $cache->getItem($this->testJwksUriKey)
+            ->shouldBeCalledOnce()
+            ->willReturn($cacheItem->reveal());
+        $cache->save(Argument::any())
+            ->shouldBeCalledOnce()
+            ->willReturn(true);
+
+        $cachedKeySet = new CachedKeySet(
+            $this->testJwksUri,
+            $this->getMockHttpClient($this->testJwks2), // updated JWK
+            $this->getMockHttpFactory(),
+            $cache->reveal()
+        );
+        $this->assertInstanceOf(Key::class, $cachedKeySet['foo']);
+        $this->assertSame('foo', $cachedKeySet['foo']->getAlgorithm());
+
+        $this->assertInstanceOf(Key::class, $cachedKeySet['bar']);
+        $this->assertSame('bar', $cachedKeySet['bar']->getAlgorithm());
+    }
+
+    public function testKeyIdIsCachedFromPreviousFormat()
     {
         $cacheItem = $this->prophesize(CacheItemInterface::class);
         $cacheItem->isHit()
@@ -132,10 +196,10 @@ class CachedKeySetTest extends TestCase
             $cache->reveal()
         );
         $this->assertInstanceOf(Key::class, $cachedKeySet['foo']);
-        $this->assertEquals('foo', $cachedKeySet['foo']->getAlgorithm());
+        $this->assertSame('foo', $cachedKeySet['foo']->getAlgorithm());
     }
 
-    public function testCachedKeyIdRefresh()
+    public function testCachedKeyIdRefreshFromPreviousFormat()
     {
         $cacheItem = $this->prophesize(CacheItemInterface::class);
         $cacheItem->isHit()
@@ -165,10 +229,10 @@ class CachedKeySetTest extends TestCase
             $cache->reveal()
         );
         $this->assertInstanceOf(Key::class, $cachedKeySet['foo']);
-        $this->assertEquals('foo', $cachedKeySet['foo']->getAlgorithm());
+        $this->assertSame('foo', $cachedKeySet['foo']->getAlgorithm());
 
         $this->assertInstanceOf(Key::class, $cachedKeySet['bar']);
-        $this->assertEquals('bar', $cachedKeySet['bar']->getAlgorithm());
+        $this->assertSame('bar', $cachedKeySet['bar']->getAlgorithm());
     }
 
     public function testCacheItemWithExpiresAfter()
@@ -204,7 +268,7 @@ class CachedKeySetTest extends TestCase
             $expiresAfter
         );
         $this->assertInstanceOf(Key::class, $cachedKeySet['foo']);
-        $this->assertEquals('foo', $cachedKeySet['foo']->getAlgorithm());
+        $this->assertSame('foo', $cachedKeySet['foo']->getAlgorithm());
     }
 
     public function testJwtVerify()
@@ -213,12 +277,18 @@ class CachedKeySetTest extends TestCase
         $payload = ['sub' => 'foo', 'exp' => strtotime('+10 seconds')];
         $msg = JWT::encode($payload, $privKey1, 'RS256', 'jwk1');
 
+        // format the cached value to match the expected format
+        $cachedJwks = [];
+        $rsaKeySet = file_get_contents(__DIR__ . '/data/rsa-jwkset.json');
+        foreach (json_decode($rsaKeySet, true)['keys'] as $k => $v) {
+            $cachedJwks[$v['kid']] = $v;
+        }
+
         $cacheItem = $this->prophesize(CacheItemInterface::class);
         $cacheItem->isHit()
             ->willReturn(true);
         $cacheItem->get()
-            ->willReturn(file_get_contents(__DIR__ . '/data/rsa-jwkset.json')
-            );
+            ->willReturn($cachedJwks);
 
         $cache = $this->prophesize(CacheItemPoolInterface::class);
         $cache->getItem($this->testJwksUriKey)
@@ -233,7 +303,7 @@ class CachedKeySetTest extends TestCase
 
         $result = JWT::decode($msg, $cachedKeySet);
 
-        $this->assertEquals('foo', $result->sub);
+        $this->assertSame('foo', $result->sub);
     }
 
     public function testRateLimit()
@@ -290,14 +360,14 @@ class CachedKeySetTest extends TestCase
         $this->assertArrayHasKey($kid, $cachedKeySet);
         $key = $cachedKeySet[$kid];
         $this->assertInstanceOf(Key::class, $key);
-        $this->assertEquals($keys['keys'][0]['alg'], $key->getAlgorithm());
+        $this->assertSame($keys['keys'][0]['alg'], $key->getAlgorithm());
     }
 
     public function provideFullIntegration()
     {
         return [
             [$this->googleRsaUri],
-            // [$this->googleEcUri, 'LYyP2g']
+            [$this->googleEcUri, 'LYyP2g']
         ];
     }
 
@@ -325,7 +395,7 @@ class CachedKeySetTest extends TestCase
     {
         $request = $this->prophesize('Psr\Http\Message\RequestInterface');
         $factory = $this->prophesize(RequestFactoryInterface::class);
-        $factory->createRequest('get', $this->testJwksUri)
+        $factory->createRequest('GET', $this->testJwksUri)
             ->shouldBeCalledTimes($timesCalled)
             ->willReturn($request->reveal());
 
