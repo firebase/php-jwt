@@ -78,6 +78,7 @@ class JWT
      *                                                                      Supported algorithms are 'ES384','ES256',
      *                                                                      'HS256', 'HS384', 'HS512', 'RS256', 'RS384'
      *                                                                      and 'RS512'.
+     * @param stdClass               $headers                               Optional. Populates stdClass with headers.
      *
      * @return stdClass The JWT's payload as a PHP object
      *
