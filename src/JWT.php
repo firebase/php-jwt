@@ -115,7 +115,6 @@ class JWT
         if ($headers !== null) {
             $headers = $header;
         }
-
         $payloadRaw = static::urlsafeB64Decode($bodyb64);
         if (null === ($payload = static::jsonDecode($payloadRaw))) {
             throw new UnexpectedValueException('Invalid claims encoding');
