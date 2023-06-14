@@ -1,5 +1,17 @@
 # Changelog
 
+## [6.8.0](https://github.com/firebase/php-jwt/compare/v6.7.0...v6.8.0) (2023-06-14)
+
+
+### Features
+
+* add support for P-384 curve ([#515](https://github.com/firebase/php-jwt/issues/515)) ([5de4323](https://github.com/firebase/php-jwt/commit/5de4323f4baf4d70bca8663bd87682a69c656c3d))
+
+
+### Bug Fixes
+
+* handle invalid http responses ([#508](https://github.com/firebase/php-jwt/issues/508)) ([91c39c7](https://github.com/firebase/php-jwt/commit/91c39c72b22fc3e1191e574089552c1f2041c718))
+
 ## [6.7.0](https://github.com/firebase/php-jwt/compare/v6.6.0...v6.7.0) (2023-06-14)
 
 
