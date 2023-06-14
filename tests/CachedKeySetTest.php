@@ -91,24 +91,18 @@ class CachedKeySetTest extends TestCase
     public function testInvalidHttpResponseThrowsException()
     {
         $this->expectException(\UnexpectedValueException::class);
-        $this->expectExceptionMessage('HTTP Error: URL not found');
+        $this->expectExceptionMessage('HTTP Error: 404 URL not found');
         $this->expectExceptionCode(404);
 
         $body = $this->prophesize('Psr\Http\Message\StreamInterface');
-        $body->__toString()
-            ->shouldBeCalledTimes(1)
-            ->willReturn('HTTP Error: URL not found');
 
         $response = $this->prophesize('Psr\Http\Message\ResponseInterface');
-        $response->getBody()
-            ->shouldBeCalledTimes(1)
-            ->willReturn($body->reveal());
         $response->getStatusCode()
             ->shouldBeCalled()
             ->willReturn(404);
         $response->getReasonPhrase()
             ->shouldBeCalledTimes(1)
-            ->willReturn('');
+            ->willReturn('URL not found');
 
         $http = $this->prophesize(ClientInterface::class);
         $http->sendRequest(Argument::any())
