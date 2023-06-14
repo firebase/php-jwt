@@ -106,6 +106,9 @@ class CachedKeySetTest extends TestCase
         $response->getStatusCode()
             ->shouldBeCalled()
             ->willReturn(404);
+        $response->getReasonPhrase()
+            ->shouldBeCalledTimes(1)
+            ->willReturn('');
 
         $http = $this->prophesize(ClientInterface::class);
         $http->sendRequest(Argument::any())
