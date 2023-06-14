@@ -180,7 +180,11 @@ class CachedKeySet implements ArrayAccess
             $jwksResponse = $this->httpClient->sendRequest($request);
             if ($jwksResponse->getStatusCode() !== 200) {
                 throw new UnexpectedValueException(
-                    (string) $jwksResponse->getBody(),
+                    sprintf('Got bad HTTP status code %d %s for URI "%s"',
+                        $jwksResponse->getStatusCode(),
+                        $jwksResponse->getReasonPhrase(),
+                        $this->jwksUri,
+                    ),
                     $jwksResponse->getStatusCode()
                 );
             }
