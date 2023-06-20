@@ -125,7 +125,7 @@ class JWTTest extends TestCase
         $this->expectException(BeforeValidException::class);
         $payload = [
             'message' => 'abc',
-            'iat' => time() + 20, // time in the future
+            'iat' => time() + 100, // time in the future
         ];
         $encoded = JWT::encode($payload, 'my_key', 'HS256');
         try {
