@@ -2,9 +2,9 @@
 
 namespace Firebase\JWT;
 
-class BeforeValidException extends \UnexpectedValueException implements JwtExceptionInterface
+class BeforeValidException extends \UnexpectedValueException implements JWTExceptionInterface
 {
-    private $payload;
+    private object $payload;
 
     public function setPayload(object $payload): void
     {

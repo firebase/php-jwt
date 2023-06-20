@@ -2,9 +2,9 @@
 
 namespace Firebase\JWT;
 
-class SignatureInvalidException extends \UnexpectedValueException implements JwtExceptionInterface
+class SignatureInvalidException extends \UnexpectedValueException implements JWTExceptionInterface
 {
-    private $payload;
+    private object $payload;
 
     public function setPayload(object $payload): void
     {
