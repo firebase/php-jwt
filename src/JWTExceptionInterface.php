@@ -16,5 +16,5 @@ interface JWTExceptionInterface
      * @param object $payload
      * @return void
      */
-    public function setPayload(object $object): void;
+    public function setPayload(object $payload): void;
 }
