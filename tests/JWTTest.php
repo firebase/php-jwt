@@ -137,23 +137,6 @@ class JWTTest extends TestCase
         }
     }
 
-    public function testSignatureInvalidExceptionPayload()
-    {
-        $payload = [
-            'message' => 'abc',
-            'exp' => time() + 20, // time in the future
-        ];
-        $encoded = JWT::encode($payload, 'my_key', 'HS256');
-        $this->expectException(SignatureInvalidException::class);
-        try {
-            JWT::decode($encoded, new Key('my_key2', 'HS256'));
-        } catch (SignatureInvalidException $e) {
-            $exceptionPayload = (array) $e->getPayload();
-            $this->assertEquals($exceptionPayload, $payload);
-            throw $e;
-        }
-    }
-
     public function testValidTokenWithNbf()
     {
         $payload = [
