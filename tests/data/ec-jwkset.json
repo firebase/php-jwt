@@ -26,6 +26,15 @@
             "x": "EFpwNuP322bU3WP1DtJgx67L0CUV1MxNixqPVMH2L9Q",
             "y": "_fSTbijIJjpsqL16cIEvxxf3MaYMY8MbqEq066yV9ls",
             "alg": "ES256K"
+        },
+        {
+            "kty": "EC",
+            "use": "sig",
+            "crv": "P-384",
+            "kid": "jwk4",
+            "x": "FhXXcyKmWkTkdVbWYYU3dtJqpJ0JmLGftEdNzUEFEKSU5MlnLr_FjcneszvXAqEB",
+            "y": "M4veJF_dO_zhFk44bh_ELXbp0_nn9QaViVtQpuTvpu29eefx6PfUMqX0K--IS4NQ",
+            "alg": "ES384"
         }
     ]
 }

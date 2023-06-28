@@ -129,11 +129,11 @@ class JWKTest extends TestCase
     /**
      * @dataProvider provideDecodeByJwkKeySet
      */
-    public function testDecodeByJwkKeySet($pemFile, $jwkFile, $alg)
+    public function testDecodeByJwkKeySet($pemFile, $jwkFile, $alg, $keyId)
     {
         $privKey1 = file_get_contents(__DIR__ . '/data/' . $pemFile);
         $payload = ['sub' => 'foo', 'exp' => strtotime('+10 seconds')];
-        $msg = JWT::encode($payload, $privKey1, $alg, 'jwk1');
+        $msg = JWT::encode($payload, $privKey1, $alg, $keyId);
 
         $jwkSet = json_decode(
             file_get_contents(__DIR__ . '/data/' . $jwkFile),
@@ -149,8 +149,10 @@ class JWKTest extends TestCase
     public function provideDecodeByJwkKeySet()
     {
         return [
-            ['rsa1-private.pem', 'rsa-jwkset.json', 'RS256'],
-            ['ecdsa256-private.pem', 'ec-jwkset.json', 'ES256'],
+            ['rsa1-private.pem', 'rsa-jwkset.json', 'RS256', 'jwk1'],
+            ['ecdsa256-private.pem', 'ec-jwkset.json', 'ES256', 'jwk1'],
+            ['ecdsa384-private.pem', 'ec-jwkset.json', 'ES384', 'jwk4'],
+            ['ed25519-1.sec', 'ed25519-jwkset.json', 'EdDSA', 'jwk1'],
         ];
     }
 
