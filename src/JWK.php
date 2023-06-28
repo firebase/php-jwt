@@ -27,7 +27,7 @@ class JWK
     private const EC_CURVES = [
         'P-256' => '1.2.840.10045.3.1.7', // Len: 64
         'secp256k1' => '1.3.132.0.10', // Len: 64
-        // 'P-384' => '1.3.132.0.34', // Len: 96 (not yet supported)
+        'P-384' => '1.3.132.0.34', // Len: 96
         // 'P-521' => '1.3.132.0.35', // Len: 132 (not supported)
     ];
 
@@ -182,7 +182,7 @@ class JWK
     /**
      * Converts the EC JWK values to pem format.
      *
-     * @param   string  $crv The EC curve (only P-256 is supported)
+     * @param   string  $crv The EC curve (only P-256 & P-384 is supported)
      * @param   string  $x   The EC x-coordinate
      * @param   string  $y   The EC y-coordinate
      *

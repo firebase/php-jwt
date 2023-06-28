@@ -88,6 +88,35 @@ class CachedKeySetTest extends TestCase
         $cachedKeySet['bar'];
     }
 
+    public function testInvalidHttpResponseThrowsException()
+    {
+        $this->expectException(\UnexpectedValueException::class);
+        $this->expectExceptionMessage('HTTP Error: 404 URL not found');
+        $this->expectExceptionCode(404);
+
+        $response = $this->prophesize('Psr\Http\Message\ResponseInterface');
+        $response->getStatusCode()
+            ->shouldBeCalled()
+            ->willReturn(404);
+        $response->getReasonPhrase()
+            ->shouldBeCalledTimes(1)
+            ->willReturn('URL not found');
+
+        $http = $this->prophesize(ClientInterface::class);
+        $http->sendRequest(Argument::any())
+            ->shouldBeCalledTimes(1)
+            ->willReturn($response->reveal());
+
+        $cachedKeySet = new CachedKeySet(
+            $this->testJwksUri,
+            $http->reveal(),
+            $this->getMockHttpFactory(),
+            $this->getMockEmptyCache()
+        );
+
+        isset($cachedKeySet[0]);
+    }
+
     public function testWithExistingKeyId()
     {
         $cachedKeySet = new CachedKeySet(
@@ -382,6 +411,9 @@ class CachedKeySetTest extends TestCase
         $response->getBody()
             ->shouldBeCalledTimes($timesCalled)
             ->willReturn($body->reveal());
+        $response->getStatusCode()
+            ->shouldBeCalledTimes($timesCalled)
+            ->willReturn(200);
 
         $http = $this->prophesize(ClientInterface::class);
         $http->sendRequest(Argument::any())
