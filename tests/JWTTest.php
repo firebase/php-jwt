@@ -147,6 +147,7 @@ class JWTTest extends TestCase
         ];
         $encoded = JWT::encode($payload, 'my_key', 'HS256');
         $this->expectException(BeforeValidException::class);
+        $this->expectExceptionMessage('Cannot handle token with nbf prior to');
         JWT::decode($encoded, new Key('my_key', 'HS256'));
     }
 
@@ -176,6 +177,7 @@ class JWTTest extends TestCase
     public function testInvalidTokenWithNbfMicrotime()
     {
         $this->expectException(BeforeValidException::class);
+        $this->expectExceptionMessage('Cannot handle token with nbf prior to');
         $payload = [
             'message' => 'abc',
             'nbf' => microtime(true) + 20, // use microtime in the future
@@ -211,6 +213,7 @@ class JWTTest extends TestCase
         ];
         $encoded = JWT::encode($payload, 'my_key', 'HS256');
         $this->expectException(BeforeValidException::class);
+        $this->expectExceptionMessage('Cannot handle token with iat prior to');
         JWT::decode($encoded, new Key('my_key', 'HS256'));
     }
 
@@ -228,6 +231,7 @@ class JWTTest extends TestCase
     public function testInvalidTokenWithIatMicrotime()
     {
         $this->expectException(BeforeValidException::class);
+        $this->expectExceptionMessage('Cannot handle token with iat prior to');
         $payload = [
             'message' => 'abc',
             'iat' => microtime(true) + 20, // use microtime in the future
