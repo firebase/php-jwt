@@ -76,6 +76,9 @@ class JWTTest extends TestCase
         $this->assertSame($decoded->message, 'abc');
     }
 
+    /**
+     * @runInSeparateProcess
+     */
     public function testValidTokenWithLeeway()
     {
         JWT::$leeway = 60;
@@ -86,9 +89,11 @@ class JWTTest extends TestCase
         $encoded = JWT::encode($payload, 'my_key', 'HS256');
         $decoded = JWT::decode($encoded, new Key('my_key', 'HS256'));
         $this->assertSame($decoded->message, 'abc');
-        JWT::$leeway = 0;
     }
 
+    /**
+     * @runInSeparateProcess
+     */
     public function testExpiredTokenWithLeeway()
     {
         JWT::$leeway = 60;
@@ -100,7 +105,6 @@ class JWTTest extends TestCase
         $encoded = JWT::encode($payload, 'my_key', 'HS256');
         $decoded = JWT::decode($encoded, new Key('my_key', 'HS256'));
         $this->assertSame($decoded->message, 'abc');
-        JWT::$leeway = 0;
     }
 
     public function testExpiredExceptionPayload()
@@ -150,6 +154,9 @@ class JWTTest extends TestCase
         $this->assertSame($decoded->message, 'abc');
     }
 
+    /**
+     * @runInSeparateProcess
+     */
     public function testValidTokenWithNbfLeeway()
     {
         JWT::$leeway = 60;
@@ -160,9 +167,11 @@ class JWTTest extends TestCase
         $encoded = JWT::encode($payload, 'my_key', 'HS256');
         $decoded = JWT::decode($encoded, new Key('my_key', 'HS256'));
         $this->assertSame($decoded->message, 'abc');
-        JWT::$leeway = 0;
     }
 
+    /**
+     * @runInSeparateProcess
+     */
     public function testInvalidTokenWithNbfLeeway()
     {
         JWT::$leeway = 60;
@@ -172,10 +181,48 @@ class JWTTest extends TestCase
         ];
         $encoded = JWT::encode($payload, 'my_key', 'HS256');
         $this->expectException(BeforeValidException::class);
+        $this->expectExceptionMessage('Cannot handle token with nbf prior to');
         JWT::decode($encoded, new Key('my_key', 'HS256'));
-        JWT::$leeway = 0;
     }
 
+    public function testValidTokenWithNbfIgnoresIat()
+    {
+        $payload = [
+            'message' => 'abc',
+            'nbf' => time() - 20, // time in the future
+            'iat' => time() + 20, // time in the past
+        ];
+        $encoded = JWT::encode($payload, 'my_key', 'HS256');
+        $decoded = JWT::decode($encoded, new Key('my_key', 'HS256'));
+        $this->assertEquals('abc', $decoded->message);
+    }
+
+    public function testValidTokenWithNbfMicrotime()
+    {
+        $payload = [
+            'message' => 'abc',
+            'nbf' => microtime(true), // use microtime
+        ];
+        $encoded = JWT::encode($payload, 'my_key', 'HS256');
+        $decoded = JWT::decode($encoded, new Key('my_key', 'HS256'));
+        $this->assertEquals('abc', $decoded->message);
+    }
+
+    public function testInvalidTokenWithNbfMicrotime()
+    {
+        $this->expectException(BeforeValidException::class);
+        $this->expectExceptionMessage('Cannot handle token with nbf prior to');
+        $payload = [
+            'message' => 'abc',
+            'nbf' => microtime(true) + 20, // use microtime in the future
+        ];
+        $encoded = JWT::encode($payload, 'my_key', 'HS256');
+        JWT::decode($encoded, new Key('my_key', 'HS256'));
+    }
+
+    /**
+     * @runInSeparateProcess
+     */
     public function testValidTokenWithIatLeeway()
     {
         JWT::$leeway = 60;
@@ -186,9 +233,11 @@ class JWTTest extends TestCase
         $encoded = JWT::encode($payload, 'my_key', 'HS256');
         $decoded = JWT::decode($encoded, new Key('my_key', 'HS256'));
         $this->assertSame($decoded->message, 'abc');
-        JWT::$leeway = 0;
     }
 
+    /**
+     * @runInSeparateProcess
+     */
     public function testInvalidTokenWithIatLeeway()
     {
         JWT::$leeway = 60;
@@ -198,8 +247,31 @@ class JWTTest extends TestCase
         ];
         $encoded = JWT::encode($payload, 'my_key', 'HS256');
         $this->expectException(BeforeValidException::class);
+        $this->expectExceptionMessage('Cannot handle token with iat prior to');
         JWT::decode($encoded, new Key('my_key', 'HS256'));
-        JWT::$leeway = 0;
+    }
+
+    public function testValidTokenWithIatMicrotime()
+    {
+        $payload = [
+            'message' => 'abc',
+            'iat' => microtime(true), // use microtime
+        ];
+        $encoded = JWT::encode($payload, 'my_key', 'HS256');
+        $decoded = JWT::decode($encoded, new Key('my_key', 'HS256'));
+        $this->assertEquals('abc', $decoded->message);
+    }
+
+    public function testInvalidTokenWithIatMicrotime()
+    {
+        $this->expectException(BeforeValidException::class);
+        $this->expectExceptionMessage('Cannot handle token with iat prior to');
+        $payload = [
+            'message' => 'abc',
+            'iat' => microtime(true) + 20, // use microtime in the future
+        ];
+        $encoded = JWT::encode($payload, 'my_key', 'HS256');
+        JWT::decode($encoded, new Key('my_key', 'HS256'));
     }
 
     public function testInvalidToken()
