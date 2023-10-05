@@ -153,23 +153,29 @@ class JWT
         // Check the nbf if it is defined. This is the time that the
         // token can actually be used. If it's not yet that time, abort.
         if (isset($payload->nbf) && floor($payload->nbf) > ($timestamp + static::$leeway)) {
-            throw new BeforeValidException(
+            $ex = new BeforeValidException(
                 'Cannot handle token with nbf prior to ' . \date(DateTime::ISO8601, floor($payload->nbf))
             );
+            $ex->setPayload($payload);
+            throw $ex;
         }
 
         // Check that this token has been created before 'now'. This prevents
         // using tokens that have been created for later use (and haven't
         // correctly used the nbf claim).
         if (!isset($payload->nbf) && isset($payload->iat) && floor($payload->iat) > ($timestamp + static::$leeway)) {
-            throw new BeforeValidException(
+            $ex = new BeforeValidException(
                 'Cannot handle token with iat prior to ' . \date(DateTime::ISO8601, floor($payload->iat))
             );
+            $ex->setPayload($payload);
+            throw $ex;
         }
 
         // Check if this token has expired.
         if (isset($payload->exp) && ($timestamp - static::$leeway) >= $payload->exp) {
-            throw new ExpiredException('Expired token');
+            $ex = new ExpiredException('Expired token');
+            $ex->setPayload($payload);
+            throw $ex;
         }
 
         return $payload;
