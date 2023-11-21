@@ -518,4 +518,26 @@ class JWTTest extends TestCase
         $this->assertEquals($headers->typ, 'JWT');
         $this->assertEquals($headers->alg, 'HS256');
     }
+
+    public function testAdditionalHeaderOverrides()
+    {
+        $msg = JWT::encode(
+            ['message' => 'abc'],
+            'my_key',
+            'HS256',
+            'my_key_id',
+            [
+                'cty' => 'test-eit;v=1',
+                'typ' => 'JOSE', // override type header
+                'kid' => 'not_my_key_id', // should not override $key param
+                'alg' => 'BAD', // should not override $alg param
+            ]
+        );
+        $headers = new stdClass();
+        JWT::decode($msg, new Key('my_key', 'HS256'), $headers);
+        $this->assertEquals('test-eit;v=1', $headers->cty, 'additional field works');
+        $this->assertEquals('JOSE', $headers->typ, 'typ override works');
+        $this->assertEquals('my_key_id', $headers->kid, 'key param not overridden');
+        $this->assertEquals('HS256', $headers->alg, 'alg param not overridden');
+    }
 }
