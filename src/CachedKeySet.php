@@ -43,10 +43,6 @@ class CachedKeySet implements ArrayAccess
      */
     private $cacheItem;
     /**
-     * @var array<string, array<mixed>>
-     */
-    private $keySet;
-    /**
      * @var string
      */
     private $cacheKey;
@@ -158,48 +154,56 @@ class CachedKeySet implements ArrayAccess
 
     private function keyIdExists(string $keyId): bool
     {
-        if (null === $this->keySet) {
-            $item = $this->getCacheItem();
-            // Try to load keys from cache
-            if ($item->isHit()) {
-                // item found! retrieve it
-                $this->keySet = $item->get();
-                // If the cached item is a string, the JWKS response was cached (previous behavior).
-                // Parse this into expected format array<kid, jwk> instead.
-                if (\is_string($this->keySet)) {
-                    $this->keySet = $this->formatJwksForCache($this->keySet);
-                }
-            }
-        }
+	    // Try to load keys from cache
+	    $cachedKeySet = $this->getCacheItem();
 
-        if (!isset($this->keySet[$keyId])) {
-            if ($this->rateLimitExceeded()) {
-                return false;
-            }
-            $request = $this->httpFactory->createRequest('GET', $this->jwksUri);
-            $jwksResponse = $this->httpClient->sendRequest($request);
-            if ($jwksResponse->getStatusCode() !== 200) {
-                throw new UnexpectedValueException(
-                    sprintf('HTTP Error: %d %s for URI "%s"',
-                        $jwksResponse->getStatusCode(),
-                        $jwksResponse->getReasonPhrase(),
-                        $this->jwksUri,
-                    ),
-                    $jwksResponse->getStatusCode()
-                );
-            }
-            $this->keySet = $this->formatJwksForCache((string) $jwksResponse->getBody());
+        if ($cachedKeySet->isHit()) {
+            // item found! retrieve it
+            $keySet = $cachedKeySet->get();
 
-            if (!isset($this->keySet[$keyId])) {
-                return false;
+            // If the cached item is a string, the JWKS response was cached (previous behavior).
+            // Parse this into expected format array<kid, jwk> instead.
+            if (\is_string($keySet)) {
+                $keySet = $this->formatJwksForCache($keySet);
             }
 
-            $item = $this->getCacheItem();
-            $item->set($this->keySet);
-            if ($this->expiresAfter) {
-                $item->expiresAfter($this->expiresAfter);
-            }
-            $this->cache->save($item);
+			if (!isset($keySet[$keyId])) {
+				return false;
+			}
+        } else {
+			//Can we retrieve a new jwks ?
+			if ($this->rateLimitExceeded()) {
+				return false;
+			}
+
+			//Otherwise, get a refreshed token
+			$request = $this->httpFactory->createRequest('GET', $this->jwksUri);
+			$jwksResponse = $this->httpClient->sendRequest($request);
+
+			if ($jwksResponse->getStatusCode() !== 200) {
+				throw new UnexpectedValueException(
+					sprintf('HTTP Error: %d %s for URI "%s"',
+						$jwksResponse->getStatusCode(),
+						$jwksResponse->getReasonPhrase(),
+						$this->jwksUri,
+					),
+					$jwksResponse->getStatusCode()
+				);
+			}
+
+			//Save obtained key set
+			$keySet = $this->formatJwksForCache((string) $jwksResponse->getBody());
+			$cachedKeySet->set($keySet);
+
+	        if ($this->expiresAfter !== null) {
+		        $cachedKeySet->expiresAfter($this->expiresAfter);
+	        }
+	        $this->cache->save($cachedKeySet);
+
+	        //Check keyId presence
+	        if (!isset($keySet[$keyId])) {
+				return false;
+			}
         }
 
         return true;
