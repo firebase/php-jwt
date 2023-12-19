@@ -213,7 +213,7 @@ class CachedKeySet implements ArrayAccess
 
         $cacheItem = $this->cache->getItem($this->rateLimitCacheKey);
         if (!$cacheItem->isHit()) {
-            $cacheItem->expiresAfter(1); // # of calls are cached each minute
+            $cacheItem->expiresAfter(60); // # of calls are cached each minute
         }
 
         $callsPerMinute = (int) $cacheItem->get();
