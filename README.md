@@ -17,7 +17,7 @@ composer require firebase/php-jwt
 ```
 
 Optionally, install the `paragonie/sodium_compat` package from composer if your
-php is < 7.2 or does not have libsodium installed:
+php env does not have libsodium installed:
 
 ```bash
 composer require paragonie/sodium_compat

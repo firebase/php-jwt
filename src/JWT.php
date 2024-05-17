@@ -251,6 +251,9 @@ class JWT
                 return \hash_hmac($algorithm, $msg, $key, true);
             case 'openssl':
                 $signature = '';
+                if (!\is_resource($key) && !openssl_pkey_get_private($key)) {
+                    throw new DomainException('OpenSSL unable to validate key');
+                }
                 $success = \openssl_sign($msg, $signature, $key, $algorithm); // @phpstan-ignore-line
                 if (!$success) {
                     throw new DomainException('OpenSSL unable to sign data');

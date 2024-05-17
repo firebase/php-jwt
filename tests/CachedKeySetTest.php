@@ -553,7 +553,7 @@ final class TestMemoryCacheItem implements CacheItemInterface
         return $this->key;
     }
 
-    public function get()
+    public function get(): mixed
     {
         return $this->isHit() ? $this->value : null;
     }
@@ -571,7 +571,7 @@ final class TestMemoryCacheItem implements CacheItemInterface
         return $this->currentTime()->getTimestamp() < $this->expiration->getTimestamp();
     }
 
-    public function set($value)
+    public function set(mixed $value): static
     {
         $this->isHit = true;
         $this->value = $value;
@@ -579,13 +579,13 @@ final class TestMemoryCacheItem implements CacheItemInterface
         return $this;
     }
 
-    public function expiresAt($expiration)
+    public function expiresAt($expiration): static
     {
         $this->expiration = $expiration;
         return $this;
     }
 
-    public function expiresAfter($time)
+    public function expiresAfter($time): static
     {
         $this->expiration = $this->currentTime()->add(new \DateInterval("PT{$time}S"));
         return $this;
