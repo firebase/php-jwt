@@ -358,6 +358,53 @@ class CachedKeySetTest extends TestCase
         $this->assertFalse(isset($cachedKeySet[$invalidKid]));
     }
 
+    public function testRateLimitWithExpiresAfter()
+    {
+        // We request the key 17 times, HTTP should only be called 15 times
+        $shouldBeCalledTimes = 10;
+        $cachedTimes = 2;
+        $afterExpirationTimes = 5;
+
+        $totalHttpTimes = $shouldBeCalledTimes + $afterExpirationTimes;
+
+        $cachePool = new TestMemoryCacheItemPool();
+
+        // Instantiate the cached key set
+        $cachedKeySet = new CachedKeySet(
+            $this->testJwksUri,
+            $this->getMockHttpClient($this->testJwks1, $totalHttpTimes),
+            $factory = $this->getMockHttpFactory($totalHttpTimes),
+            $cachePool,
+            10,   // expires after seconds
+            true // enable rate limiting
+        );
+
+        // Set the rate limit cache to expire after 1 second
+        $cacheItem = $cachePool->getItem('jwksratelimitjwkshttpsjwk.uri');
+        $cacheItemData = $cacheItem->get();
+        $cacheItemData['expiry'] = new \DateTime('+1 seconds', new \DateTimeZone('UTC'));
+        $cacheItem->set($cacheItemData);
+        $cacheItem->expiresAfter(1);
+        $cachePool->save($cacheItem);
+
+        $invalidKid = 'invalidkey';
+        for ($i = 0; $i < $shouldBeCalledTimes; $i++) {
+            $this->assertFalse(isset($cachedKeySet[$invalidKid]));
+        }
+
+        // The next calls do not call HTTP
+        for ($i = 0; $i < $cachedTimes; $i++) {
+            $this->assertFalse(isset($cachedKeySet[$invalidKid]));
+        }
+
+        sleep(1); // wait for cache to expire
+
+        // These calls DO call HTTP because the cache has expired
+        for ($i = 0; $i < $afterExpirationTimes; $i++) {
+            $this->assertFalse(isset($cachedKeySet[$invalidKid]));
+        }
+    }
+
     /**
      * @dataProvider provideFullIntegration
      */
