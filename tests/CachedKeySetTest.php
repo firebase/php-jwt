@@ -344,7 +344,7 @@ class CachedKeySetTest extends TestCase
         $cachedKeySet = new CachedKeySet(
             $this->testJwksUri,
             $this->getMockHttpClient($this->testJwks1, $shouldBeCalledTimes),
-            $factory = $this->getMockHttpFactory($shouldBeCalledTimes),
+            $this->getMockHttpFactory($shouldBeCalledTimes),
             new TestMemoryCacheItemPool(),
             10,  // expires after seconds
             true // enable rate limiting
@@ -373,7 +373,7 @@ class CachedKeySetTest extends TestCase
         $cachedKeySet = new CachedKeySet(
             $this->testJwksUri,
             $this->getMockHttpClient($this->testJwks1, $totalHttpTimes),
-            $factory = $this->getMockHttpFactory($totalHttpTimes),
+            $this->getMockHttpFactory($totalHttpTimes),
             $cachePool,
             10,   // expires after seconds
             true // enable rate limiting
@@ -381,9 +381,10 @@ class CachedKeySetTest extends TestCase
 
         // Set the rate limit cache to expire after 1 second
         $cacheItem = $cachePool->getItem('jwksratelimitjwkshttpsjwk.uri');
-        $cacheItemData = $cacheItem->get();
-        $cacheItemData['expiry'] = new \DateTime('+1 seconds', new \DateTimeZone('UTC'));
-        $cacheItem->set($cacheItemData);
+        $cacheItem->set([
+            'expiry' => new \DateTime('+1 second', new \DateTimeZone('UTC')),
+            'callsPerMinute' => 0,
+        ]);
         $cacheItem->expiresAfter(1);
         $cachePool->save($cacheItem);
 
@@ -513,7 +514,10 @@ final class TestMemoryCacheItemPool implements CacheItemPoolInterface
 
     public function getItem($key): CacheItemInterface
     {
-        return current($this->getItems([$key]));
+        $item = current($this->getItems([$key]));
+        $item->expiresAt(null); // mimic symfony cache behavior
+
+        return $item;
     }
 
     public function getItems(array $keys = []): iterable
