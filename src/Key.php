@@ -14,7 +14,7 @@ class Key
      * @param string $algorithm
      */
     public function __construct(
-        private $keyMaterial,
+        private mixed $keyMaterial,
         private string $algorithm
     ) {
         if (
@@ -48,7 +48,7 @@ class Key
     /**
      * @return string|resource|OpenSSLAsymmetricKey|OpenSSLCertificate
      */
-    public function getKeyMaterial()
+    public function getKeyMaterial(): mixed
     {
         return $this->keyMaterial;
     }

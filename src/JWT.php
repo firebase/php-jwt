@@ -38,7 +38,7 @@ class JWT
      *
      * @var int
      */
-    public static $leeway = 0;
+    public static int $leeway = 0;
 
     /**
      * Allow the current timestamp to be specified.
@@ -47,15 +47,16 @@ class JWT
      *
      * @var ?int
      */
-    public static $timestamp = null;
+    public static ?int $timestamp = null;
 
     /**
      * @var array<string, string[]>
      */
-    public static $supported_algs = [
-        'ES384' => ['openssl', 'SHA384'],
+    public static array $supported_algs = [
         'ES256' => ['openssl', 'SHA256'],
         'ES256K' => ['openssl', 'SHA256'],
+        'ES384' => ['openssl', 'SHA384'],
+        'ES512' => ['openssl', 'SHA512'],
         'HS256' => ['hash_hmac', 'SHA256'],
         'HS384' => ['hash_hmac', 'SHA384'],
         'HS512' => ['hash_hmac', 'SHA512'],
@@ -75,10 +76,10 @@ class JWT
      *                                                                      the public key.
      *                                                                      Each Key object contains an algorithm and
      *                                                                      matching key.
-     *                                                                      Supported algorithms are 'ES384','ES256',
+     *                                                                      Supported algorithms are 'ES256', 'ES256K', 'ES384', 'ES512',
      *                                                                      'HS256', 'HS384', 'HS512', 'RS256', 'RS384'
      *                                                                      and 'RS512'.
-     * @param stdClass               $headers                               Optional. Populates stdClass with headers.
+     * @param stdClass|null          $headers                               Optional. Populates stdClass with headers.
      *
      * @return stdClass The JWT's payload as a PHP object
      *
@@ -95,7 +96,7 @@ class JWT
      */
     public static function decode(
         string $jwt,
-        $keyOrKeyArray,
+        Key|ArrayAccess|array $keyOrKeyArray,
         ?stdClass &$headers = null
     ): stdClass {
         // Validate JWT
@@ -142,9 +143,9 @@ class JWT
             // See issue #351
             throw new UnexpectedValueException('Incorrect key for this algorithm');
         }
-        if (\in_array($header->alg, ['ES256', 'ES256K', 'ES384'], true)) {
-            // OpenSSL expects an ASN.1 DER sequence for ES256/ES256K/ES384 signatures
-            $sig = self::signatureToDER($sig);
+        if (\in_array($header->alg, ['ES256', 'ES256K', 'ES384', 'ES512'], true)) {
+            // OpenSSL expects an ASN.1 DER sequence for ES256/ES256K/ES384/ES512 signatures
+            $sig = self::signatureToDER($sig, $header->alg);
         }
         if (!self::verify("{$headb64}.{$bodyb64}", $sig, $key->getKeyMaterial(), $header->alg)) {
             throw new SignatureInvalidException('Signature verification failed');
@@ -184,12 +185,12 @@ class JWT
     /**
      * Converts and signs a PHP array into a JWT string.
      *
-     * @param array<mixed>          $payload PHP array
+     * @param array<mixed>              $payload PHP array
      * @param string|resource|OpenSSLAsymmetricKey|OpenSSLCertificate $key The secret key.
-     * @param string                $alg     Supported algorithms are 'ES384','ES256', 'ES256K', 'HS256',
-     *                                       'HS384', 'HS512', 'RS256', 'RS384', and 'RS512'
-     * @param string                $keyId
-     * @param array<string, string> $head    An array with header elements to attach
+     * @param string                     $alg     Supported algorithms are 'ES256', 'ES256K', 'ES384', 'ES512',
+     *                                            'HS256', 'HS384', 'HS512', 'RS256', 'RS384', and 'RS512'
+     * @param string|null                $keyId
+     * @param array<string, string>|null $head    An array with header elements to attach
      *
      * @return string A signed JWT
      *
@@ -198,7 +199,7 @@ class JWT
      */
     public static function encode(
         array $payload,
-        $key,
+        mixed $key,
         string $alg,
         ?string $keyId = null,
         ?array $head = null
@@ -227,8 +228,8 @@ class JWT
      *
      * @param string $msg  The message to sign
      * @param string|resource|OpenSSLAsymmetricKey|OpenSSLCertificate  $key  The secret key.
-     * @param string $alg  Supported algorithms are 'EdDSA', 'ES384', 'ES256', 'ES256K', 'HS256',
-     *                    'HS384', 'HS512', 'RS256', 'RS384', and 'RS512'
+     * @param string $alg  Supported algorithms are 'EdDSA', 'ES256', 'ES256K', 'ES384', 'ES512',
+     *                     'HS256', 'HS384', 'HS512', 'RS256', 'RS384', and 'RS512'
      *
      * @return string An encrypted message
      *
@@ -236,7 +237,7 @@ class JWT
      */
     public static function sign(
         string $msg,
-        $key,
+        mixed $key,
         string $alg
     ): string {
         if (empty(static::$supported_algs[$alg])) {
@@ -259,9 +260,11 @@ class JWT
                     throw new DomainException('OpenSSL unable to sign data');
                 }
                 if ($alg === 'ES256' || $alg === 'ES256K') {
-                    $signature = self::signatureFromDER($signature, 256);
+                    $signature = self::signatureFromDER($signature, 256, $alg);
                 } elseif ($alg === 'ES384') {
-                    $signature = self::signatureFromDER($signature, 384);
+                    $signature = self::signatureFromDER($signature, 384, $alg);
+                } elseif ($alg === 'ES512') {
+                    $signature = self::signatureFromDER($signature, 521, $alg);
                 }
                 return $signature;
             case 'sodium_crypto':
@@ -303,7 +306,7 @@ class JWT
     private static function verify(
         string $msg,
         string $signature,
-        $keyMaterial,
+        mixed $keyMaterial,
         string $alg
     ): bool {
         if (empty(static::$supported_algs[$alg])) {
@@ -364,7 +367,7 @@ class JWT
      *
      * @throws DomainException Provided string was invalid JSON
      */
-    public static function jsonDecode(string $input)
+    public static function jsonDecode(string $input): mixed
     {
         $obj = \json_decode($input, false, 512, JSON_BIGINT_AS_STRING);
 
@@ -457,7 +460,7 @@ class JWT
      * @return Key
      */
     private static function getKey(
-        $keyOrKeyArray,
+        Key|ArrayAccess|array $keyOrKeyArray,
         ?string $kid
     ): Key {
         if ($keyOrKeyArray instanceof Key) {
@@ -519,11 +522,7 @@ class JWT
             JSON_ERROR_SYNTAX => 'Syntax error, malformed JSON',
             JSON_ERROR_UTF8 => 'Malformed UTF-8 characters' //PHP >= 5.3.3
         ];
-        throw new DomainException(
-            isset($messages[$errno])
-            ? $messages[$errno]
-            : 'Unknown JSON error: ' . $errno
-        );
+        throw new DomainException($messages[$errno] ?? 'Unknown JSON error: ' . $errno);
     }
 
     /**
@@ -545,12 +544,16 @@ class JWT
      * Convert an ECDSA signature to an ASN.1 DER sequence
      *
      * @param   string $sig The ECDSA signature to convert
+     * @param   string $alg The algorithm
      * @return  string The encoded DER object
      */
-    private static function signatureToDER(string $sig): string
+    private static function signatureToDER(string $sig, string $alg): string
     {
         // Separate the signature into r-value and s-value
-        $length = max(1, (int) (\strlen($sig) / 2));
+        $length = match ($alg) {
+            'ES512' => 66,
+            default => max(1, (int) (\strlen($sig) / 2)),
+        };
         list($r, $s) = \str_split($sig, $length);
 
         // Trim leading zeros
@@ -602,10 +605,11 @@ class JWT
      *
      * @param   string  $der binary signature in DER format
      * @param   int     $keySize the number of bits in the key
+     * @param   string  $alg The algorithm
      *
      * @return  string  the signature
      */
-    private static function signatureFromDER(string $der, int $keySize): string
+    private static function signatureFromDER(string $der, int $keySize, string $alg): string
     {
         // OpenSSL returns the ECDSA signatures as a binary ASN.1 DER SEQUENCE
         list($offset, $_) = self::readDER($der);
@@ -618,8 +622,9 @@ class JWT
         $s = \ltrim($s, "\x00");
 
         // Pad out r and s so that they are $keySize bits long
-        $r = \str_pad($r, $keySize / 8, "\x00", STR_PAD_LEFT);
-        $s = \str_pad($s, $keySize / 8, "\x00", STR_PAD_LEFT);
+        $length = \ceil($keySize / 8);
+        $r = \str_pad($r, $length, "\x00", STR_PAD_LEFT);
+        $s = \str_pad($s, $length, "\x00", STR_PAD_LEFT);
 
         return $r . $s;
     }
