@@ -38,7 +38,7 @@ class JWT
      *
      * @var int
      */
-    public static $leeway = 0;
+    public static int $leeway = 0;
 
     /**
      * Allow the current timestamp to be specified.
@@ -47,12 +47,12 @@ class JWT
      *
      * @var ?int
      */
-    public static $timestamp = null;
+    public static ?int $timestamp = null;
 
     /**
      * @var array<string, string[]>
      */
-    public static $supported_algs = [
+    public static array $supported_algs = [
         'ES256' => ['openssl', 'SHA256'],
         'ES256K' => ['openssl', 'SHA256'],
         'ES384' => ['openssl', 'SHA384'],
@@ -79,7 +79,7 @@ class JWT
      *                                                                      Supported algorithms are 'ES256', 'ES256K', 'ES384', 'ES512',
      *                                                                      'HS256', 'HS384', 'HS512', 'RS256', 'RS384'
      *                                                                      and 'RS512'.
-     * @param stdClass               $headers                               Optional. Populates stdClass with headers.
+     * @param stdClass|null          $headers                               Optional. Populates stdClass with headers.
      *
      * @return stdClass The JWT's payload as a PHP object
      *
@@ -96,7 +96,7 @@ class JWT
      */
     public static function decode(
         string $jwt,
-        $keyOrKeyArray,
+        Key|ArrayAccess|array $keyOrKeyArray,
         ?stdClass &$headers = null
     ): stdClass {
         // Validate JWT
@@ -185,12 +185,12 @@ class JWT
     /**
      * Converts and signs a PHP array into a JWT string.
      *
-     * @param array<mixed>          $payload PHP array
-     * @param string|resource|OpenSSLAsymmetricKey|OpenSSLCertificate $key The secret key.
-     * @param string                $alg     Supported algorithms are 'ES256', 'ES256K', 'ES384', 'ES512',
-     *                                       'HS256', 'HS384', 'HS512', 'RS256', 'RS384', and 'RS512'
-     * @param string                $keyId
-     * @param array<string, string> $head    An array with header elements to attach
+     * @param array                      $payload PHP array
+     * @param string|array|OpenSSLAsymmetricKey|OpenSSLCertificate $key The secret key.
+     * @param string                     $alg     Supported algorithms are 'ES256', 'ES256K', 'ES384', 'ES512',
+     *                                            'HS256', 'HS384', 'HS512', 'RS256', 'RS384', and 'RS512'
+     * @param string|null                $keyId
+     * @param array<string, string>|null $head    An array with header elements to attach
      *
      * @return string A signed JWT
      *
@@ -199,7 +199,7 @@ class JWT
      */
     public static function encode(
         array $payload,
-        $key,
+        string|array|OpenSSLAsymmetricKey|OpenSSLCertificate $key,
         string $alg,
         ?string $keyId = null,
         ?array $head = null
@@ -227,9 +227,9 @@ class JWT
      * Sign a string with a given key and algorithm.
      *
      * @param string $msg  The message to sign
-     * @param string|resource|OpenSSLAsymmetricKey|OpenSSLCertificate  $key  The secret key.
+     * @param string|array|OpenSSLAsymmetricKey|OpenSSLCertificate  $key  The secret key.
      * @param string $alg  Supported algorithms are 'EdDSA', 'ES256', 'ES256K', 'ES384', 'ES512',
-     *                    'HS256', 'HS384', 'HS512', 'RS256', 'RS384', and 'RS512'
+     *                     'HS256', 'HS384', 'HS512', 'RS256', 'RS384', and 'RS512'
      *
      * @return string An encrypted message
      *
@@ -237,7 +237,7 @@ class JWT
      */
     public static function sign(
         string $msg,
-        $key,
+        string|array|OpenSSLAsymmetricKey|OpenSSLCertificate $key,
         string $alg
     ): string {
         if (empty(static::$supported_algs[$alg])) {
@@ -296,7 +296,7 @@ class JWT
      *
      * @param string $msg         The original message (header and body)
      * @param string $signature   The original signature
-     * @param string|resource|OpenSSLAsymmetricKey|OpenSSLCertificate  $keyMaterial For Ed*, ES*, HS*, a string key works. for RS*, must be an instance of OpenSSLAsymmetricKey
+     * @param string|array|OpenSSLAsymmetricKey|OpenSSLCertificate  $keyMaterial For Ed*, ES*, HS*, a string key works. for RS*, must be an instance of OpenSSLAsymmetricKey
      * @param string $alg         The algorithm
      *
      * @return bool
@@ -306,7 +306,7 @@ class JWT
     private static function verify(
         string $msg,
         string $signature,
-        $keyMaterial,
+        string|array|OpenSSLAsymmetricKey|OpenSSLCertificate $keyMaterial,
         string $alg
     ): bool {
         if (empty(static::$supported_algs[$alg])) {
@@ -367,7 +367,7 @@ class JWT
      *
      * @throws DomainException Provided string was invalid JSON
      */
-    public static function jsonDecode(string $input)
+    public static function jsonDecode(string $input): mixed
     {
         $obj = \json_decode($input, false, 512, JSON_BIGINT_AS_STRING);
 
@@ -382,7 +382,7 @@ class JWT
     /**
      * Encode a PHP array into a JSON string.
      *
-     * @param array<mixed> $input A PHP array
+     * @param array $input A PHP array
      *
      * @return string JSON representation of the PHP array
      *
@@ -465,7 +465,7 @@ class JWT
      * @return Key
      */
     private static function getKey(
-        $keyOrKeyArray,
+        Key|ArrayAccess|array $keyOrKeyArray,
         ?string $kid
     ): Key {
         if ($keyOrKeyArray instanceof Key) {
@@ -527,11 +527,7 @@ class JWT
             JSON_ERROR_SYNTAX => 'Syntax error, malformed JSON',
             JSON_ERROR_UTF8 => 'Malformed UTF-8 characters' //PHP >= 5.3.3
         ];
-        throw new DomainException(
-            isset($messages[$errno])
-            ? $messages[$errno]
-            : 'Unknown JSON error: ' . $errno
-        );
+        throw new DomainException($messages[$errno] ?? 'Unknown JSON error: ' . $errno);
     }
 
     /**
