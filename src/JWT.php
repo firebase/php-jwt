@@ -127,6 +127,16 @@ class JWT
         if (!$payload instanceof stdClass) {
             throw new UnexpectedValueException('Payload must be a JSON object');
         }
+        if (isset($payload->iat) && !\is_numeric($payload->iat)) {
+            throw new UnexpectedValueException('Payload iat must be a number');
+        }
+        if (isset($payload->nbf) && !\is_numeric($payload->nbf)) {
+            throw new UnexpectedValueException('Payload nbf must be a number');
+        }
+        if (isset($payload->exp) && !\is_numeric($payload->exp)) {
+            throw new UnexpectedValueException('Payload exp must be a number');
+        }
+
         $sig = static::urlsafeB64Decode($cryptob64);
         if (empty($header->alg)) {
             throw new UnexpectedValueException('Empty algorithm');
@@ -172,7 +182,7 @@ class JWT
         }
 
         // Check if this token has expired.
-        if (isset($payload->exp) && ($timestamp - static::$leeway) >= $payload->exp) {
+        if (isset($payload->exp) && floor($payload->exp) && ($timestamp - static::$leeway) >= $payload->exp) {
             $ex = new ExpiredException('Expired token');
             $ex->setPayload($payload);
             throw $ex;
