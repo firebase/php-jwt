@@ -212,7 +212,7 @@ class JWK
                 )
             );
 
-        return sprintf(
+        return \sprintf(
             "-----BEGIN PUBLIC KEY-----\n%s\n-----END PUBLIC KEY-----\n",
             wordwrap(base64_encode($pem), 64, "\n", true)
         );
