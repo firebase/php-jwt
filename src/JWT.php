@@ -460,17 +460,20 @@ class JWT
         $keyOrKeyArray,
         ?string $kid
     ): Key {
+
+        $kid = (string) $kid;
+
         if ($keyOrKeyArray instanceof Key) {
             return $keyOrKeyArray;
-        }
-
-        if (empty($kid) && $kid !== '0') {
-            throw new UnexpectedValueException('"kid" empty, unable to lookup correct key');
         }
 
         if ($keyOrKeyArray instanceof CachedKeySet) {
             // Skip "isset" check, as this will automatically refresh if not set
             return $keyOrKeyArray[$kid];
+        }
+
+        if (!is_array($keyOrKeyArray) && !$keyOrKeyArray instanceof ArrayAccess) {
+            throw new UnexpectedValueException('Expecting a Key or an associative array of keys');
         }
 
         if (!isset($keyOrKeyArray[$kid])) {
