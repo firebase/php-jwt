@@ -26,6 +26,12 @@ class JWTTest extends TestCase
         JWT::encode(['message' => pack('c', 128)], 'a', 'HS256');
     }
 
+    public function testInvalidKeyOpensslSignFail()
+    {
+        $this->expectException(DomainException::class);
+        JWT::sign('message', 'invalid key', 'openssl');
+    }
+
     public function testMalformedJsonThrowsException()
     {
         $this->expectException(DomainException::class);
@@ -76,6 +82,9 @@ class JWTTest extends TestCase
         $this->assertSame($decoded->message, 'abc');
     }
 
+    /**
+     * @runInSeparateProcess
+     */
     public function testValidTokenWithLeeway()
     {
         JWT::$leeway = 60;
@@ -86,9 +95,11 @@ class JWTTest extends TestCase
         $encoded = JWT::encode($payload, 'my_key', 'HS256');
         $decoded = JWT::decode($encoded, new Key('my_key', 'HS256'));
         $this->assertSame($decoded->message, 'abc');
-        JWT::$leeway = 0;
     }
 
+    /**
+     * @runInSeparateProcess
+     */
     public function testExpiredTokenWithLeeway()
     {
         JWT::$leeway = 60;
@@ -100,7 +111,40 @@ class JWTTest extends TestCase
         $encoded = JWT::encode($payload, 'my_key', 'HS256');
         $decoded = JWT::decode($encoded, new Key('my_key', 'HS256'));
         $this->assertSame($decoded->message, 'abc');
-        JWT::$leeway = 0;
+    }
+
+    public function testExpiredExceptionPayload()
+    {
+        $this->expectException(ExpiredException::class);
+        $payload = [
+            'message' => 'abc',
+            'exp' => time() - 100, // time in the past
+        ];
+        $encoded = JWT::encode($payload, 'my_key', 'HS256');
+        try {
+            JWT::decode($encoded, new Key('my_key', 'HS256'));
+        } catch (ExpiredException $e) {
+            $exceptionPayload = (array) $e->getPayload();
+            $this->assertEquals($exceptionPayload, $payload);
+            throw $e;
+        }
+    }
+
+    public function testBeforeValidExceptionPayload()
+    {
+        $this->expectException(BeforeValidException::class);
+        $payload = [
+            'message' => 'abc',
+            'iat' => time() + 100, // time in the future
+        ];
+        $encoded = JWT::encode($payload, 'my_key', 'HS256');
+        try {
+            JWT::decode($encoded, new Key('my_key', 'HS256'));
+        } catch (BeforeValidException $e) {
+            $exceptionPayload = (array) $e->getPayload();
+            $this->assertEquals($exceptionPayload, $payload);
+            throw $e;
+        }
     }
 
     public function testValidTokenWithNbf()
@@ -116,6 +160,9 @@ class JWTTest extends TestCase
         $this->assertSame($decoded->message, 'abc');
     }
 
+    /**
+     * @runInSeparateProcess
+     */
     public function testValidTokenWithNbfLeeway()
     {
         JWT::$leeway = 60;
@@ -126,9 +173,11 @@ class JWTTest extends TestCase
         $encoded = JWT::encode($payload, 'my_key', 'HS256');
         $decoded = JWT::decode($encoded, new Key('my_key', 'HS256'));
         $this->assertSame($decoded->message, 'abc');
-        JWT::$leeway = 0;
     }
 
+    /**
+     * @runInSeparateProcess
+     */
     public function testInvalidTokenWithNbfLeeway()
     {
         JWT::$leeway = 60;
@@ -138,10 +187,48 @@ class JWTTest extends TestCase
         ];
         $encoded = JWT::encode($payload, 'my_key', 'HS256');
         $this->expectException(BeforeValidException::class);
+        $this->expectExceptionMessage('Cannot handle token with nbf prior to');
         JWT::decode($encoded, new Key('my_key', 'HS256'));
-        JWT::$leeway = 0;
     }
 
+    public function testValidTokenWithNbfIgnoresIat()
+    {
+        $payload = [
+            'message' => 'abc',
+            'nbf' => time() - 20, // time in the future
+            'iat' => time() + 20, // time in the past
+        ];
+        $encoded = JWT::encode($payload, 'my_key', 'HS256');
+        $decoded = JWT::decode($encoded, new Key('my_key', 'HS256'));
+        $this->assertEquals('abc', $decoded->message);
+    }
+
+    public function testValidTokenWithNbfMicrotime()
+    {
+        $payload = [
+            'message' => 'abc',
+            'nbf' => microtime(true), // use microtime
+        ];
+        $encoded = JWT::encode($payload, 'my_key', 'HS256');
+        $decoded = JWT::decode($encoded, new Key('my_key', 'HS256'));
+        $this->assertEquals('abc', $decoded->message);
+    }
+
+    public function testInvalidTokenWithNbfMicrotime()
+    {
+        $this->expectException(BeforeValidException::class);
+        $this->expectExceptionMessage('Cannot handle token with nbf prior to');
+        $payload = [
+            'message' => 'abc',
+            'nbf' => microtime(true) + 20, // use microtime in the future
+        ];
+        $encoded = JWT::encode($payload, 'my_key', 'HS256');
+        JWT::decode($encoded, new Key('my_key', 'HS256'));
+    }
+
+    /**
+     * @runInSeparateProcess
+     */
     public function testValidTokenWithIatLeeway()
     {
         JWT::$leeway = 60;
@@ -152,9 +239,11 @@ class JWTTest extends TestCase
         $encoded = JWT::encode($payload, 'my_key', 'HS256');
         $decoded = JWT::decode($encoded, new Key('my_key', 'HS256'));
         $this->assertSame($decoded->message, 'abc');
-        JWT::$leeway = 0;
     }
 
+    /**
+     * @runInSeparateProcess
+     */
     public function testInvalidTokenWithIatLeeway()
     {
         JWT::$leeway = 60;
@@ -164,8 +253,31 @@ class JWTTest extends TestCase
         ];
         $encoded = JWT::encode($payload, 'my_key', 'HS256');
         $this->expectException(BeforeValidException::class);
+        $this->expectExceptionMessage('Cannot handle token with iat prior to');
         JWT::decode($encoded, new Key('my_key', 'HS256'));
-        JWT::$leeway = 0;
+    }
+
+    public function testValidTokenWithIatMicrotime()
+    {
+        $payload = [
+            'message' => 'abc',
+            'iat' => microtime(true), // use microtime
+        ];
+        $encoded = JWT::encode($payload, 'my_key', 'HS256');
+        $decoded = JWT::decode($encoded, new Key('my_key', 'HS256'));
+        $this->assertEquals('abc', $decoded->message);
+    }
+
+    public function testInvalidTokenWithIatMicrotime()
+    {
+        $this->expectException(BeforeValidException::class);
+        $this->expectExceptionMessage('Cannot handle token with iat prior to');
+        $payload = [
+            'message' => 'abc',
+            'iat' => microtime(true) + 20, // use microtime in the future
+        ];
+        $encoded = JWT::encode($payload, 'my_key', 'HS256');
+        JWT::decode($encoded, new Key('my_key', 'HS256'));
     }
 
     public function testInvalidToken()
@@ -396,5 +508,42 @@ class JWTTest extends TestCase
         $decoded = JWT::decode($encoded, new Key($resource, 'RS512'));
 
         $this->assertSame('bar', $decoded->foo);
+    }
+
+    public function testGetHeaders()
+    {
+        $payload = [
+            'message' => 'abc',
+            'exp' => time() + JWT::$leeway + 20, // time in the future
+        ];
+        $headers = new stdClass();
+
+        $encoded = JWT::encode($payload, 'my_key', 'HS256');
+        JWT::decode($encoded, new Key('my_key', 'HS256'), $headers);
+
+        $this->assertEquals($headers->typ, 'JWT');
+        $this->assertEquals($headers->alg, 'HS256');
+    }
+
+    public function testAdditionalHeaderOverrides()
+    {
+        $msg = JWT::encode(
+            ['message' => 'abc'],
+            'my_key',
+            'HS256',
+            'my_key_id',
+            [
+                'cty' => 'test-eit;v=1',
+                'typ' => 'JOSE', // override type header
+                'kid' => 'not_my_key_id', // should not override $key param
+                'alg' => 'BAD', // should not override $alg param
+            ]
+        );
+        $headers = new stdClass();
+        JWT::decode($msg, new Key('my_key', 'HS256'), $headers);
+        $this->assertEquals('test-eit;v=1', $headers->cty, 'additional field works');
+        $this->assertEquals('JOSE', $headers->typ, 'typ override works');
+        $this->assertEquals('my_key_id', $headers->kid, 'key param not overridden');
+        $this->assertEquals('HS256', $headers->alg, 'alg param not overridden');
     }
 }

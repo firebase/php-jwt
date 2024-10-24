@@ -1,5 +1,66 @@
 # Changelog
 
+## [6.10.1](https://github.com/firebase/php-jwt/compare/v6.10.0...v6.10.1) (2024-05-18)
+
+
+### Bug Fixes
+
+* ensure ratelimit expiry is set every time ([#556](https://github.com/firebase/php-jwt/issues/556)) ([09cb208](https://github.com/firebase/php-jwt/commit/09cb2081c2c3bc0f61e2f2a5fbea5741f7498648))
+* ratelimit cache expiration ([#550](https://github.com/firebase/php-jwt/issues/550)) ([dda7250](https://github.com/firebase/php-jwt/commit/dda725033585ece30ff8cae8937320d7e9f18bae))
+
+## [6.10.0](https://github.com/firebase/php-jwt/compare/v6.9.0...v6.10.0) (2023-11-28)
+
+
+### Features
+
+* allow typ header override ([#546](https://github.com/firebase/php-jwt/issues/546)) ([79cb30b](https://github.com/firebase/php-jwt/commit/79cb30b729a22931b2fbd6b53f20629a83031ba9))
+
+## [6.9.0](https://github.com/firebase/php-jwt/compare/v6.8.1...v6.9.0) (2023-10-04)
+
+
+### Features
+
+* add payload to jwt exception ([#521](https://github.com/firebase/php-jwt/issues/521)) ([175edf9](https://github.com/firebase/php-jwt/commit/175edf958bb61922ec135b2333acf5622f2238a2))
+
+## [6.8.1](https://github.com/firebase/php-jwt/compare/v6.8.0...v6.8.1) (2023-07-14)
+
+
+### Bug Fixes
+
+* accept float claims but round down to ignore them ([#492](https://github.com/firebase/php-jwt/issues/492)) ([3936842](https://github.com/firebase/php-jwt/commit/39368423beeaacb3002afa7dcb75baebf204fe7e))
+* different BeforeValidException messages for nbf and iat ([#526](https://github.com/firebase/php-jwt/issues/526)) ([0a53cf2](https://github.com/firebase/php-jwt/commit/0a53cf2986e45c2bcbf1a269f313ebf56a154ee4))
+
+## [6.8.0](https://github.com/firebase/php-jwt/compare/v6.7.0...v6.8.0) (2023-06-14)
+
+
+### Features
+
+* add support for P-384 curve ([#515](https://github.com/firebase/php-jwt/issues/515)) ([5de4323](https://github.com/firebase/php-jwt/commit/5de4323f4baf4d70bca8663bd87682a69c656c3d))
+
+
+### Bug Fixes
+
+* handle invalid http responses ([#508](https://github.com/firebase/php-jwt/issues/508)) ([91c39c7](https://github.com/firebase/php-jwt/commit/91c39c72b22fc3e1191e574089552c1f2041c718))
+
+## [6.7.0](https://github.com/firebase/php-jwt/compare/v6.6.0...v6.7.0) (2023-06-14)
+
+
+### Features
+
+* add ed25519 support to JWK (public keys) ([#452](https://github.com/firebase/php-jwt/issues/452)) ([e53979a](https://github.com/firebase/php-jwt/commit/e53979abae927de916a75b9d239cfda8ce32be2a))
+
+## [6.6.0](https://github.com/firebase/php-jwt/compare/v6.5.0...v6.6.0) (2023-06-13)
+
+
+### Features
+
+* allow get headers when decoding token ([#442](https://github.com/firebase/php-jwt/issues/442)) ([fb85f47](https://github.com/firebase/php-jwt/commit/fb85f47cfaeffdd94faf8defdf07164abcdad6c3))
+
+
+### Bug Fixes
+
+* only check iat if nbf is not used ([#493](https://github.com/firebase/php-jwt/issues/493)) ([398ccd2](https://github.com/firebase/php-jwt/commit/398ccd25ea12fa84b9e4f1085d5ff448c21ec797))
+
 ## [6.5.0](https://github.com/firebase/php-jwt/compare/v6.4.0...v6.5.0) (2023-05-12)
 
 

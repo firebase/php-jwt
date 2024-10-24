@@ -88,6 +88,35 @@ class CachedKeySetTest extends TestCase
         $cachedKeySet['bar'];
     }
 
+    public function testInvalidHttpResponseThrowsException()
+    {
+        $this->expectException(\UnexpectedValueException::class);
+        $this->expectExceptionMessage('HTTP Error: 404 URL not found');
+        $this->expectExceptionCode(404);
+
+        $response = $this->prophesize('Psr\Http\Message\ResponseInterface');
+        $response->getStatusCode()
+            ->shouldBeCalled()
+            ->willReturn(404);
+        $response->getReasonPhrase()
+            ->shouldBeCalledTimes(1)
+            ->willReturn('URL not found');
+
+        $http = $this->prophesize(ClientInterface::class);
+        $http->sendRequest(Argument::any())
+            ->shouldBeCalledTimes(1)
+            ->willReturn($response->reveal());
+
+        $cachedKeySet = new CachedKeySet(
+            $this->testJwksUri,
+            $http->reveal(),
+            $this->getMockHttpFactory(),
+            $this->getMockEmptyCache()
+        );
+
+        isset($cachedKeySet[0]);
+    }
+
     public function testWithExistingKeyId()
     {
         $cachedKeySet = new CachedKeySet(
@@ -315,7 +344,7 @@ class CachedKeySetTest extends TestCase
         $cachedKeySet = new CachedKeySet(
             $this->testJwksUri,
             $this->getMockHttpClient($this->testJwks1, $shouldBeCalledTimes),
-            $factory = $this->getMockHttpFactory($shouldBeCalledTimes),
+            $this->getMockHttpFactory($shouldBeCalledTimes),
             new TestMemoryCacheItemPool(),
             10,  // expires after seconds
             true // enable rate limiting
@@ -327,6 +356,54 @@ class CachedKeySetTest extends TestCase
         }
         // The 11th time does not call HTTP
         $this->assertFalse(isset($cachedKeySet[$invalidKid]));
+    }
+
+    public function testRateLimitWithExpiresAfter()
+    {
+        // We request the key 17 times, HTTP should only be called 15 times
+        $shouldBeCalledTimes = 10;
+        $cachedTimes = 2;
+        $afterExpirationTimes = 5;
+
+        $totalHttpTimes = $shouldBeCalledTimes + $afterExpirationTimes;
+
+        $cachePool = new TestMemoryCacheItemPool();
+
+        // Instantiate the cached key set
+        $cachedKeySet = new CachedKeySet(
+            $this->testJwksUri,
+            $this->getMockHttpClient($this->testJwks1, $totalHttpTimes),
+            $this->getMockHttpFactory($totalHttpTimes),
+            $cachePool,
+            10,   // expires after seconds
+            true // enable rate limiting
+        );
+
+        // Set the rate limit cache to expire after 1 second
+        $cacheItem = $cachePool->getItem('jwksratelimitjwkshttpsjwk.uri');
+        $cacheItem->set([
+            'expiry' => new \DateTime('+1 second', new \DateTimeZone('UTC')),
+            'callsPerMinute' => 0,
+        ]);
+        $cacheItem->expiresAfter(1);
+        $cachePool->save($cacheItem);
+
+        $invalidKid = 'invalidkey';
+        for ($i = 0; $i < $shouldBeCalledTimes; $i++) {
+            $this->assertFalse(isset($cachedKeySet[$invalidKid]));
+        }
+
+        // The next calls do not call HTTP
+        for ($i = 0; $i < $cachedTimes; $i++) {
+            $this->assertFalse(isset($cachedKeySet[$invalidKid]));
+        }
+
+        sleep(1); // wait for cache to expire
+
+        // These calls DO call HTTP because the cache has expired
+        for ($i = 0; $i < $afterExpirationTimes; $i++) {
+            $this->assertFalse(isset($cachedKeySet[$invalidKid]));
+        }
     }
 
     /**
@@ -382,6 +459,9 @@ class CachedKeySetTest extends TestCase
         $response->getBody()
             ->shouldBeCalledTimes($timesCalled)
             ->willReturn($body->reveal());
+        $response->getStatusCode()
+            ->shouldBeCalledTimes($timesCalled)
+            ->willReturn(200);
 
         $http = $this->prophesize(ClientInterface::class);
         $http->sendRequest(Argument::any())
@@ -434,7 +514,10 @@ final class TestMemoryCacheItemPool implements CacheItemPoolInterface
 
     public function getItem($key): CacheItemInterface
     {
-        return current($this->getItems([$key]));
+        $item = current($this->getItems([$key]));
+        $item->expiresAt(null); // mimic symfony cache behavior
+
+        return $item;
     }
 
     public function getItems(array $keys = []): iterable
@@ -521,7 +604,7 @@ final class TestMemoryCacheItem implements CacheItemInterface
         return $this->key;
     }
 
-    public function get()
+    public function get(): mixed
     {
         return $this->isHit() ? $this->value : null;
     }
@@ -539,7 +622,7 @@ final class TestMemoryCacheItem implements CacheItemInterface
         return $this->currentTime()->getTimestamp() < $this->expiration->getTimestamp();
     }
 
-    public function set($value)
+    public function set(mixed $value): static
     {
         $this->isHit = true;
         $this->value = $value;
@@ -547,13 +630,13 @@ final class TestMemoryCacheItem implements CacheItemInterface
         return $this;
     }
 
-    public function expiresAt($expiration)
+    public function expiresAt($expiration): static
     {
         $this->expiration = $expiration;
         return $this;
     }
 
-    public function expiresAfter($time)
+    public function expiresAfter($time): static
     {
         $this->expiration = $this->currentTime()->add(new \DateInterval("PT{$time}S"));
         return $this;

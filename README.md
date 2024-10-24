@@ -17,7 +17,7 @@ composer require firebase/php-jwt
 ```
 
 Optionally, install the `paragonie/sodium_compat` package from composer if your
-php is < 7.2 or does not have libsodium installed:
+php env does not have libsodium installed:
 
 ```bash
 composer require paragonie/sodium_compat
@@ -45,8 +45,11 @@ $payload = [
  */
 $jwt = JWT::encode($payload, $key, 'HS256');
 $decoded = JWT::decode($jwt, new Key($key, 'HS256'));
-
 print_r($decoded);
+
+// Pass a stdClass in as the third parameter to get the decoded header values
+$decoded = JWT::decode($jwt, new Key($key, 'HS256'), $headers = new stdClass());
+print_r($headers);
 
 /*
  NOTE: This will now be an object instead of an associative array. To get
