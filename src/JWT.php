@@ -287,7 +287,7 @@ class JWT
             case 'openssl':
                 $signature = '';
                 if (!\is_resource($key) && !openssl_pkey_get_private($key)) {
-                    throw new DomainException('OpenSSL unable to validate key');
+                    throw new DomainException('OpenSSL unable to validate key', ExceptionCodes::OPENSSL_SIGNATURE);
                 }
                 $success = \openssl_sign($msg, $signature, $key, $algorithm); // @phpstan-ignore-line
                 if (!$success) {
@@ -304,7 +304,9 @@ class JWT
                 return $signature;
             case 'sodium_crypto':
                 if (!\function_exists('sodium_crypto_sign_detached')) {
-                    throw new DomainException('libsodium is not available');
+                    throw new DomainException('libsodium is not available',
+                        ExceptionCodes::SODIUM_FUNC_DOES_NOT_EXIST
+                    );
                 }
                 if (!\is_string($key)) {
                     throw new InvalidArgumentException(
@@ -317,7 +319,10 @@ class JWT
                     $lines = array_filter(explode("\n", $key));
                     $key = base64_decode((string) end($lines));
                     if (\strlen($key) === 0) {
-                        throw new DomainException('Key cannot be empty string');
+                        throw new DomainException(
+                            'Key cannot be empty string',
+                            ExceptionCodes::SODIUM_KEY_LENGTH_ZERO
+                        );
                     }
                     return sodium_crypto_sign_detached($msg, $key);
                 } catch (Exception $e) {
@@ -394,10 +399,16 @@ class JWT
                     $lines = array_filter(explode("\n", $keyMaterial));
                     $key = base64_decode((string) end($lines));
                     if (\strlen($key) === 0) {
-                        throw new DomainException('Key cannot be empty string');
+                        throw new DomainException(
+                            'Key cannot be empty string',
+                            ExceptionCodes::SODIUM_VERIFY_KEY_LENGTH_ZERO
+                        );
                     }
                     if (\strlen($signature) === 0) {
-                        throw new DomainException('Signature cannot be empty string');
+                        throw new DomainException(
+                            'Signature cannot be empty string',
+                            ExceptionCodes::SODIUM_VERIFY_SIGNATURE_EMPTY
+                        );
                     }
                     return sodium_crypto_sign_verify_detached($signature, $msg, $key);
                 } catch (Exception $e) {

@@ -149,11 +149,11 @@ class CachedKeySet implements ArrayAccess
         $jwks = json_decode($jwks, true);
 
         if (!isset($jwks['keys'])) {
-            throw new UnexpectedValueException('"keys" member must exist in the JWK Set');
+            throw new UnexpectedValueException('"keys" member must exist in the JWK Set', ExceptionCodes::CACHED_KEY_MISSING);
         }
 
         if (empty($jwks['keys'])) {
-            throw new InvalidArgumentException('JWK Set did not contain any keys');
+            throw new InvalidArgumentException('JWK Set did not contain any keys', ExceptionCodes::CACHED_KEY_EMPTY);
         }
 
         $keys = [];
@@ -194,7 +194,7 @@ class CachedKeySet implements ArrayAccess
                         $jwksResponse->getReasonPhrase(),
                         $this->jwksUri,
                     ),
-                    $jwksResponse->getStatusCode()
+                    ExceptionCodes::CACHED_KEY_GET_JWK
                 );
             }
             $this->keySet = $this->formatJwksForCache((string) $jwksResponse->getBody());

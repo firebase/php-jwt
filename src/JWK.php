@@ -192,19 +192,19 @@ class JWK
             case 'OKP':
                 if (isset($jwk['d'])) {
                     // The key is actually a private key
-                    throw new UnexpectedValueException('Key data must be for a public key');
+                    throw new UnexpectedValueException('Key data must be for a public key', ExceptionCodes::JWK_OKP_MISSING);
                 }
 
                 if (!isset($jwk['crv'])) {
-                    throw new UnexpectedValueException('crv not set');
+                    throw new UnexpectedValueException('crv not set', ExceptionCodes::JWT_CRV_MISSING);
                 }
 
                 if (empty(self::OKP_SUBTYPES[$jwk['crv']])) {
-                    throw new DomainException('Unrecognised or unsupported OKP key subtype');
+                    throw new DomainException('Unrecognised or unsupported OKP key subtype', ExceptionCodes::JWT_CRV_UNSUPPORTED);
                 }
 
                 if (empty($jwk['x'])) {
-                    throw new UnexpectedValueException('x not set');
+                    throw new UnexpectedValueException('x not set', ExceptionCodes::JWT_X_MISSING);
                 }
 
                 // This library works internally with EdDSA keys (Ed25519) encoded in standard base64.
