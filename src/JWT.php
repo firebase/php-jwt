@@ -233,7 +233,7 @@ class JWT
         ?array $head = null
     ): string {
         $header = ['typ' => 'JWT'];
-        if (isset($head) && \is_array($head)) {
+        if (isset($head)) {
             $header = \array_merge($header, $head);
         }
         $header['alg'] = $alg;
@@ -466,12 +466,7 @@ class JWT
      */
     public static function jsonEncode(array $input): string
     {
-        if (PHP_VERSION_ID >= 50400) {
-            $json = \json_encode($input, \JSON_UNESCAPED_SLASHES);
-        } else {
-            // PHP 5.3 only
-            $json = \json_encode($input);
-        }
+        $json = \json_encode($input, \JSON_UNESCAPED_SLASHES);
         if ($errno = \json_last_error()) {
             self::handleJsonError($errno);
         } elseif ($json === 'null') {

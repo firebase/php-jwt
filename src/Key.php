@@ -9,18 +9,13 @@ use TypeError;
 
 class Key
 {
-    /** @var string|resource|OpenSSLAsymmetricKey|OpenSSLCertificate */
-    private $keyMaterial;
-    /** @var string */
-    private $algorithm;
-
     /**
      * @param string|resource|OpenSSLAsymmetricKey|OpenSSLCertificate $keyMaterial
      * @param string $algorithm
      */
     public function __construct(
-        $keyMaterial,
-        string $algorithm
+        private $keyMaterial,
+        private string $algorithm
     ) {
         if (
             !\is_string($keyMaterial)
@@ -47,10 +42,6 @@ class Key
                 JwtExceptionInterface::KEY_ALGORITHM_IS_EMPTY
             );
         }
-
-        // TODO: Remove in PHP 8.0 in favor of class constructor property promotion
-        $this->keyMaterial = $keyMaterial;
-        $this->algorithm = $algorithm;
     }
 
     /**
