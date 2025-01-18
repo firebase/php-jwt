@@ -92,7 +92,7 @@ class CachedKeySetTest extends TestCase
     {
         $this->expectException(\UnexpectedValueException::class);
         $this->expectExceptionMessage('HTTP Error: 404 URL not found');
-        $this->expectExceptionCode(404);
+        $this->expectExceptionCode(JwtExceptionInterface::CACHED_KEY_GET_JWK);
 
         $response = $this->prophesize('Psr\Http\Message\ResponseInterface');
         $response->getStatusCode()
