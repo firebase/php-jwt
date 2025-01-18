@@ -59,14 +59,14 @@ class JWK
         if (!isset($jwks['keys'])) {
             throw new UnexpectedValueException(
                 '"keys" member must exist in the JWK Set',
-                ExceptionCodes::JWK_MISSING_KEYS
+                JwtExceptionInterface::JWK_MISSING_KEYS
             );
         }
 
         if (empty($jwks['keys'])) {
             throw new InvalidArgumentException(
                 'JWK Set did not contain any keys',
-                ExceptionCodes::JWT_KEYS_IS_EMPTY
+                JwtExceptionInterface::JWT_KEYS_IS_EMPTY
             );
         }
 
@@ -80,7 +80,7 @@ class JWK
         if (0 === \count($keys)) {
             throw new UnexpectedValueException(
                 'No supported algorithms found in JWK Set',
-                ExceptionCodes::JWT_ALGORITHM_NOT_SUPPORTED
+                JwtExceptionInterface::JWT_ALGORITHM_NOT_SUPPORTED
 
             );
         }
@@ -108,14 +108,14 @@ class JWK
         if (empty($jwk)) {
             throw new InvalidArgumentException(
                 'JWK must not be empty',
-                ExceptionCodes::JWK_IS_EMPTY
+                JwtExceptionInterface::JWK_IS_EMPTY
             );
         }
 
         if (!isset($jwk['kty'])) {
             throw new UnexpectedValueException(
                 'JWK must contain a "kty" parameter',
-                ExceptionCodes::JWT_MISSING_KTY_PARAMETER
+                JwtExceptionInterface::JWT_MISSING_KTY_PARAMETER
             );
         }
 
@@ -127,7 +127,7 @@ class JWK
                 // @see https://datatracker.ietf.org/doc/html/rfc7517#section-4.4
                 throw new UnexpectedValueException(
                     'JWK must contain an "alg" parameter',
-                    ExceptionCodes::JWT_MISSING_ALG_PARAMETER
+                    JwtExceptionInterface::JWT_MISSING_ALG_PARAMETER
                 );
             }
             $jwk['alg'] = $defaultAlg;
@@ -138,13 +138,13 @@ class JWK
                 if (!empty($jwk['d'])) {
                     throw new UnexpectedValueException(
                         'RSA private keys are not supported',
-                        ExceptionCodes::JWT_RSA_KEYS_NOT_SUPPORTED
+                        JwtExceptionInterface::JWT_RSA_KEYS_NOT_SUPPORTED
                     );
                 }
                 if (!isset($jwk['n']) || !isset($jwk['e'])) {
                     throw new UnexpectedValueException(
                         'RSA keys must contain values for both "n" and "e"',
-                        ExceptionCodes::JWT_RSA_KEYS_MISSING_N_AND_E
+                        JwtExceptionInterface::JWT_RSA_KEYS_MISSING_N_AND_E
                     );
                 }
 
@@ -153,7 +153,7 @@ class JWK
                 if (false === $publicKey) {
                     throw new DomainException(
                         'OpenSSL error: ' . \openssl_error_string(),
-                        ExceptionCodes::JWT_OPEN_SSL_ERROR
+                        JwtExceptionInterface::JWT_OPEN_SSL_ERROR
                     );
                 }
                 return new Key($publicKey, $jwk['alg']);
@@ -162,28 +162,28 @@ class JWK
                     // The key is actually a private key
                     throw new UnexpectedValueException(
                         'Key data must be for a public key',
-                        ExceptionCodes::JWK_EC_D_IS_NOT_SET
+                        JwtExceptionInterface::JWK_EC_D_IS_NOT_SET
                     );
                 }
 
                 if (empty($jwk['crv'])) {
                     throw new UnexpectedValueException(
                         'crv not set',
-                        ExceptionCodes::JWT_EC_CRV_IS_EMPTY
+                        JwtExceptionInterface::JWT_EC_CRV_IS_EMPTY
                     );
                 }
 
                 if (!isset(self::EC_CURVES[$jwk['crv']])) {
                     throw new DomainException(
                         'Unrecognised or unsupported EC curve',
-                        ExceptionCodes::JWK_UNSUPPORTED_EC_CURVE
+                        JwtExceptionInterface::JWK_UNSUPPORTED_EC_CURVE
                     );
                 }
 
                 if (empty($jwk['x']) || empty($jwk['y'])) {
                     throw new UnexpectedValueException(
                         'x and y not set',
-                        ExceptionCodes::JWT_X_AND_Y_ARE_EMPTY
+                        JwtExceptionInterface::JWT_X_AND_Y_ARE_EMPTY
                     );
                 }
 
@@ -192,19 +192,19 @@ class JWK
             case 'OKP':
                 if (isset($jwk['d'])) {
                     // The key is actually a private key
-                    throw new UnexpectedValueException('Key data must be for a public key', ExceptionCodes::JWK_OKP_MISSING);
+                    throw new UnexpectedValueException('Key data must be for a public key', JwtExceptionInterface::JWK_OKP_MISSING);
                 }
 
                 if (!isset($jwk['crv'])) {
-                    throw new UnexpectedValueException('crv not set', ExceptionCodes::JWT_CRV_MISSING);
+                    throw new UnexpectedValueException('crv not set', JwtExceptionInterface::JWT_CRV_MISSING);
                 }
 
                 if (empty(self::OKP_SUBTYPES[$jwk['crv']])) {
-                    throw new DomainException('Unrecognised or unsupported OKP key subtype', ExceptionCodes::JWT_CRV_UNSUPPORTED);
+                    throw new DomainException('Unrecognised or unsupported OKP key subtype', JwtExceptionInterface::JWT_CRV_UNSUPPORTED);
                 }
 
                 if (empty($jwk['x'])) {
-                    throw new UnexpectedValueException('x not set', ExceptionCodes::JWT_X_MISSING);
+                    throw new UnexpectedValueException('x not set', JwtExceptionInterface::JWT_X_MISSING);
                 }
 
                 // This library works internally with EdDSA keys (Ed25519) encoded in standard base64.

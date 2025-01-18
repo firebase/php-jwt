@@ -30,21 +30,21 @@ class Key
         ) {
             throw new TypeError(
                 'Key material must be a string, resource, or OpenSSLAsymmetricKey',
-                ExceptionCodes::KEY_MATERIAL_IS_INVALID
+                JwtExceptionInterface::KEY_MATERIAL_IS_INVALID
             );
         }
 
         if (empty($keyMaterial)) {
             throw new InvalidArgumentException(
                 'Key material must not be empty',
-                ExceptionCodes::KEY_MATERIAL_IS_EMPTY
+                JwtExceptionInterface::KEY_MATERIAL_IS_EMPTY
             );
         }
 
         if (empty($algorithm)) {
             throw new InvalidArgumentException(
                 'Algorithm must not be empty',
-                ExceptionCodes::KEY_ALGORITHM_IS_EMPTY
+                JwtExceptionInterface::KEY_ALGORITHM_IS_EMPTY
             );
         }
 

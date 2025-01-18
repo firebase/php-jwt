@@ -103,7 +103,7 @@ class CachedKeySet implements ArrayAccess
         if (!$this->keyIdExists($keyId)) {
             throw new OutOfBoundsException(
                 'Key ID not found',
-                ExceptionCodes::KEY_ID_NOT_FOUND
+                JwtExceptionInterface::KEY_ID_NOT_FOUND
             );
         }
         return JWK::parseKey($this->keySet[$keyId], $this->defaultAlg);
@@ -126,7 +126,7 @@ class CachedKeySet implements ArrayAccess
     {
         throw new LogicException(
             'Method not implemented',
-            ExceptionCodes::OFFSET_SET_METHOD_NOT_IMPLEMENTED
+            JwtExceptionInterface::OFFSET_SET_METHOD_NOT_IMPLEMENTED
         );
     }
 
@@ -137,7 +137,7 @@ class CachedKeySet implements ArrayAccess
     {
         throw new LogicException(
             'Method not implemented',
-            ExceptionCodes::OFFSET_UNSET_METHOD_NOT_IMPLEMENTED
+            JwtExceptionInterface::OFFSET_UNSET_METHOD_NOT_IMPLEMENTED
         );
     }
 
@@ -149,11 +149,11 @@ class CachedKeySet implements ArrayAccess
         $jwks = json_decode($jwks, true);
 
         if (!isset($jwks['keys'])) {
-            throw new UnexpectedValueException('"keys" member must exist in the JWK Set', ExceptionCodes::CACHED_KEY_MISSING);
+            throw new UnexpectedValueException('"keys" member must exist in the JWK Set', JwtExceptionInterface::CACHED_KEY_MISSING);
         }
 
         if (empty($jwks['keys'])) {
-            throw new InvalidArgumentException('JWK Set did not contain any keys', ExceptionCodes::CACHED_KEY_EMPTY);
+            throw new InvalidArgumentException('JWK Set did not contain any keys', JwtExceptionInterface::CACHED_KEY_EMPTY);
         }
 
         $keys = [];
@@ -194,7 +194,7 @@ class CachedKeySet implements ArrayAccess
                         $jwksResponse->getReasonPhrase(),
                         $this->jwksUri,
                     ),
-                    ExceptionCodes::CACHED_KEY_GET_JWK
+                    JwtExceptionInterface::CACHED_KEY_GET_JWK
                 );
             }
             $this->keySet = $this->formatJwksForCache((string) $jwksResponse->getBody());
@@ -254,7 +254,7 @@ class CachedKeySet implements ArrayAccess
         if (empty($this->jwksUri)) {
             throw new RuntimeException(
                 'JWKS URI is empty',
-                ExceptionCodes::JWKS_URI_IS_EMPTY
+                JwtExceptionInterface::JWKS_URI_IS_EMPTY
             );
         }
 

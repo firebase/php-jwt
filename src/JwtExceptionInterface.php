@@ -2,7 +2,7 @@
 
 namespace Firebase\JWT;
 
-class ExceptionCodes
+interface JwtExceptionInterface
 {
     public const KEY_NOT_EMPTY = 1;
     public const WRONG_NUMBER_OF_SEGMENTS = 2;
