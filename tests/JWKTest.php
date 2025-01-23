@@ -186,7 +186,8 @@ class JWKTest extends TestCase
         }
     }
 
-    public function testOctetJwkMissingK() {
+    public function testOctetJwkMissingK()
+    {
         $this->expectException(UnexpectedValueException::class);
         $this->expectExceptionMessage('k not set');
 
