@@ -154,7 +154,7 @@ class JWT
         // token can actually be used. If it's not yet that time, abort.
         if (isset($payload->nbf) && floor($payload->nbf) > ($timestamp + static::$leeway)) {
             $ex = new BeforeValidException(
-                'Cannot handle token with nbf prior to ' . \date(DateTime::ISO8601, (int) $payload->nbf)
+                'Cannot handle token with nbf prior to ' . \date(DateTime::ISO8601, (int) floor($payload->nbf))
             );
             $ex->setPayload($payload);
             throw $ex;
@@ -165,7 +165,7 @@ class JWT
         // correctly used the nbf claim).
         if (!isset($payload->nbf) && isset($payload->iat) && floor($payload->iat) > ($timestamp + static::$leeway)) {
             $ex = new BeforeValidException(
-                'Cannot handle token with iat prior to ' . \date(DateTime::ISO8601, (int) $payload->iat)
+                'Cannot handle token with iat prior to ' . \date(DateTime::ISO8601, (int) floor($payload->iat))
             );
             $ex->setPayload($payload);
             throw $ex;
