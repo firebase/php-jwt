@@ -102,37 +102,58 @@ class JWT
         $timestamp = \is_null(static::$timestamp) ? \time() : static::$timestamp;
 
         if (empty($keyOrKeyArray)) {
-            throw new InvalidArgumentException('Key may not be empty');
+            throw new InvalidArgumentException(
+                'Key may not be empty',
+                JwtExceptionInterface::KEY_NOT_EMPTY
+            );
         }
         $tks = \explode('.', $jwt);
         if (\count($tks) !== 3) {
-            throw new UnexpectedValueException('Wrong number of segments');
+            throw new UnexpectedValueException(
+                'Wrong number of segments',
+                JwtExceptionInterface::WRONG_NUMBER_OF_SEGMENTS
+            );
         }
         list($headb64, $bodyb64, $cryptob64) = $tks;
         $headerRaw = static::urlsafeB64Decode($headb64);
         if (null === ($header = static::jsonDecode($headerRaw))) {
-            throw new UnexpectedValueException('Invalid header encoding');
+            throw new UnexpectedValueException(
+                'Invalid header encoding',
+                JwtExceptionInterface::INVALID_HEADER_ENCODING
+            );
         }
         if ($headers !== null) {
             $headers = $header;
         }
         $payloadRaw = static::urlsafeB64Decode($bodyb64);
         if (null === ($payload = static::jsonDecode($payloadRaw))) {
-            throw new UnexpectedValueException('Invalid claims encoding');
+            throw new UnexpectedValueException(
+                'Invalid claims encoding',
+                JwtExceptionInterface::INVALID_CLAIMS_ENCODING
+            );
         }
         if (\is_array($payload)) {
             // prevent PHP Fatal Error in edge-cases when payload is empty array
             $payload = (object) $payload;
         }
         if (!$payload instanceof stdClass) {
-            throw new UnexpectedValueException('Payload must be a JSON object');
+            throw new UnexpectedValueException(
+                'Payload must be a JSON object',
+                JwtExceptionInterface::PAYLOAD_NOT_JSON
+            );
         }
         $sig = static::urlsafeB64Decode($cryptob64);
         if (empty($header->alg)) {
-            throw new UnexpectedValueException('Empty algorithm');
+            throw new UnexpectedValueException(
+                'Empty algorithm',
+                JwtExceptionInterface::EMPTY_ALGORITHM
+            );
         }
         if (empty(static::$supported_algs[$header->alg])) {
-            throw new UnexpectedValueException('Algorithm not supported');
+            throw new UnexpectedValueException(
+                'Algorithm not supported',
+                JwtExceptionInterface::DECODE_ALGORITHM_NOT_SUPPORTED
+            );
         }
 
         $key = self::getKey($keyOrKeyArray, property_exists($header, 'kid') ? $header->kid : null);
@@ -140,21 +161,28 @@ class JWT
         // Check the algorithm
         if (!self::constantTimeEquals($key->getAlgorithm(), $header->alg)) {
             // See issue #351
-            throw new UnexpectedValueException('Incorrect key for this algorithm');
+            throw new UnexpectedValueException(
+                'Incorrect key for this algorithm',
+                JwtExceptionInterface::INCORRECT_KEY_FOR_ALGORITHM
+            );
         }
         if (\in_array($header->alg, ['ES256', 'ES256K', 'ES384'], true)) {
             // OpenSSL expects an ASN.1 DER sequence for ES256/ES256K/ES384 signatures
             $sig = self::signatureToDER($sig);
         }
         if (!self::verify("{$headb64}.{$bodyb64}", $sig, $key->getKeyMaterial(), $header->alg)) {
-            throw new SignatureInvalidException('Signature verification failed');
+            throw new SignatureInvalidException(
+                'Signature verification failed',
+                JwtExceptionInterface::SIGNATURE_VERIFICATION_FAILED
+            );
         }
 
         // Check the nbf if it is defined. This is the time that the
         // token can actually be used. If it's not yet that time, abort.
         if (isset($payload->nbf) && floor($payload->nbf) > ($timestamp + static::$leeway)) {
             $ex = new BeforeValidException(
-                'Cannot handle token with nbf prior to ' . \date(DateTime::ISO8601, (int) $payload->nbf)
+                'Cannot handle token with nbf prior to ' . \date(DateTime::ISO8601, (int) $payload->nbf),
+                JwtExceptionInterface::NBF_PRIOR_TO_DATE
             );
             $ex->setPayload($payload);
             throw $ex;
@@ -165,7 +193,8 @@ class JWT
         // correctly used the nbf claim).
         if (!isset($payload->nbf) && isset($payload->iat) && floor($payload->iat) > ($timestamp + static::$leeway)) {
             $ex = new BeforeValidException(
-                'Cannot handle token with iat prior to ' . \date(DateTime::ISO8601, (int) $payload->iat)
+                'Cannot handle token with iat prior to ' . \date(DateTime::ISO8601, (int) $payload->iat),
+                JwtExceptionInterface::IAT_PRIOR_TO_DATE
             );
             $ex->setPayload($payload);
             throw $ex;
@@ -173,7 +202,7 @@ class JWT
 
         // Check if this token has expired.
         if (isset($payload->exp) && ($timestamp - static::$leeway) >= $payload->exp) {
-            $ex = new ExpiredException('Expired token');
+            $ex = new ExpiredException('Expired token', JwtExceptionInterface::TOKEN_EXPIRED);
             $ex->setPayload($payload);
             throw $ex;
         }
@@ -240,23 +269,32 @@ class JWT
         string $alg
     ): string {
         if (empty(static::$supported_algs[$alg])) {
-            throw new DomainException('Algorithm not supported');
+            throw new DomainException(
+                'Algorithm not supported',
+                JwtExceptionInterface::SIGN_ALGORITHM_NOT_SUPPORTED
+            );
         }
         list($function, $algorithm) = static::$supported_algs[$alg];
         switch ($function) {
             case 'hash_hmac':
                 if (!\is_string($key)) {
-                    throw new InvalidArgumentException('key must be a string when using hmac');
+                    throw new InvalidArgumentException(
+                        'key must be a string when using hmac',
+                        JwtExceptionInterface::KEY_IS_NOT_STRING
+                    );
                 }
                 return \hash_hmac($algorithm, $msg, $key, true);
             case 'openssl':
                 $signature = '';
                 if (!\is_resource($key) && !openssl_pkey_get_private($key)) {
-                    throw new DomainException('OpenSSL unable to validate key');
+                    throw new DomainException('OpenSSL unable to validate key', JwtExceptionInterface::OPENSSL_SIGNATURE);
                 }
                 $success = \openssl_sign($msg, $signature, $key, $algorithm); // @phpstan-ignore-line
                 if (!$success) {
-                    throw new DomainException('OpenSSL unable to sign data');
+                    throw new DomainException(
+                        'OpenSSL unable to sign data',
+                        JwtExceptionInterface::OPENSSL_CAN_NOT_SIGN_DATA
+                    );
                 }
                 if ($alg === 'ES256' || $alg === 'ES256K') {
                     $signature = self::signatureFromDER($signature, 256);
@@ -266,25 +304,40 @@ class JWT
                 return $signature;
             case 'sodium_crypto':
                 if (!\function_exists('sodium_crypto_sign_detached')) {
-                    throw new DomainException('libsodium is not available');
+                    throw new DomainException('libsodium is not available',
+                        JwtExceptionInterface::SODIUM_FUNC_DOES_NOT_EXIST
+                    );
                 }
                 if (!\is_string($key)) {
-                    throw new InvalidArgumentException('key must be a string when using EdDSA');
+                    throw new InvalidArgumentException(
+                        'key must be a string when using EdDSA',
+                        JwtExceptionInterface::SODIUM_KEY_IS_NOT_STRING
+                    );
                 }
                 try {
                     // The last non-empty line is used as the key.
                     $lines = array_filter(explode("\n", $key));
                     $key = base64_decode((string) end($lines));
                     if (\strlen($key) === 0) {
-                        throw new DomainException('Key cannot be empty string');
+                        throw new DomainException(
+                            'Key cannot be empty string',
+                            JwtExceptionInterface::SODIUM_KEY_LENGTH_ZERO
+                        );
                     }
                     return sodium_crypto_sign_detached($msg, $key);
                 } catch (Exception $e) {
-                    throw new DomainException($e->getMessage(), 0, $e);
+                    throw new DomainException(
+                        $e->getMessage(),
+                        JwtExceptionInterface::SODIUM_EXCEPTION,
+                        $e
+                    );
                 }
         }
 
-        throw new DomainException('Algorithm not supported');
+        throw new DomainException(
+            'Algorithm not supported',
+            JwtExceptionInterface::SIGN_GENERAL_EXCEPTION
+        );
     }
 
     /**
@@ -307,7 +360,10 @@ class JWT
         string $alg
     ): bool {
         if (empty(static::$supported_algs[$alg])) {
-            throw new DomainException('Algorithm not supported');
+            throw new DomainException(
+                'Algorithm not supported',
+                JwtExceptionInterface::VERIFY_ALGORITHM_NOT_SUPPORTED
+            );
         }
 
         list($function, $algorithm) = static::$supported_algs[$alg];
@@ -322,33 +378,53 @@ class JWT
                 }
                 // returns 1 on success, 0 on failure, -1 on error.
                 throw new DomainException(
-                    'OpenSSL error: ' . \openssl_error_string()
+                    'OpenSSL error: ' . \openssl_error_string(),
+                    JwtExceptionInterface::VERIFY_OPEN_SSL_ERROR
                 );
             case 'sodium_crypto':
                 if (!\function_exists('sodium_crypto_sign_verify_detached')) {
-                    throw new DomainException('libsodium is not available');
+                    throw new DomainException(
+                        'libsodium is not available',
+                        JwtExceptionInterface::VERIFY_SODIUM_NOT_AVAILABLE
+                    );
                 }
                 if (!\is_string($keyMaterial)) {
-                    throw new InvalidArgumentException('key must be a string when using EdDSA');
+                    throw new InvalidArgumentException(
+                        'key must be a string when using EdDSA',
+                        JwtExceptionInterface::VERIFY_KEY_MATERIAL_IS_NOT_STRING
+                    );
                 }
                 try {
                     // The last non-empty line is used as the key.
                     $lines = array_filter(explode("\n", $keyMaterial));
                     $key = base64_decode((string) end($lines));
                     if (\strlen($key) === 0) {
-                        throw new DomainException('Key cannot be empty string');
+                        throw new DomainException(
+                            'Key cannot be empty string',
+                            JwtExceptionInterface::SODIUM_VERIFY_KEY_LENGTH_ZERO
+                        );
                     }
                     if (\strlen($signature) === 0) {
-                        throw new DomainException('Signature cannot be empty string');
+                        throw new DomainException(
+                            'Signature cannot be empty string',
+                            JwtExceptionInterface::SODIUM_VERIFY_SIGNATURE_EMPTY
+                        );
                     }
                     return sodium_crypto_sign_verify_detached($signature, $msg, $key);
                 } catch (Exception $e) {
-                    throw new DomainException($e->getMessage(), 0, $e);
+                    throw new DomainException(
+                        $e->getMessage(),
+                        JwtExceptionInterface::VERIFY_SODIUM_EXCEPTION,
+                        $e
+                    );
                 }
             case 'hash_hmac':
             default:
                 if (!\is_string($keyMaterial)) {
-                    throw new InvalidArgumentException('key must be a string when using hmac');
+                    throw new InvalidArgumentException(
+                        'key must be a string when using hmac',
+                        JwtExceptionInterface::VERIFY_KEY_IS_NOT_STRING
+                    );
                 }
                 $hash = \hash_hmac($algorithm, $msg, $keyMaterial, true);
                 return self::constantTimeEquals($hash, $signature);
@@ -371,7 +447,10 @@ class JWT
         if ($errno = \json_last_error()) {
             self::handleJsonError($errno);
         } elseif ($obj === null && $input !== 'null') {
-            throw new DomainException('Null result with non-null input');
+            throw new DomainException(
+                'Null result with non-null input',
+                JwtExceptionInterface::DECODED_JSON_IS_NULL
+            );
         }
         return $obj;
     }
@@ -391,10 +470,16 @@ class JWT
         if ($errno = \json_last_error()) {
             self::handleJsonError($errno);
         } elseif ($json === 'null') {
-            throw new DomainException('Null result with non-null input');
+            throw new DomainException(
+                'Null result with non-null input',
+                JwtExceptionInterface::ENCODED_JSON_IS_NULL
+            );
         }
         if ($json === false) {
-            throw new DomainException('Provided object could not be encoded to valid JSON');
+            throw new DomainException(
+                'Provided object could not be encoded to valid JSON',
+                JwtExceptionInterface::INVALID_JSON
+            );
         }
         return $json;
     }
@@ -465,7 +550,10 @@ class JWT
         }
 
         if (empty($kid) && $kid !== '0') {
-            throw new UnexpectedValueException('"kid" empty, unable to lookup correct key');
+            throw new UnexpectedValueException(
+                '"kid" empty, unable to lookup correct key',
+                JwtExceptionInterface::KID_IS_EMPTY
+            );
         }
 
         if ($keyOrKeyArray instanceof CachedKeySet) {
@@ -474,7 +562,10 @@ class JWT
         }
 
         if (!isset($keyOrKeyArray[$kid])) {
-            throw new UnexpectedValueException('"kid" invalid, unable to lookup correct key');
+            throw new UnexpectedValueException(
+                '"kid" invalid, unable to lookup correct key',
+                JwtExceptionInterface::KID_IS_INVALID
+            );
         }
 
         return $keyOrKeyArray[$kid];
@@ -522,7 +613,8 @@ class JWT
         throw new DomainException(
             isset($messages[$errno])
             ? $messages[$errno]
-            : 'Unknown JSON error: ' . $errno
+            : 'Unknown JSON error: ' . $errno,
+            JwtExceptionInterface::JSON_ERROR
         );
     }
 
