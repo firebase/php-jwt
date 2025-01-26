@@ -291,7 +291,7 @@ $jwks = ['keys' => []];
 
 // JWK::parseKeySet($jwks) returns an associative array of **kid** to Firebase\JWT\Key
 // objects. Pass this as the second parameter to JWT::decode.
-JWT::decode($payload, JWK::parseKeySet($jwks));
+JWT::decode($jwt, JWK::parseKeySet($jwks));
 ```
 
 Using Cached Key Sets
@@ -350,7 +350,7 @@ use InvalidArgumentException;
 use UnexpectedValueException;
 
 try {
-    $decoded = JWT::decode($payload, $keys);
+    $decoded = JWT::decode($jwt, $keys);
 } catch (InvalidArgumentException $e) {
     // provided key/key-array is empty or malformed.
 } catch (DomainException $e) {
@@ -380,7 +380,7 @@ like this:
 use Firebase\JWT\JWT;
 use UnexpectedValueException;
 try {
-    $decoded = JWT::decode($payload, $keys);
+    $decoded = JWT::decode($jwt, $keys);
 } catch (LogicException $e) {
     // errors having to do with environmental setup or malformed JWT Keys
 } catch (UnexpectedValueException $e) {
@@ -395,7 +395,7 @@ instead, you can do the following:
 
 ```php
 // return type is stdClass
-$decoded = JWT::decode($payload, $keys);
+$decoded = JWT::decode($jwt, $keys);
 
 // cast to array
 $decoded = json_decode(json_encode($decoded), true);
