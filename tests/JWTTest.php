@@ -546,4 +546,29 @@ class JWTTest extends TestCase
         $this->assertEquals('my_key_id', $headers->kid, 'key param not overridden');
         $this->assertEquals('HS256', $headers->alg, 'alg param not overridden');
     }
+
+    public function testReset()
+    {
+        JWT::$leeway = 100;
+        JWT::$timestamp = 7000;
+
+        // Pre-conditions
+        $this->assertSame(100, JWT::$leeway);
+        $this->assertSame(7000, JWT::$timestamp);
+
+        JWT::resetTime();
+
+        $this->assertSame(0, JWT::$leeway);
+        $this->assertNull(JWT::$timestamp);
+    }
+
+    public function testMaxLeeway()
+    {
+        // Pre-condition
+        $this->assertSame(0, JWT::$leeway);
+
+        JWT::maxLeeway();
+
+        $this->assertSame(\PHP_INT_MAX, JWT::$leeway);
+    }
 }
