@@ -445,6 +445,16 @@ class JWT
         return \str_replace('=', '', \strtr(\base64_encode($input), '+/', '-_'));
     }
 
+    /**
+     * Reset leeway and timestamp to their initial values.
+     *
+     * @return void
+     */
+    public static function resetTime(): void
+    {
+        static::$leeway = 0;
+        static::$timestamp = null;
+    }
 
     /**
      * Determine if an algorithm has been provided for each Key
