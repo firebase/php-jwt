@@ -446,6 +446,16 @@ class JWT
     }
 
     /**
+     * Set leeway to max. Useful for unit testing with fixtures.
+     *
+     * @return void
+     */
+    public static function maxLeeway(): void
+    {
+        static::$leeway = \PHP_INT_MAX;
+    }
+
+    /**
      * Reset leeway and timestamp to their initial values.
      *
      * @return void
