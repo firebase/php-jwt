@@ -12,6 +12,12 @@ use UnexpectedValueException;
 
 class JWTTest extends TestCase
 {
+    protected function tearDown()
+    {
+        parent::tearDown();
+        JWT::resetTime();
+    }
+    
     public function testUrlSafeCharacters()
     {
         $encoded = JWT::encode(['message' => 'f?'], 'a', 'HS256');
