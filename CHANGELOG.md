@@ -1,5 +1,12 @@
 # Changelog
 
+## [6.11.2](https://github.com/firebase/php-jwt/compare/v6.11.1...v6.11.2) (2025-04-09)
+
+
+### Bug Fixes
+
+* use DateTime::ATOM instead of ISO8601 in exception message ([43d70ae](https://github.com/firebase/php-jwt/commit/43d70ae8d9b0dd8adbe189adc03324369f2161e6))
+
 ## [6.11.1](https://github.com/firebase/php-jwt/compare/v6.11.0...v6.11.1) (2025-04-09)
 
 
