@@ -48,7 +48,8 @@ $decoded = JWT::decode($jwt, new Key($key, 'HS256'));
 print_r($decoded);
 
 // Pass a stdClass in as the third parameter to get the decoded header values
-$decoded = JWT::decode($jwt, new Key($key, 'HS256'), $headers = new stdClass());
+$headers = new stdClass();
+$decoded = JWT::decode($jwt, new Key($key, 'HS256'), $headers);
 print_r($headers);
 
 /*

@@ -170,6 +170,31 @@ class JWKTest extends TestCase
         $this->assertSame('bar', $result->sub);
     }
 
+    public function testDecodeByOctetJwkKeySet()
+    {
+        $jwkSet = json_decode(
+            file_get_contents(__DIR__ . '/data/octet-jwkset.json'),
+            true
+        );
+        $keys = JWK::parseKeySet($jwkSet);
+        $payload = ['sub' => 'foo', 'exp' => strtotime('+10 seconds')];
+        foreach ($keys as $keyId => $key) {
+            $msg = JWT::encode($payload, $key->getKeyMaterial(), $key->getAlgorithm(), $keyId);
+            $result = JWT::decode($msg, $keys);
+
+            $this->assertSame('foo', $result->sub);
+        }
+    }
+
+    public function testOctetJwkMissingK()
+    {
+        $this->expectException(UnexpectedValueException::class);
+        $this->expectExceptionMessage('k not set');
+
+        $badJwk = ['kty' => 'oct', 'alg' => 'HS256'];
+        $keys = JWK::parseKeySet(['keys' => [$badJwk]]);
+    }
+
     public function testParseKey()
     {
         // Use a known module and exponent, and ensure it parses as expected
