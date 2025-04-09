@@ -26,6 +26,12 @@ class JWTTest extends TestCase
         JWT::encode(['message' => pack('c', 128)], 'a', 'HS256');
     }
 
+    public function testInvalidKeyOpensslSignFail()
+    {
+        $this->expectException(DomainException::class);
+        JWT::sign('message', 'invalid key', 'openssl');
+    }
+
     public function testMalformedJsonThrowsException()
     {
         $this->expectException(DomainException::class);

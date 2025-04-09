@@ -16,6 +16,10 @@ return (new PhpCsFixer\Config())
         'native_function_invocation' => [
             'strict' => false
         ],
+        'nullable_type_declaration' => [
+            'syntax' => 'question_mark',
+        ],
+        'nullable_type_declaration_for_default_null_value' => true,
     ])
     ->setFinder(
         PhpCsFixer\Finder::create()

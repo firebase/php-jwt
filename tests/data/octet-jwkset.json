@@ -1,0 +1,22 @@
+{
+    "keys": [
+        {
+            "kty": "oct",
+            "alg": "HS256",
+            "kid": "jwk1",
+            "k": "xUNfVvQ-WdmXB9qp6qK0SrG-yKW4AJqmcSP66Gm2TrE"
+        },
+        {
+            "kty": "oct",
+            "alg": "HS384",
+            "kid": "jwk2",
+            "k": "z7990HoD72QDX9JKqeQc3l7EtXutco72j2YulZMjeakFVDbFGXGDFG4awOF7eu9l"
+        },
+        {
+            "kty": "oct",
+            "alg": "HS512",
+            "kid": "jwk3",
+            "k": "EmYGSDG5W1UjkPIL7LelG-QMVtsXn7bz5lUxBrkqq3kdFEzkLWVGrXKpZxRe7YcApCe0d4s9lXRQtn5Nzaf49w"
+        }
+    ]
+}

@@ -96,7 +96,7 @@ class JWT
     public static function decode(
         string $jwt,
         $keyOrKeyArray,
-        stdClass &$headers = null
+        ?stdClass &$headers = null
     ): stdClass {
         // Validate JWT
         $timestamp = \is_null(static::$timestamp) ? \time() : static::$timestamp;
@@ -200,11 +200,11 @@ class JWT
         array $payload,
         $key,
         string $alg,
-        string $keyId = null,
-        array $head = null
+        ?string $keyId = null,
+        ?array $head = null
     ): string {
         $header = ['typ' => 'JWT'];
-        if (isset($head) && \is_array($head)) {
+        if (isset($head)) {
             $header = \array_merge($header, $head);
         }
         $header['alg'] = $alg;
@@ -251,6 +251,9 @@ class JWT
                 return \hash_hmac($algorithm, $msg, $key, true);
             case 'openssl':
                 $signature = '';
+                if (!\is_resource($key) && !openssl_pkey_get_private($key)) {
+                    throw new DomainException('OpenSSL unable to validate key');
+                }
                 $success = \openssl_sign($msg, $signature, $key, $algorithm); // @phpstan-ignore-line
                 if (!$success) {
                     throw new DomainException('OpenSSL unable to sign data');
@@ -384,12 +387,7 @@ class JWT
      */
     public static function jsonEncode(array $input): string
     {
-        if (PHP_VERSION_ID >= 50400) {
-            $json = \json_encode($input, \JSON_UNESCAPED_SLASHES);
-        } else {
-            // PHP 5.3 only
-            $json = \json_encode($input);
-        }
+        $json = \json_encode($input, \JSON_UNESCAPED_SLASHES);
         if ($errno = \json_last_error()) {
             self::handleJsonError($errno);
         } elseif ($json === 'null') {
