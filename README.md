@@ -17,7 +17,7 @@ composer require firebase/php-jwt
 ```
 
 Optionally, install the `paragonie/sodium_compat` package from composer if your
-php is < 7.2 or does not have libsodium installed:
+php env does not have libsodium installed:
 
 ```bash
 composer require paragonie/sodium_compat
@@ -48,7 +48,8 @@ $decoded = JWT::decode($jwt, new Key($key, 'HS256'));
 print_r($decoded);
 
 // Pass a stdClass in as the third parameter to get the decoded header values
-$decoded = JWT::decode($jwt, new Key($key, 'HS256'), $headers = new stdClass());
+$headers = new stdClass();
+$decoded = JWT::decode($jwt, new Key($key, 'HS256'), $headers);
 print_r($headers);
 
 /*
@@ -290,7 +291,7 @@ $jwks = ['keys' => []];
 
 // JWK::parseKeySet($jwks) returns an associative array of **kid** to Firebase\JWT\Key
 // objects. Pass this as the second parameter to JWT::decode.
-JWT::decode($payload, JWK::parseKeySet($jwks));
+JWT::decode($jwt, JWK::parseKeySet($jwks));
 ```
 
 Using Cached Key Sets
@@ -349,7 +350,7 @@ use InvalidArgumentException;
 use UnexpectedValueException;
 
 try {
-    $decoded = JWT::decode($payload, $keys);
+    $decoded = JWT::decode($jwt, $keys);
 } catch (InvalidArgumentException $e) {
     // provided key/key-array is empty or malformed.
 } catch (DomainException $e) {
@@ -379,7 +380,7 @@ like this:
 use Firebase\JWT\JWT;
 use UnexpectedValueException;
 try {
-    $decoded = JWT::decode($payload, $keys);
+    $decoded = JWT::decode($jwt, $keys);
 } catch (LogicException $e) {
     // errors having to do with environmental setup or malformed JWT Keys
 } catch (UnexpectedValueException $e) {
@@ -394,7 +395,7 @@ instead, you can do the following:
 
 ```php
 // return type is stdClass
-$decoded = JWT::decode($payload, $keys);
+$decoded = JWT::decode($jwt, $keys);
 
 // cast to array
 $decoded = json_decode(json_encode($decoded), true);
