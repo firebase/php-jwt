@@ -10,7 +10,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        php: [ "7.1", "7.2", "7.3", "7.4", "8.0", "8.1"]
+        php: [ "8.0", "8.1", "8.2", "8.3", "8.4" ]
     name: PHP ${{matrix.php }} Unit Test
     steps:
       - uses: actions/checkout@v2
@@ -35,7 +35,7 @@ jobs:
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
         with:
-          php-version: "8.0"
+          php-version: "8.3"
       - name: Run Script
         run: |
           composer global require friendsofphp/php-cs-fixer
@@ -49,9 +49,9 @@ jobs:
     - name: Install PHP
       uses: shivammathur/setup-php@v2
       with:
-        php-version: '8.0'
+        php-version: '8.3'
     - name: Run Script
       run: |
         composer install
-        composer global require phpstan/phpstan
+        composer global require phpstan/phpstan:~1.10.0
         ~/.composer/vendor/bin/phpstan analyse

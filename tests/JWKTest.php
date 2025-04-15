@@ -67,7 +67,7 @@ class JWKTest extends TestCase
         unset($jwkSet['keys'][0]['alg']);
 
         $jwks = JWK::parseKeySet($jwkSet, 'foo');
-        $this->assertEquals('foo', $jwks['jwk1']->getAlgorithm());
+        $this->assertSame('foo', $jwks['jwk1']->getAlgorithm());
     }
 
     public function testParseKeyWithEmptyDValue()
@@ -129,11 +129,11 @@ class JWKTest extends TestCase
     /**
      * @dataProvider provideDecodeByJwkKeySet
      */
-    public function testDecodeByJwkKeySet($pemFile, $jwkFile, $alg)
+    public function testDecodeByJwkKeySet($pemFile, $jwkFile, $alg, $keyId)
     {
         $privKey1 = file_get_contents(__DIR__ . '/data/' . $pemFile);
         $payload = ['sub' => 'foo', 'exp' => strtotime('+10 seconds')];
-        $msg = JWT::encode($payload, $privKey1, $alg, 'jwk1');
+        $msg = JWT::encode($payload, $privKey1, $alg, $keyId);
 
         $jwkSet = json_decode(
             file_get_contents(__DIR__ . '/data/' . $jwkFile),
@@ -143,14 +143,16 @@ class JWKTest extends TestCase
         $keys = JWK::parseKeySet($jwkSet);
         $result = JWT::decode($msg, $keys);
 
-        $this->assertEquals('foo', $result->sub);
+        $this->assertSame('foo', $result->sub);
     }
 
     public function provideDecodeByJwkKeySet()
     {
         return [
-            ['rsa1-private.pem', 'rsa-jwkset.json', 'RS256'],
-            ['ecdsa256-private.pem', 'ec-jwkset.json', 'ES256'],
+            ['rsa1-private.pem', 'rsa-jwkset.json', 'RS256', 'jwk1'],
+            ['ecdsa256-private.pem', 'ec-jwkset.json', 'ES256', 'jwk1'],
+            ['ecdsa384-private.pem', 'ec-jwkset.json', 'ES384', 'jwk4'],
+            ['ed25519-1.sec', 'ed25519-jwkset.json', 'EdDSA', 'jwk1'],
         ];
     }
 
@@ -165,6 +167,66 @@ class JWKTest extends TestCase
 
         $result = JWT::decode($msg, self::$keys);
 
-        $this->assertEquals('bar', $result->sub);
+        $this->assertSame('bar', $result->sub);
+    }
+
+    public function testDecodeByOctetJwkKeySet()
+    {
+        $jwkSet = json_decode(
+            file_get_contents(__DIR__ . '/data/octet-jwkset.json'),
+            true
+        );
+        $keys = JWK::parseKeySet($jwkSet);
+        $payload = ['sub' => 'foo', 'exp' => strtotime('+10 seconds')];
+        foreach ($keys as $keyId => $key) {
+            $msg = JWT::encode($payload, $key->getKeyMaterial(), $key->getAlgorithm(), $keyId);
+            $result = JWT::decode($msg, $keys);
+
+            $this->assertSame('foo', $result->sub);
+        }
+    }
+
+    public function testOctetJwkMissingK()
+    {
+        $this->expectException(UnexpectedValueException::class);
+        $this->expectExceptionMessage('k not set');
+
+        $badJwk = ['kty' => 'oct', 'alg' => 'HS256'];
+        $keys = JWK::parseKeySet(['keys' => [$badJwk]]);
+    }
+
+    public function testParseKey()
+    {
+        // Use a known module and exponent, and ensure it parses as expected
+        $jwk = [
+            'alg' => 'RS256',
+            'kty' => 'RSA',
+            'n' => 'hsYvCPtkUV7SIxwkOkJsJfhwV_CMdXU5i0UmY2QEs-Pa7v0-0y-s4EjEDtsQ8Yow6hc670JhkGBcMzhU4DtrqNGROXebyOse5FX0m0UvWo1qXqNTf28uBKB990mY42Icr8sGjtOw8ajyT9kufbmXi3eZKagKpG0TDGK90oBEfoGzCxoFT87F95liNth_GoyU5S8-G3OqIqLlQCwxkI5s-g2qvg_aooALfh1rhvx2wt4EJVMSrdnxtPQSPAtZBiw5SwCnVglc6OnalVNvAB2JArbqC9GAzzz9pApAk28SYg5a4hPiPyqwRv-4X1CXEK8bO5VesIeRX0oDf7UoM-pVAw',
+            'use' => 'sig',
+            'e' => 'AQAB',
+            'kid' => '838c06c62046c2d948affe137dd5310129f4d5d1'
+        ];
+
+        $key = JWK::parseKey($jwk);
+        $this->assertNotNull($key);
+
+        $openSslKey = $key->getKeyMaterial();
+        $pubKey = openssl_pkey_get_public($openSslKey);
+        $keyData = openssl_pkey_get_details($pubKey);
+
+        $expectedPublicKey = <<<EOF
+-----BEGIN PUBLIC KEY-----
+MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAhsYvCPtkUV7SIxwkOkJs
+JfhwV/CMdXU5i0UmY2QEs+Pa7v0+0y+s4EjEDtsQ8Yow6hc670JhkGBcMzhU4Dtr
+qNGROXebyOse5FX0m0UvWo1qXqNTf28uBKB990mY42Icr8sGjtOw8ajyT9kufbmX
+i3eZKagKpG0TDGK90oBEfoGzCxoFT87F95liNth/GoyU5S8+G3OqIqLlQCwxkI5s
++g2qvg/aooALfh1rhvx2wt4EJVMSrdnxtPQSPAtZBiw5SwCnVglc6OnalVNvAB2J
+ArbqC9GAzzz9pApAk28SYg5a4hPiPyqwRv+4X1CXEK8bO5VesIeRX0oDf7UoM+pV
+AwIDAQAB
+-----END PUBLIC KEY-----
+
+EOF;
+
+        $this->assertEquals($expectedPublicKey, $keyData['key']);
     }
 }
