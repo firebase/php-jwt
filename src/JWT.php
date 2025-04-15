@@ -152,30 +152,46 @@ class JWT
 
         // Check the nbf if it is defined. This is the time that the
         // token can actually be used. If it's not yet that time, abort.
-        if (isset($payload->nbf) && floor($payload->nbf) > ($timestamp + static::$leeway)) {
-            $ex = new BeforeValidException(
-                'Cannot handle token with nbf prior to ' . \date(DateTime::ATOM, (int) floor($payload->nbf))
-            );
-            $ex->setPayload($payload);
-            throw $ex;
+        if (isset($payload->nbf)) {
+            if (!\is_int($payload->nbf)) {
+                throw new UnexpectedValueException('The property nbf must be of type integer.');
+            }
+            if (floor($payload->nbf) > ($timestamp + static::$leeway)) {
+                $ex = new BeforeValidException(
+                    'Cannot handle token with nbf prior to ' . \date(DateTime::ATOM, (int) floor($payload->nbf))
+                );
+                $ex->setPayload($payload);
+                throw $ex;
+            }
         }
 
         // Check that this token has been created before 'now'. This prevents
         // using tokens that have been created for later use (and haven't
         // correctly used the nbf claim).
-        if (!isset($payload->nbf) && isset($payload->iat) && floor($payload->iat) > ($timestamp + static::$leeway)) {
-            $ex = new BeforeValidException(
-                'Cannot handle token with iat prior to ' . \date(DateTime::ATOM, (int) floor($payload->iat))
-            );
-            $ex->setPayload($payload);
-            throw $ex;
+        if (isset($payload->iat)) {
+            if (!\is_int($payload->iat)) {
+                throw new UnexpectedValueException('The property iat must be of type integer.');
+            }
+            if (floor($payload->iat) > ($timestamp + static::$leeway)) {
+                $ex = new BeforeValidException(
+                    'Cannot handle token with iat prior to ' . \date(DateTime::ATOM, (int) floor($payload->iat))
+                );
+                $ex->setPayload($payload);
+                throw $ex;
+            }
         }
 
         // Check if this token has expired.
-        if (isset($payload->exp) && ($timestamp - static::$leeway) >= $payload->exp) {
-            $ex = new ExpiredException('Expired token');
-            $ex->setPayload($payload);
-            throw $ex;
+        if (isset($payload->exp)) {
+            if (!\is_int($payload->exp)) {
+                throw new UnexpectedValueException('The property exp must be of type integer.');
+            }
+          
+            if (($timestamp - static::$leeway) >= $payload->exp) {
+                $ex = new ExpiredException('Expired token');
+                $ex->setPayload($payload);
+                throw $ex;
+            }
         }
 
         return $payload;
@@ -210,6 +226,15 @@ class JWT
         $header['alg'] = $alg;
         if ($keyId !== null) {
             $header['kid'] = $keyId;
+        }
+        if (isset($payload['nbf']) && !\is_int($payload['nbf'])) {
+            throw new UnexpectedValueException('The property nbf must be an integer containing a unix timestamp.');
+        }
+        if (isset($payload['iat']) && !\is_int($payload['iat'])) {
+            throw new UnexpectedValueException('The property nbf must be an integer containing a unix timestamp.');
+        }
+        if (isset($payload['exp']) && !\is_int($payload['exp'])) {
+            throw new UnexpectedValueException('The property exp must be an integer containing a unix timestamp.');
         }
         $segments = [];
         $segments[] = static::urlsafeB64Encode((string) static::jsonEncode($header));
