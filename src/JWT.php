@@ -96,7 +96,7 @@ class JWT
     public static function decode(
         string $jwt,
         $keyOrKeyArray,
-        stdClass &$headers = null
+        ?stdClass &$headers = null
     ): stdClass {
         // Validate JWT
         $timestamp = \is_null(static::$timestamp) ? \time() : static::$timestamp;
@@ -154,7 +154,7 @@ class JWT
         // token can actually be used. If it's not yet that time, abort.
         if (isset($payload->nbf) && floor($payload->nbf) > ($timestamp + static::$leeway)) {
             $ex = new BeforeValidException(
-                'Cannot handle token with nbf prior to ' . \date(DateTime::ISO8601, (int) $payload->nbf)
+                'Cannot handle token with nbf prior to ' . \date(DateTime::ATOM, (int) floor($payload->nbf))
             );
             $ex->setPayload($payload);
             throw $ex;
@@ -165,7 +165,7 @@ class JWT
         // correctly used the nbf claim).
         if (!isset($payload->nbf) && isset($payload->iat) && floor($payload->iat) > ($timestamp + static::$leeway)) {
             $ex = new BeforeValidException(
-                'Cannot handle token with iat prior to ' . \date(DateTime::ISO8601, (int) $payload->iat)
+                'Cannot handle token with iat prior to ' . \date(DateTime::ATOM, (int) floor($payload->iat))
             );
             $ex->setPayload($payload);
             throw $ex;
@@ -199,9 +199,9 @@ class JWT
     public static function encode(
         array $payload,
         $key,
-        ?string $alg = null,
-        string $keyId = null,
-        array $head = null
+        ?string $alg,
+        ?string $keyId = null,
+        ?array $head = null
     ): string {
         if (is_a($key, Key::class)) {
             $alg = $key->getAlgorithm();
@@ -210,7 +210,7 @@ class JWT
             throw new InvalidArgumentException('alg cannot be null unless key is instance of Key');
         }
         $header = ['typ' => 'JWT'];
-        if (isset($head) && \is_array($head)) {
+        if (isset($head)) {
             $header = \array_merge($header, $head);
         }
         $header['alg'] = $alg;
@@ -399,12 +399,7 @@ class JWT
      */
     public static function jsonEncode(array $input): string
     {
-        if (PHP_VERSION_ID >= 50400) {
-            $json = \json_encode($input, \JSON_UNESCAPED_SLASHES);
-        } else {
-            // PHP 5.3 only
-            $json = \json_encode($input);
-        }
+        $json = \json_encode($input, \JSON_UNESCAPED_SLASHES);
         if ($errno = \json_last_error()) {
             self::handleJsonError($errno);
         } elseif ($json === 'null') {
