@@ -227,9 +227,6 @@ class JWT
         if ($keyId !== null) {
             $header['kid'] = $keyId;
         }
-        if (isset($head) && \is_array($head)) {
-            $header = \array_merge($head, $header);
-        }
         if (isset($payload['nbf']) && !\is_int($payload['nbf'])) {
             throw new UnexpectedValueException('The property nbf must be an integer containing a unix timestamp.');
         }
