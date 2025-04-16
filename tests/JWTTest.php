@@ -546,4 +546,34 @@ class JWTTest extends TestCase
         $this->assertEquals('my_key_id', $headers->kid, 'key param not overridden');
         $this->assertEquals('HS256', $headers->alg, 'alg param not overridden');
     }
+
+	public function testDecodeExpectsIntegerIat()
+	{
+		$this->expectException(UnexpectedValueException::class);
+		$this->expectExceptionMessage('Payload iat must be a number');
+		JWT::decode(
+			'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMzM3IiwibmFtZSI6IkpvaG4gU25vdyIsImlhdCI6InRlc3QifQ.B8cbURVQAPay3-Ep0DAm1Ji2rhij-hxfNA5PIDarf5o',
+			new Key('secret', 'HS256')
+		);
+	}
+
+	public function testDecodeExpectsIntegerNbf()
+	{
+		$this->expectException(UnexpectedValueException::class);
+		$this->expectExceptionMessage('Payload nbf must be a number');
+		JWT::decode(
+			'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMzM3IiwibmFtZSI6IkpvaG4gU25vdyIsIm5iZiI6InRlc3QifQ.9KdFz3ktQoPO5QFG3E7J86PEuw5Vmx0VPrUKszP7DDs',
+			new Key('secret', 'HS256')
+		);
+	}
+
+	public function testDecodeExpectsIntegerExp()
+	{
+		$this->expectException(UnexpectedValueException::class);
+		$this->expectExceptionMessage('Payload exp must be a number');
+		JWT::decode(
+			'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMzM3IiwibmFtZSI6IkpvaG4gU25vdyIsImV4cCI6InRlc3QifQ.LXevvGvchI3PTBZo9jZ5-4d0OvONVU-_8Tbg_22-PTo',
+			new Key('secret', 'HS256')
+		);
+	}
 }
