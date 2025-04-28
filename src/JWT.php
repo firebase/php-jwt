@@ -194,7 +194,7 @@ class JWT
     /**
      * Converts and signs a PHP array into a JWT string.
      *
-     * @param array<mixed>          $payload PHP array
+     * @param array<mixed>|object   $payload PHP array or object
      * @param string|resource|OpenSSLAsymmetricKey|OpenSSLCertificate $key The secret key.
      * @param string                $alg     Supported algorithms are 'ES384','ES256', 'ES256K', 'HS256',
      *                                       'HS384', 'HS512', 'RS256', 'RS384', and 'RS512'
@@ -207,7 +207,7 @@ class JWT
      * @uses urlsafeB64Encode
      */
     public static function encode(
-        array $payload,
+        array|object $payload,
         $key,
         string $alg,
         ?string $keyId = null,
@@ -389,13 +389,13 @@ class JWT
     /**
      * Encode a PHP array into a JSON string.
      *
-     * @param array<mixed> $input A PHP array
+     * @param array<mixed>|object $input A PHP array or object
      *
-     * @return string JSON representation of the PHP array
+     * @return string JSON representation of the PHP array or object
      *
      * @throws DomainException Provided object could not be encoded to valid JSON
      */
-    public static function jsonEncode(array $input): string
+    public static function jsonEncode(array|object $input): string
     {
         $json = \json_encode($input, \JSON_UNESCAPED_SLASHES);
         if ($errno = \json_last_error()) {
@@ -404,7 +404,8 @@ class JWT
             throw new DomainException('Null result with non-null input');
         }
         if ($json === false) {
-            throw new DomainException('Provided object could not be encoded to valid JSON');
+            $type = is_array($input) ? 'array' : 'object';
+            throw new DomainException('Provided ' . $type . ' could not be encoded to valid JSON');
         }
         return $json;
     }

@@ -82,6 +82,17 @@ class JWTTest extends TestCase
         $this->assertSame($decoded->message, 'abc');
     }
 
+    public function testValidTokenWithObjectPayload()
+    {
+        $payload = (object)[
+            'message' => 'abc',
+            'exp' => time() + JWT::$leeway + 20, // time in the future
+        ];
+        $encoded = JWT::encode($payload, 'my_key', 'HS256');
+        $decoded = JWT::decode($encoded, new Key('my_key', 'HS256'));
+        $this->assertSame($decoded->message, 'abc');
+    }
+
     /**
      * @runInSeparateProcess
      */
