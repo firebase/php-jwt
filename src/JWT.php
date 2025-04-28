@@ -423,10 +423,13 @@ class JWT
      *
      * @return string A decoded string
      *
-     * @throws InvalidArgumentException invalid base64 characters
+     * @throws InvalidArgumentException invalid base64URL characters
      */
     public static function urlsafeB64Decode(string $input): string
     {
+        if (strpbrk($input, '+/=') !== false) {
+            throw new InvalidArgumentException('Input is not valid Base64URL');
+        }
         $result = \base64_decode(self::convertBase64UrlToBase64($input), true);
         if ($result === false) {
             throw new InvalidArgumentException('Input is not valid Base64URL');
