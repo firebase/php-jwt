@@ -193,17 +193,22 @@ class JWT
      *
      * @return string A signed JWT
      *
+     * @throws InvalidArgumentException
+     *
      * @uses jsonEncode
      * @uses urlsafeB64Encode
      */
     public static function encode(
         array $payload,
         $key,
-        ?string $alg,
+        ?string $alg = null,
         ?string $keyId = null,
         ?array $head = null
     ): string {
-        if (is_a($key, Key::class)) {
+        if ($key instanceof Key) {
+            if ($alg !== null) {
+                throw new InvalidArgumentException('If key is instance of Key alg must be null');
+            }
             $alg = $key->getAlgorithm();
             $key = $key->getKeyMaterial();
         } elseif ($alg === null) {
