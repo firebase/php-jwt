@@ -547,6 +547,29 @@ class JWTTest extends TestCase
         $this->assertEquals('HS256', $headers->alg, 'alg param not overridden');
     }
 
+    public function testNullAlgFails()
+    {
+        $this->expectException(InvalidArgumentException::class);
+        JWT::encode(['message' => 'abc'], 'my_key');
+    }
+
+    public function testEncodingWithKeyObject()
+    {
+        $payload = [
+            'message' => 'abc'
+        ];
+        $key = new Key('my_key', 'HS256');
+        $encoded = JWT::encode($payload, $key);
+        $decoded = JWT::decode($encoded, $key);
+        $this->assertSame($decoded->message, 'abc');
+    }
+
+    public function testNotNullAlgWhenUsingKeyObjectFails()
+    {
+        $this->expectException(InvalidArgumentException::class);
+        JWT::encode(['message' => 'abc'], new Key('my_key', 'HS256'), 'HS256');
+    }
+ 
     public function testDecodeExpectsIntegerIat()
     {
         $this->expectException(UnexpectedValueException::class);

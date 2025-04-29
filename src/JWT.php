@@ -195,13 +195,15 @@ class JWT
      * Converts and signs a PHP array into a JWT string.
      *
      * @param array<mixed>          $payload PHP array
-     * @param string|resource|OpenSSLAsymmetricKey|OpenSSLCertificate $key The secret key.
-     * @param string                $alg     Supported algorithms are 'ES384','ES256', 'ES256K', 'HS256',
+     * @param string|resource|OpenSSLAsymmetricKey|OpenSSLCertificate|Key $key The secret key.
+     * @param ?string                $alg     Supported algorithms are 'ES384','ES256', 'ES256K', 'HS256',
      *                                       'HS384', 'HS512', 'RS256', 'RS384', and 'RS512'
      * @param string                $keyId
      * @param array<string, string> $head    An array with header elements to attach
      *
      * @return string A signed JWT
+     *
+     * @throws InvalidArgumentException
      *
      * @uses jsonEncode
      * @uses urlsafeB64Encode
@@ -209,10 +211,19 @@ class JWT
     public static function encode(
         array $payload,
         $key,
-        string $alg,
+        ?string $alg = null,
         ?string $keyId = null,
         ?array $head = null
     ): string {
+        if ($key instanceof Key) {
+            if ($alg !== null) {
+                throw new InvalidArgumentException('If key is instance of Key alg must be null');
+            }
+            $alg = $key->getAlgorithm();
+            $key = $key->getKeyMaterial();
+        } elseif ($alg === null) {
+            throw new InvalidArgumentException('alg cannot be null unless key is instance of Key');
+        }
         $header = ['typ' => 'JWT'];
         if (isset($head)) {
             $header = \array_merge($header, $head);
@@ -236,19 +247,29 @@ class JWT
      * Sign a string with a given key and algorithm.
      *
      * @param string $msg  The message to sign
-     * @param string|resource|OpenSSLAsymmetricKey|OpenSSLCertificate  $key  The secret key.
-     * @param string $alg  Supported algorithms are 'EdDSA', 'ES384', 'ES256', 'ES256K', 'HS256',
+     * @param string|resource|OpenSSLAsymmetricKey|OpenSSLCertificate|Key  $key  The secret key.
+     * @param ?string $alg  Supported algorithms are 'EdDSA', 'ES384', 'ES256', 'ES256K', 'HS256',
      *                    'HS384', 'HS512', 'RS256', 'RS384', and 'RS512'
      *
      * @return string An encrypted message
      *
      * @throws DomainException Unsupported algorithm or bad key was specified
+     * @throws InvalidArgumentException
      */
     public static function sign(
         string $msg,
         $key,
-        string $alg
+        ?string $alg = null
     ): string {
+        if (is_a($key, Key::class)) {
+            if ($alg !== null) {
+                throw new InvalidArgumentException('If key is instance of Key alg must be null');
+            }
+            $alg = $key->getAlgorithm();
+            $key = $key->getKeyMaterial();
+        } elseif ($alg === null) {
+            throw new InvalidArgumentException('alg cannot be null unless key is instance of Key');
+        }
         if (empty(static::$supported_algs[$alg])) {
             throw new DomainException('Algorithm not supported');
         }
