@@ -569,4 +569,31 @@ class JWTTest extends TestCase
         $this->expectException(InvalidArgumentException::class);
         JWT::encode(['message' => 'abc'], new Key('my_key', 'HS256'), 'HS256');
     }
+ 
+    public function testDecodeExpectsIntegerIat()
+    {
+        $this->expectException(UnexpectedValueException::class);
+        $this->expectExceptionMessage('Payload iat must be a number');
+
+        $payload = JWT::encode(['iat' => 'not-an-int'], 'secret', 'HS256');
+        JWT::decode($payload, new Key('secret', 'HS256'));
+    }
+
+    public function testDecodeExpectsIntegerNbf()
+    {
+        $this->expectException(UnexpectedValueException::class);
+        $this->expectExceptionMessage('Payload nbf must be a number');
+
+        $payload = JWT::encode(['nbf' => 'not-an-int'], 'secret', 'HS256');
+        JWT::decode($payload, new Key('secret', 'HS256'));
+    }
+
+    public function testDecodeExpectsIntegerExp()
+    {
+        $this->expectException(UnexpectedValueException::class);
+        $this->expectExceptionMessage('Payload exp must be a number');
+
+        $payload = JWT::encode(['exp' => 'not-an-int'], 'secret', 'HS256');
+        JWT::decode($payload, new Key('secret', 'HS256'));
+    }
 }
