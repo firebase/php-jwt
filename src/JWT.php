@@ -244,6 +244,7 @@ class JWT
      * @return string An encrypted message
      *
      * @throws DomainException Unsupported algorithm or bad key was specified
+     * @throws InvalidArgumentException
      */
     public static function sign(
         string $msg,
@@ -251,6 +252,9 @@ class JWT
         ?string $alg = null
     ): string {
         if (is_a($key, Key::class)) {
+            if ($alg !== null) {
+                throw new InvalidArgumentException('If key is instance of Key alg must be null');
+            }
             $alg = $key->getAlgorithm();
             $key = $key->getKeyMaterial();
         } elseif ($alg === null) {
