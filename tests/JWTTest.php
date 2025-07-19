@@ -130,6 +130,9 @@ class JWTTest extends TestCase
         }
     }
 
+    /**
+     * @runInSeparateProcess
+     */
     public function testExpiredExceptionTimestamp()
     {
         $this->expectException(ExpiredException::class);
