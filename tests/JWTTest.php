@@ -130,6 +130,29 @@ class JWTTest extends TestCase
         }
     }
 
+    /**
+     * @runInSeparateProcess
+     */
+    public function testExpiredExceptionTimestamp()
+    {
+        $this->expectException(ExpiredException::class);
+
+        JWT::$timestamp = 98765;
+        $payload = [
+            'message' => 'abc',
+            'exp' => 1234,
+        ];
+        $encoded = JWT::encode($payload, 'my_key', 'HS256');
+
+        try {
+            JWT::decode($encoded, new Key('my_key', 'HS256'));
+        } catch (ExpiredException $e) {
+            $exTimestamp = $e->getTimestamp();
+            $this->assertSame(98765, $exTimestamp);
+            throw $e;
+        }
+    }
+
     public function testBeforeValidExceptionPayload()
     {
         $this->expectException(BeforeValidException::class);
