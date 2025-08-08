@@ -327,6 +327,19 @@ class JWTTest extends TestCase
         $this->assertEquals($decoded, $expected);
     }
 
+    public function testArrayAccessKIDChooserWhenJWTHasNoKey()
+    {
+        $key = new Key('my_key0', 'HS256');
+        $keys = new ArrayObject([
+            '' => $key,
+        ]);
+        $msg = JWT::encode(['message' => 'abc'], $key->getKeyMaterial(), 'HS256');
+        $decoded = JWT::decode($msg, $keys);
+        $expected = new stdClass();
+        $expected->message = 'abc';
+        $this->assertEquals($decoded, $expected);
+    }
+
     public function testArrayAccessKIDChooser()
     {
         $keys = new ArrayObject([
@@ -381,6 +394,26 @@ class JWTTest extends TestCase
         $msg = 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpZCI6MSwibmFtZSI6ImZvbyJ9.Q4Kee9E8o0Xfo4ADXvYA8t7dN_X_bU9K5w6tXuiSjlUxx';
         $this->expectException(UnexpectedValueException::class);
         JWT::decode($msg, new Key('secret', 'HS256'));
+    }
+
+    public function testInvalidKeyOrKeyArray()
+    {
+        $key = 'yma6Hq4XQegCVND8ef23OYgxSrC3IKqk';
+        $payload = ['foo' => [1, 2, 3]];
+        $jwt = JWT::encode($payload, $key, 'HS256');
+        $this->expectException(UnexpectedValueException::class);
+        $this->expectExceptionMessage('Expecting a Key or an associative array of keys');
+        JWT::decode($jwt, 'SomeKeyNotAnArray');
+    }
+
+    public function testKeyNotInKeyOrKeyArray()
+    {
+        $key = 'yma6Hq4XQegCVND8ef23OYgxSrC3IKqk';
+        $payload = ['foo' => [1, 2, 3]];
+        $jwt = JWT::encode($payload, $key, 'HS256');
+        $this->expectException(UnexpectedValueException::class);
+        $this->expectExceptionMessage('"kid" invalid, unable to lookup correct key');
+        JWT::decode($jwt, ['notrealkey' => 'SomeKeyNotAnArray']);
     }
 
     public function testHSEncodeDecode()
