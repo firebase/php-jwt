@@ -1,5 +1,18 @@
 # Changelog
 
+## [6.12.0](https://github.com/firebase/php-jwt/compare/v6.11.1...v6.12.0) (2025-08-19)
+
+
+### Features
+
+* add SensitiveParameter attribute to security-critical parameters ([#603](https://github.com/firebase/php-jwt/issues/603)) ([4dbfac0](https://github.com/firebase/php-jwt/commit/4dbfac0260eeb0e9e643063c99998e3219cc539b))
+* store timestamp in `ExpiredException` ([#604](https://github.com/firebase/php-jwt/issues/604)) ([f174826](https://github.com/firebase/php-jwt/commit/f1748260d218a856b6a0c23715ac7fae1d7ca95b))
+
+
+### Bug Fixes
+
+* validate iat and nbf on payload ([#568](https://github.com/firebase/php-jwt/issues/568)) ([953b2c8](https://github.com/firebase/php-jwt/commit/953b2c88bb445b7e3bb82a5141928f13d7343afd))
+
 ## [6.11.1](https://github.com/firebase/php-jwt/compare/v6.11.0...v6.11.1) (2025-04-09)
 
 
