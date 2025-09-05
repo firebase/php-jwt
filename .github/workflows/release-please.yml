@@ -15,5 +15,5 @@ jobs:
       - uses: googleapis/release-please-action@v4
         id: release
         with:
-          token: ${{ secrets.GITHUB_TOKEN }}
+          token: ${{ secrets.YOSHI_CODE_BOT_TOKEN }}
           release-type: simple
