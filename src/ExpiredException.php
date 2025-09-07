@@ -2,7 +2,7 @@
 
 namespace Firebase\JWT;
 
-class ExpiredException extends \UnexpectedValueException implements JWTExceptionWithPayloadInterface
+class ExpiredException extends \UnexpectedValueException implements JWTExceptionWithPayloadInterface, JwtExceptionInterface
 {
     private object $payload;
 
