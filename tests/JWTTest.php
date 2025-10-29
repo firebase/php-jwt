@@ -28,7 +28,6 @@ class JWTTest extends TestCase
 
     public function testMalformedUtf8StringsFail()
     {
-
         $this->expectException(DomainException::class);
         JWT::encode(['message' => pack('c', 128)], $this->hmacKey->getKeyMaterial(), 'HS256');
     }
@@ -531,17 +530,17 @@ class JWTTest extends TestCase
         ];
     }
 
-    public function testEncodeDecodeWithResource()
+    public function testEncodeDecodeWithOpenSSLAsymmetricKey()
     {
         $pem = file_get_contents(__DIR__ . '/data/rsa1-public.pub');
-        $resource = openssl_pkey_get_public($pem);
+        $keyMaterial = openssl_pkey_get_public($pem);
         $privateKey = file_get_contents(__DIR__ . '/data/rsa1-private.pem');
 
         $payload = ['foo' => 'bar'];
         $encoded = JWT::encode($payload, $privateKey, 'RS512');
 
         // Verify decoding succeeds
-        $decoded = JWT::decode($encoded, new Key($resource, 'RS512'));
+        $decoded = JWT::decode($encoded, new Key($keyMaterial, 'RS512'));
 
         $this->assertSame('bar', $decoded->foo);
     }

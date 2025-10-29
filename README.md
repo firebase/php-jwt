@@ -186,7 +186,7 @@ $passphrase = '[YOUR_PASSPHRASE]';
 // Can be generated with "ssh-keygen -t rsa -m pem"
 $privateKeyFile = '/path/to/key-with-passphrase.pem';
 
-// Create a private key of type "resource"
+/** @var OpenSSLAsymmetricKey $privateKey */
 $privateKey = openssl_pkey_get_private(
     file_get_contents($privateKeyFile),
     $passphrase
