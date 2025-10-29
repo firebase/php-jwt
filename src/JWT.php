@@ -259,11 +259,15 @@ class JWT
                 if (!\is_string($key)) {
                     throw new InvalidArgumentException('key must be a string when using hmac');
                 }
+                self::validateHmacKeyLength($key, $algorithm);
                 return \hash_hmac($algorithm, $msg, $key, true);
             case 'openssl':
                 $signature = '';
                 if (!\is_resource($key) && !openssl_pkey_get_private($key)) {
                     throw new DomainException('OpenSSL unable to validate key');
+                }
+                if (str_starts_with($algorithm, 'RS')) {
+                    self::validateRsaKeyLength($key);
                 }
                 $success = \openssl_sign($msg, $signature, $key, $algorithm); // @phpstan-ignore-line
                 if (!$success) {
@@ -324,6 +328,9 @@ class JWT
         list($function, $algorithm) = static::$supported_algs[$alg];
         switch ($function) {
             case 'openssl':
+                if (str_starts_with($algorithm, 'RS')) {
+                    self::validateRsaKeyLength($keyMaterial);
+                }
                 $success = \openssl_verify($msg, $signature, $keyMaterial, $algorithm); // @phpstan-ignore-line
                 if ($success === 1) {
                     return true;
@@ -361,6 +368,7 @@ class JWT
                 if (!\is_string($keyMaterial)) {
                     throw new InvalidArgumentException('key must be a string when using hmac');
                 }
+                self::validateHmacKeyLength($keyMaterial, $algorithm);
                 $hash = \hash_hmac($algorithm, $msg, $keyMaterial, true);
                 return self::constantTimeEquals($hash, $signature);
         }
@@ -674,5 +682,39 @@ class JWT
         }
 
         return [$pos, $data];
+    }
+
+    /**
+     * Validate HMAC key length
+     *
+     * @param string $key HMAC key material
+     * @param string $algorithm The algorithm
+     *
+     * @throws DomainException Provided key is too short
+     */
+    private static function validateHmacKeyLength(string $key, string $algorithm): void
+    {
+        $keyLength = strlen($key) * 8;
+        $minKeyLength = (int)str_replace($algorithm, 'SHA', '');
+        if ($keyLength < $minKeyLength) {
+            throw new DomainException('Provided key is too short');
+        }
+    }
+
+    /**
+     * Validate RSA key length
+     *
+     * @param OpenSSLAsymmetricKey|OpenSSLCertificate $key RSA key material
+     *
+     * @throws DomainException Provided key is too short
+     */
+    private static function validateRsaKeyLength(OpenSSLAsymmetricKey|OpenSSLCertificate $key): void
+    {
+        $keyDetails = openssl_pkey_get_details(openssl_pkey_get_private($key));
+        $keyLength = $keyDetails['bits'];
+        $minKeyLength = 2048;
+        if ($keyLength < $minKeyLength) {
+            throw new DomainException('Provided key is too short');
+        }
     }
 }
