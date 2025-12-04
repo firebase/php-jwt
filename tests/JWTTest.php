@@ -2,7 +2,6 @@
 
 namespace Firebase\JWT;
 
-use ArrayObject;
 use DomainException;
 use InvalidArgumentException;
 use PHPUnit\Framework\TestCase;

@@ -694,7 +694,7 @@ class JWT
      */
     private static function validateHmacKeyLength(string $key, string $algorithm): void
     {
-        $keyLength = strlen($key) * 8;
+        $keyLength = \strlen($key) * 8;
         $minKeyLength = (int)str_replace($algorithm, 'SHA', '');
         if ($keyLength < $minKeyLength) {
             throw new DomainException('Provided key is too short');
@@ -710,9 +710,15 @@ class JWT
      */
     private static function validateRsaKeyLength(OpenSSLAsymmetricKey|OpenSSLCertificate $key): void
     {
-        $keyDetails = openssl_pkey_get_details(openssl_pkey_get_private($key));
-        $keyLength = $keyDetails['bits'];
         $minKeyLength = 2048;
+        $keyLength = 0;
+        $privateKey = openssl_pkey_get_private($key);
+        if ($privateKey !== false) {
+            $keyDetails = openssl_pkey_get_details($privateKey);
+            if ($keyDetails !== false) {
+                $keyLength = $keyDetails['bits'];
+            }
+        }
         if ($keyLength < $minKeyLength) {
             throw new DomainException('Provided key is too short');
         }
