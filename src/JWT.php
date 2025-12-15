@@ -198,7 +198,7 @@ class JWT
      * Converts and signs a PHP array into a JWT string.
      *
      * @param array<mixed>          $payload PHP array
-     * @param string|resource|OpenSSLAsymmetricKey|OpenSSLCertificate $key The secret key.
+     * @param string|OpenSSLAsymmetricKey|OpenSSLCertificate $key The secret key.
      * @param string                $alg     Supported algorithms are 'ES384','ES256', 'ES256K', 'HS256',
      *                                       'HS384', 'HS512', 'RS256', 'RS384', and 'RS512'
      * @param string                $keyId
@@ -239,7 +239,7 @@ class JWT
      * Sign a string with a given key and algorithm.
      *
      * @param string $msg  The message to sign
-     * @param string|resource|OpenSSLAsymmetricKey|OpenSSLCertificate  $key  The secret key.
+     * @param string|OpenSSLAsymmetricKey|OpenSSLCertificate  $key  The secret key.
      * @param string $alg  Supported algorithms are 'EdDSA', 'ES384', 'ES256', 'ES256K', 'HS256',
      *                    'HS384', 'HS512', 'RS256', 'RS384', and 'RS512'
      *
@@ -265,17 +265,13 @@ class JWT
                 return \hash_hmac($algorithm, $msg, $key, true);
             case 'openssl':
                 $signature = '';
-                if (!\is_resource($key)) {
-                    /** @var OpenSSLAsymmetricKey|OpenSSLCertificate|string $key */
-                    $key = $key;
-                    if (!$key = openssl_pkey_get_private($key)) {
-                        throw new DomainException('OpenSSL unable to validate key');
-                    }
-                    if (str_starts_with($alg, 'RS')) {
-                        self::validateRsaKeyLength($key);
-                    }
+                if (!$key = openssl_pkey_get_private($key)) {
+                    throw new DomainException('OpenSSL unable to validate key');
                 }
-                $success = \openssl_sign($msg, $signature, $key, $algorithm); // @phpstan-ignore-line
+                if (str_starts_with($alg, 'RS')) {
+                    self::validateRsaKeyLength($key);
+                }
+                $success = \openssl_sign($msg, $signature, $key, $algorithm);
                 if (!$success) {
                     throw new DomainException('OpenSSL unable to sign data');
                 }
@@ -314,7 +310,7 @@ class JWT
      *
      * @param string $msg         The original message (header and body)
      * @param string $signature   The original signature
-     * @param string|resource|OpenSSLAsymmetricKey|OpenSSLCertificate  $keyMaterial For Ed*, ES*, HS*, a string key works. for RS*, must be an instance of OpenSSLAsymmetricKey
+     * @param string|OpenSSLAsymmetricKey|OpenSSLCertificate  $keyMaterial For Ed*, ES*, HS*, a string key works. for RS*, must be an instance of OpenSSLAsymmetricKey
      * @param string $alg         The algorithm
      *
      * @return bool
@@ -334,14 +330,13 @@ class JWT
         list($function, $algorithm) = static::$supported_algs[$alg];
         switch ($function) {
             case 'openssl':
-                if (!\is_resource($keyMaterial) && str_starts_with($algorithm, 'RS')) {
-                    /** @var OpenSSLAsymmetricKey|OpenSSLCertificate|string $keyMaterial */
-                    $keyMaterial = $keyMaterial;
-                    if ($key = openssl_pkey_get_private($keyMaterial)) {
-                        self::validateRsaKeyLength($key);
+                if (str_starts_with($algorithm, 'RS')) {
+                    if (!$key = openssl_pkey_get_private($keyMaterial)) {
+                        throw new DomainException('OpenSSL unable to validate key');
                     }
+                    self::validateRsaKeyLength($key);
                 }
-                $success = \openssl_verify($msg, $signature, $keyMaterial, $algorithm); // @phpstan-ignore-line
+                $success = \openssl_verify($msg, $signature, $keyMaterial, $algorithm);
                 if ($success === 1) {
                     return true;
                 }
@@ -699,6 +694,7 @@ class JWT
      *
      * @param string $key HMAC key material
      * @param string $algorithm The algorithm
+     *
      * @throws DomainException Provided key is too short
      */
     private static function validateHmacKeyLength(string $key, string $algorithm): void
@@ -716,12 +712,13 @@ class JWT
      * @param OpenSSLAsymmetricKey $key RSA key material
      * @throws DomainException Provided key is too short
      */
-    private static function validateRsaKeyLength(OpenSSLAsymmetricKey $key): void
+    private static function validateRsaKeyLength(#[\SensitiveParameter] OpenSSLAsymmetricKey $key): void
     {
-        if ($keyDetails = \openssl_pkey_get_details($key)) {
-            if ($keyDetails['bits'] < self::RSA_KEY_MIN_LENGTH) {
-                throw new DomainException('Provided key is too short');
-            }
+        if (!$keyDetails = openssl_pkey_get_details($key)) {
+            throw new DomainException('Unable to validate key');
+        }
+        if ($keyDetails['bits'] < self::RSA_KEY_MIN_LENGTH) {
+            throw new DomainException('Provided key is too short');
         }
     }
 }
