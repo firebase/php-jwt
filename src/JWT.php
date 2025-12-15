@@ -31,6 +31,8 @@ class JWT
     private const ASN1_SEQUENCE = 0x10;
     private const ASN1_BIT_STRING = 0x03;
 
+    private const RSA_KEY_MIN_LENGTH=2048;
+
     /**
      * When checking nbf, iat or expiration times,
      * we want to provide some extra leeway time to
@@ -259,11 +261,19 @@ class JWT
                 if (!\is_string($key)) {
                     throw new InvalidArgumentException('key must be a string when using hmac');
                 }
+                self::validateHmacKeyLength($key, $algorithm);
                 return \hash_hmac($algorithm, $msg, $key, true);
             case 'openssl':
                 $signature = '';
-                if (!\is_resource($key) && !openssl_pkey_get_private($key)) {
-                    throw new DomainException('OpenSSL unable to validate key');
+                if (!\is_resource($key)) {
+                    /** @var OpenSSLAsymmetricKey|OpenSSLCertificate|string $key */
+                    $key = $key;
+                    if (!$key = openssl_pkey_get_private($key)) {
+                        throw new DomainException('OpenSSL unable to validate key');
+                    }
+                    if (str_starts_with($alg, 'RS')) {
+                        self::validateRsaKeyLength($key);
+                    }
                 }
                 $success = \openssl_sign($msg, $signature, $key, $algorithm); // @phpstan-ignore-line
                 if (!$success) {
@@ -324,6 +334,13 @@ class JWT
         list($function, $algorithm) = static::$supported_algs[$alg];
         switch ($function) {
             case 'openssl':
+                if (!\is_resource($keyMaterial) && str_starts_with($algorithm, 'RS')) {
+                    /** @var OpenSSLAsymmetricKey|OpenSSLCertificate|string $keyMaterial */
+                    $keyMaterial = $keyMaterial;
+                    if ($key = openssl_pkey_get_private($keyMaterial)) {
+                        self::validateRsaKeyLength($key);
+                    }
+                }
                 $success = \openssl_verify($msg, $signature, $keyMaterial, $algorithm); // @phpstan-ignore-line
                 if ($success === 1) {
                     return true;
@@ -361,6 +378,7 @@ class JWT
                 if (!\is_string($keyMaterial)) {
                     throw new InvalidArgumentException('key must be a string when using hmac');
                 }
+                self::validateHmacKeyLength($keyMaterial, $algorithm);
                 $hash = \hash_hmac($algorithm, $msg, $keyMaterial, true);
                 return self::constantTimeEquals($hash, $signature);
         }
@@ -674,5 +692,36 @@ class JWT
         }
 
         return [$pos, $data];
+    }
+
+    /**
+     * Validate HMAC key length
+     *
+     * @param string $key HMAC key material
+     * @param string $algorithm The algorithm
+     * @throws DomainException Provided key is too short
+     */
+    private static function validateHmacKeyLength(string $key, string $algorithm): void
+    {
+        $keyLength = \strlen($key) * 8;
+        $minKeyLength = (int) \str_replace('SHA', '', $algorithm);
+        if ($keyLength < $minKeyLength) {
+            throw new DomainException('Provided key is too short');
+        }
+    }
+
+    /**
+     * Validate RSA key length
+     *
+     * @param OpenSSLAsymmetricKey $key RSA key material
+     * @throws DomainException Provided key is too short
+     */
+    private static function validateRsaKeyLength(OpenSSLAsymmetricKey $key): void
+    {
+        if ($keyDetails = \openssl_pkey_get_details($key)) {
+            if ($keyDetails['bits'] < self::RSA_KEY_MIN_LENGTH) {
+                throw new DomainException('Provided key is too short');
+            }
+        }
     }
 }
