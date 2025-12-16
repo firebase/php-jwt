@@ -678,6 +678,65 @@ class JWTTest extends TestCase
         ];
     }
 
+    /** @dataProvider provideEcKeyInvalidLength */
+    public function testEcKeyLengthValidationThrowsExceptionEncode(string $keyFile, string $alg): void
+    {
+        $this->expectException(DomainException::class);
+        $this->expectExceptionMessage('Provided key is too short');
+
+        $tooShortEcKey = file_get_contents(__DIR__ . '/data/' . $keyFile);
+        $payload = ['message' => 'abc'];
+
+        JWT::encode($payload, $tooShortEcKey, $alg);
+    }
+
+    public function testEcKeyLengthValidationThrowsExceptionDecode(): void
+    {
+        $this->expectException(DomainException::class);
+        $this->expectExceptionMessage('Provided key is too short');
+
+        $payload = ['message' => 'abc'];
+
+        $validEcKeyBytes = file_get_contents(__DIR__ . '/data/ecdsa384-private.pem');
+        $encoded = JWT::encode($payload, $validEcKeyBytes, 'ES256');
+
+        $tooShortEcKey = file_get_contents(__DIR__ . '/data/ecdsa192-public.pem');
+        JWT::decode($encoded, new Key($tooShortEcKey, 'ES256'));
+    }
+
+    /** @dataProvider provideEcKey */
+    public function testEcKeyLengthValidationPassesWithCorrectLength(
+        string $privateKeyFile,
+        string $publicKeyFile,
+        string $alg
+    ): void {
+        $payload = ['message' => 'test hmac length'];
+
+        // Test with a key that is the required length
+        $privateKeyBytes = file_get_contents(__DIR__ . '/data/' . $privateKeyFile);
+        $encoded48 = JWT::encode($payload, $privateKeyBytes, $alg);
+
+        $publicKeyBytes = file_get_contents(__DIR__ . '/data/' . $publicKeyFile);
+        $decoded48 = JWT::decode($encoded48, new Key($publicKeyBytes, $alg));
+        $this->assertEquals($payload['message'], $decoded48->message);
+    }
+
+    public function provideEcKeyInvalidLength()
+    {
+        return [
+            ['ecdsa192-private.pem', 'ES256'],
+            ['ecdsa-private.pem', 'ES384'],
+        ];
+    }
+
+    public function provideEcKey()
+    {
+        return [
+            ['ecdsa-private.pem', 'ecdsa-public.pem', 'ES256'],
+            ['ecdsa384-private.pem', 'ecdsa384-public.pem', 'ES384'],
+        ];
+    }
+
     private function generateHmac256(): Key
     {
         return new Key(random_bytes(32), 'HS256');
