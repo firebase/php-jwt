@@ -264,7 +264,12 @@ class JWT
                         self::validateRsaKeyLength($key);
                     }
                 }
-                $success = \openssl_sign($msg, $signature, $key, $algorithm); // @phpstan-ignore-line
+                if (str_starts_with($alg, 'RS')) {
+                    self::validateRsaKeyLength($key);
+                } elseif (str_starts_with($alg, 'ES')) {
+                    self::validateEcKeyLength($key, $alg);
+                }
+                $success = \openssl_sign($msg, $signature, $key, $algorithm);
                 if (!$success) {
                     throw new DomainException('OpenSSL unable to sign data');
                 }
@@ -323,12 +328,13 @@ class JWT
         list($function, $algorithm) = static::$supported_algs[$alg];
         switch ($function) {
             case 'openssl':
-                if (!\is_resource($keyMaterial) && str_starts_with($algorithm, 'RS')) {
-                    /** @var OpenSSLAsymmetricKey|OpenSSLCertificate|string $keyMaterial */
-                    $keyMaterial = $keyMaterial;
-                    if ($key = openssl_pkey_get_private($keyMaterial)) {
-                        self::validateRsaKeyLength($key);
-                    }
+                if (!$key = openssl_pkey_get_public($keyMaterial)) {
+                    throw new DomainException('OpenSSL unable to validate key');
+                }
+                if (str_starts_with($alg, 'RS')) {
+                    self::validateRsaKeyLength($key);
+                } elseif (str_starts_with($alg, 'ES')) {
+                    self::validateEcKeyLength($key, $alg);
                 }
                 $success = \openssl_verify($msg, $signature, $keyMaterial, $algorithm); // @phpstan-ignore-line
                 if ($success === 1) {
@@ -711,6 +717,26 @@ class JWT
             if ($keyDetails['bits'] < self::RSA_KEY_MIN_LENGTH) {
                 throw new DomainException('Provided key is too short');
             }
+        }
+    }
+
+    /**
+     * Validate RSA key length
+     *
+     * @param OpenSSLAsymmetricKey $key RSA key material
+     * @param string $algorithm The algorithm
+     * @throws DomainException Provided key is too short
+     */
+    private static function validateEcKeyLength(
+        #[\SensitiveParameter] OpenSSLAsymmetricKey $key,
+        string $algorithm
+    ): void {
+        if (!$keyDetails = openssl_pkey_get_details($key)) {
+            throw new DomainException('Unable to validate key');
+        }
+        $minKeyLength = (int) \str_replace('ES', '', $algorithm);
+        if ($keyDetails['bits'] < $minKeyLength) {
+            throw new DomainException('Provided key is too short');
         }
     }
 }
