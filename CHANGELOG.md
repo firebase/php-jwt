@@ -1,5 +1,12 @@
 # Changelog
 
+## [7.0.2](https://github.com/firebase/php-jwt/compare/v7.0.1...v7.0.2) (2025-12-16)
+
+
+### Bug Fixes
+
+* add key length validation for ec keys ([#615](https://github.com/firebase/php-jwt/issues/615)) ([7044f9a](https://github.com/firebase/php-jwt/commit/7044f9ae7e7d175d28cca71714feb236f1c0e252))
+
 ## [7.0.0](https://github.com/firebase/php-jwt/compare/v6.11.1...v7.0.0) (2025-12-15)
 
 
