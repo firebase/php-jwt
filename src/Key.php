@@ -10,20 +10,19 @@ use TypeError;
 class Key
 {
     /**
-     * @param string|resource|OpenSSLAsymmetricKey|OpenSSLCertificate $keyMaterial
+     * @param string|OpenSSLAsymmetricKey|OpenSSLCertificate $keyMaterial
      * @param string $algorithm
      */
     public function __construct(
-        private mixed $keyMaterial,
+        #[\SensitiveParameter] private string|OpenSSLAsymmetricKey|OpenSSLCertificate $keyMaterial,
         private string $algorithm
     ) {
         if (
             !\is_string($keyMaterial)
             && !$keyMaterial instanceof OpenSSLAsymmetricKey
             && !$keyMaterial instanceof OpenSSLCertificate
-            && !\is_resource($keyMaterial)
         ) {
-            throw new TypeError('Key material must be a string, resource, or OpenSSLAsymmetricKey');
+            throw new TypeError('Key material must be a string, OpenSSLCertificate, or OpenSSLAsymmetricKey');
         }
 
         if (empty($keyMaterial)) {
@@ -46,7 +45,7 @@ class Key
     }
 
     /**
-     * @return string|resource|OpenSSLAsymmetricKey|OpenSSLCertificate
+     * @return string|OpenSSLAsymmetricKey|OpenSSLCertificate
      */
     public function getKeyMaterial(): mixed
     {
