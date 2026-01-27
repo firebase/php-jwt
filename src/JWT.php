@@ -203,7 +203,7 @@ class JWT
      * @param string                     $alg     Supported algorithms are 'ES256', 'ES256K', 'ES384', 'ES512',
      *                                            'HS256', 'HS384', 'HS512', 'RS256', 'RS384', and 'RS512'
      * @param string|null                $keyId
-     * @param array<string, string>|null $head    An array with header elements to attach
+     * @param array<string, string|string[]>|null $head    An array with header elements to attach
      *
      * @return string A signed JWT
      *
