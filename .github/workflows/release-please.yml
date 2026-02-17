@@ -10,6 +10,7 @@ permissions:
   pull-requests: write
 jobs:
   release-please:
+    environment: Release
     runs-on: ubuntu-latest
     steps:
       - uses: googleapis/release-please-action@v4
