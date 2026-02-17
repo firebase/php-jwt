@@ -1,5 +1,56 @@
 # Changelog
 
+## [7.0.2](https://github.com/firebase/php-jwt/compare/v7.0.1...v7.0.2) (2025-12-16)
+
+
+### Bug Fixes
+
+* add key length validation for ec keys ([#615](https://github.com/firebase/php-jwt/issues/615)) ([7044f9a](https://github.com/firebase/php-jwt/commit/7044f9ae7e7d175d28cca71714feb236f1c0e252))
+
+## [7.0.0](https://github.com/firebase/php-jwt/compare/v6.11.1...v7.0.0) (2025-12-15)
+
+
+### ⚠️ ⚠️ ⚠️  Security Fixes ⚠️ ⚠️ ⚠️ 
+ * add key size validation ([#613](https://github.com/firebase/php-jwt/issues/613)) ([6b80341](https://github.com/firebase/php-jwt/commit/6b80341bf57838ea2d011487917337901cd71576))
+ **NOTE**: This fix will cause keys with a size below the minimally allowed size to break. 
+
+### Features
+
+* add SensitiveParameter attribute to security-critical parameters ([#603](https://github.com/firebase/php-jwt/issues/603)) ([4dbfac0](https://github.com/firebase/php-jwt/commit/4dbfac0260eeb0e9e643063c99998e3219cc539b))
+* store timestamp in `ExpiredException` ([#604](https://github.com/firebase/php-jwt/issues/604)) ([f174826](https://github.com/firebase/php-jwt/commit/f1748260d218a856b6a0c23715ac7fae1d7ca95b))
+
+
+### Bug Fixes
+
+* validate iat and nbf on payload ([#568](https://github.com/firebase/php-jwt/issues/568)) ([953b2c8](https://github.com/firebase/php-jwt/commit/953b2c88bb445b7e3bb82a5141928f13d7343afd))
+
+## [6.11.1](https://github.com/firebase/php-jwt/compare/v6.11.0...v6.11.1) (2025-04-09)
+
+
+### Bug Fixes
+
+* update error text for consistency ([#528](https://github.com/firebase/php-jwt/issues/528)) ([c11113a](https://github.com/firebase/php-jwt/commit/c11113afa13265e016a669e75494b9203b8a7775))
+
+## [6.11.0](https://github.com/firebase/php-jwt/compare/v6.10.2...v6.11.0) (2025-01-23)
+
+
+### Features
+
+* support octet typed JWK ([#587](https://github.com/firebase/php-jwt/issues/587)) ([7cb8a26](https://github.com/firebase/php-jwt/commit/7cb8a265fa81edf2fa6ef8098f5bc5ae573c33ad))
+
+
+### Bug Fixes
+
+* refactor constructor Key to use PHP 8.0 syntax ([#577](https://github.com/firebase/php-jwt/issues/577)) ([29fa2ce](https://github.com/firebase/php-jwt/commit/29fa2ce9e0582cd397711eec1e80c05ce20fabca))
+
+## [6.10.2](https://github.com/firebase/php-jwt/compare/v6.10.1...v6.10.2) (2024-11-24)
+
+
+### Bug Fixes
+
+* Mitigate PHP8.4 deprecation warnings ([#570](https://github.com/firebase/php-jwt/issues/570)) ([76808fa](https://github.com/firebase/php-jwt/commit/76808fa227f3811aa5cdb3bf81233714b799a5b5))
+* support php 8.4 ([#583](https://github.com/firebase/php-jwt/issues/583)) ([e3d68b0](https://github.com/firebase/php-jwt/commit/e3d68b044421339443c74199edd020e03fb1887e))
+
 ## [6.10.1](https://github.com/firebase/php-jwt/compare/v6.10.0...v6.10.1) (2024-05-18)
 
 

@@ -6,6 +6,8 @@ class ExpiredException extends \UnexpectedValueException implements JWTException
 {
     private object $payload;
 
+    private ?int $timestamp = null;
+
     public function setPayload(object $payload): void
     {
         $this->payload = $payload;
@@ -14,5 +16,15 @@ class ExpiredException extends \UnexpectedValueException implements JWTException
     public function getPayload(): object
     {
         return $this->payload;
+    }
+
+    public function setTimestamp(int $timestamp): void
+    {
+        $this->timestamp = $timestamp;
+    }
+
+    public function getTimestamp(): ?int
+    {
+        return $this->timestamp;
     }
 }
