@@ -721,27 +721,7 @@ class JWT
     }
 
     /**
-     * Validate RSA key length
-     *
-     * @param OpenSSLAsymmetricKey $key RSA key material
-     * @param string $algorithm The algorithm
-     * @throws DomainException Provided key is too short
-     */
-    private static function validateEcKeyLength(
-        #[\SensitiveParameter] OpenSSLAsymmetricKey $key,
-        string $algorithm
-    ): void {
-        if (!$keyDetails = openssl_pkey_get_details($key)) {
-            throw new DomainException('Unable to validate key');
-        }
-        $minKeyLength = (int) \str_replace('ES', '', $algorithm);
-        if ($keyDetails['bits'] < $minKeyLength) {
-            throw new DomainException('Provided key is too short');
-        }
-    }
-
-    /**
-     * Validate RSA key length
+     * Validate EC key length
      *
      * @param OpenSSLAsymmetricKey $key RSA key material
      * @param string $algorithm The algorithm
