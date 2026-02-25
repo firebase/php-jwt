@@ -1,5 +1,12 @@
 # Changelog
 
+## [7.0.3](https://github.com/firebase/php-jwt/compare/v7.0.2...v7.0.3) (2026-02-18)
+
+
+### Miscellaneous Chores
+
+* add environment for Release Please job ([#619](https://github.com/firebase/php-jwt/issues/619)) ([300fd02](https://github.com/firebase/php-jwt/commit/300fd02c883f096c9067df652dbd23f62cb5e2a7))
+
 ## [7.0.2](https://github.com/firebase/php-jwt/compare/v7.0.1...v7.0.2) (2025-12-16)
 
 
