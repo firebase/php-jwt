@@ -29,7 +29,7 @@ Example
 use Firebase\JWT\JWT;
 use Firebase\JWT\Key;
 
-$key = 'example_key';
+$key = 'example_key_of_sufficient_length';
 $payload = [
     'iss' => 'http://example.org',
     'aud' => 'http://example.com',
@@ -80,7 +80,7 @@ header part:
 ```php
 use Firebase\JWT\JWT;
 
-$key = 'example_key';
+$key = 'example_key_of_sufficient_length';
 $payload = [
     'iss' => 'http://example.org',
     'aud' => 'http://example.com',
