@@ -293,7 +293,7 @@ class JWT
                 try {
                     // The last non-empty line is used as the key.
                     $lines = array_filter(explode("\n", $key));
-                    $key = base64_decode((string) end($lines));
+                    $key = self::urlsafeB64Decode((string) end($lines));
                     if (\strlen($key) === 0) {
                         throw new DomainException('Key cannot be empty string');
                     }
@@ -361,7 +361,7 @@ class JWT
                 try {
                     // The last non-empty line is used as the key.
                     $lines = array_filter(explode("\n", $keyMaterial));
-                    $key = base64_decode((string) end($lines));
+                    $key = self::urlsafeB64Decode((string) end($lines));
                     if (\strlen($key) === 0) {
                         throw new DomainException('Key cannot be empty string');
                     }
