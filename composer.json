@@ -37,6 +37,7 @@
         "phpunit/phpunit": "^9.5",
         "psr/cache": "^2.0||^3.0",
         "psr/http-client": "^1.0",
-        "psr/http-factory": "^1.0"
+        "psr/http-factory": "^1.0",
+        "phpfastcache/phpfastcache": "^9.2"
     }
 }
