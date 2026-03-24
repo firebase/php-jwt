@@ -3,7 +3,6 @@
 namespace Firebase\JWT;
 
 use PHPUnit\Framework\TestCase;
-use stdClass;
 
 class ReadmeTest extends TestCase
 {
