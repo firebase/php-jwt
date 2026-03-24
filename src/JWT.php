@@ -31,7 +31,7 @@ class JWT
     private const ASN1_SEQUENCE = 0x10;
     private const ASN1_BIT_STRING = 0x03;
 
-    private const RSA_KEY_MIN_LENGTH=2048;
+    private const RSA_KEY_MIN_LENGTH = 2048;
 
     /**
      * When checking nbf, iat or expiration times,
@@ -284,7 +284,11 @@ class JWT
                 }
                 return $signature;
             case 'sodium_crypto':
-                return self::parseEdDSA($msg, $key);
+                try {
+                    return sodium_crypto_sign_detached($msg, self::validateEdDSAKey($key));
+                } catch (Exception $e) {
+                    throw new DomainException($e->getMessage(), 0, $e);
+                }
         }
 
         throw new DomainException('Algorithm not supported');
@@ -336,7 +340,15 @@ class JWT
                     'OpenSSL error: ' . \openssl_error_string()
                 );
             case 'sodium_crypto':
-                return self::parseEdDSA($msg, $keyMaterial, $signature);
+                try {
+                    $key = self::validateEdDSAKey($keyMaterial);
+                    if (\strlen($signature) === 0) {
+                        throw new DomainException('Signature cannot be empty string');
+                    }
+                    return sodium_crypto_sign_verify_detached($signature, $msg, $key);
+                } catch (Exception $e) {
+                    throw new DomainException($e->getMessage(), 0, $e);
+                }
             case 'hash_hmac':
             default:
                 if (!\is_string($keyMaterial)) {
@@ -437,7 +449,6 @@ class JWT
     {
         return \str_replace('=', '', \strtr(\base64_encode($input), '+/', '-_'));
     }
-
 
     /**
      * Determine if an algorithm has been provided for each Key
@@ -711,32 +722,24 @@ class JWT
         }
     }
 
-    private static function parseEdDSA(
-        string $msg,
-        #[\SensitiveParameter] $keyMaterial,
-        ?string $signature = null
-    ) {
+    /**
+     * @param string|OpenSSLAsymmetricKey|OpenSSLCertificate  $keyMaterial
+     * @return non-empty-string
+     */
+    private static function validateEdDSAKey(#[\SensitiveParameter] $keyMaterial): string
+    {
         if (!\function_exists('sodium_crypto_sign_verify_detached')) {
             throw new DomainException('libsodium is not available');
         }
         if (!\is_string($keyMaterial)) {
             throw new InvalidArgumentException('key must be a string when using EdDSA');
         }
-        try {
-            // The last non-empty line is used as the key.
-            $lines = array_filter(explode("\n", $keyMaterial));
-            $key = self::urlsafeB64Decode((string) end($lines));
-            if (\strlen($key) === 0) {
-                throw new DomainException('Key cannot be empty string');
-            }
-            if (!is_null($signature) && \strlen($signature) === 0) {
-                throw new DomainException('Signature cannot be empty string');
-            }
-            return $signature
-                ? sodium_crypto_sign_verify_detached($signature, $msg, $key)
-                : sodium_crypto_sign_detached($msg, $key);
-        } catch (Exception $e) {
-            throw new DomainException($e->getMessage(), 0, $e);
+        // The last non-empty line is used as the key.
+        $lines = array_filter(explode("\n", $keyMaterial));
+        $key = self::urlsafeB64Decode((string) end($lines));
+        if (\strlen($key) === 0) {
+            throw new DomainException('Key cannot be empty string');
         }
+        return $key;
     }
 }

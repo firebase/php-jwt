@@ -680,7 +680,7 @@ class JWTTest extends TestCase
 
     public function testEdDsaHandlesBase64UrlKeys()
     {
-        if (!extension_loaded('sodium')) {
+        if (!\extension_loaded('sodium')) {
             $this->markTestSkipped('libsodium is not available');
         }
 
