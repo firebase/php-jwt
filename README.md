@@ -29,7 +29,7 @@ composer require paragonie/sodium_compat
 use Firebase\JWT\JWT;
 use Firebase\JWT\Key;
 
-$key = str_pad('example_key', 256, 'x');
+$key = 'example_key_of_sufficient_length';
 $payload = [
     'iss' => 'example.org',
     'aud' => 'example.com',
@@ -81,7 +81,7 @@ header part:
 ```php
 use Firebase\JWT\JWT;
 
-$key = str_pad('example_key', 256, 'x');
+$key = 'example_key_of_sufficient_length';
 $payload = [
     'iss' => 'example.org',
     'aud' => 'example.com',

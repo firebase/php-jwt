@@ -12,8 +12,8 @@ class ReadmeTest extends TestCase
     private array $payload = [
         'iss' => 'example.org',
         'aud' => 'example.com',
-        'iat' => '1356999524',
-        'nbf' => '1357000000',
+        'iat' => 1356999524,
+        'nbf' => 1357000000,
     ];
 
     public function testExample()
@@ -166,7 +166,7 @@ class ReadmeTest extends TestCase
         // find by header
         $pattern = '/^#+\s*' . preg_quote($header, '/') . '\s*\n([\s\S]*?)(?=^#+.*$|\Z)/m';
         if (!preg_match($pattern, $markdown, $matches)) {
-            throw new \Exception('Heeader "' . $header . '" not found in README.md');
+            throw new \Exception('Header "' . $header . '" not found in README.md');
         }
         $markdown = trim($matches[1]);
 
