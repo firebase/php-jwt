@@ -99,8 +99,8 @@ class ReadmeTest extends TestCase
         ];
         foreach ($keys as $varName => $keyFile) {
             $codeblock->replace(
-                sprintf('// %s = \'...\'', $varName),
-                sprintf('%s = file_get_contents(\'%s/data/%s\')', $varName, __DIR__, $keyFile)
+                \sprintf('// %s = \'...\'', $varName),
+                \sprintf('%s = file_get_contents(\'%s/data/%s\')', $varName, __DIR__, $keyFile)
             );
         }
 
@@ -127,7 +127,7 @@ class ReadmeTest extends TestCase
         $keysJson = file_get_contents(__DIR__ . '/data/rsa-jwkset.json');
         $jwkSet = json_decode($keysJson, true);
 
-        $codeblock->replace('$jwt', sprintf("'%s'", $jwt));
+        $codeblock->replace('$jwt', \sprintf("'%s'", $jwt));
         $codeblock->replace(
             '[\'keys\' => []]',
             var_export($jwkSet, true)
