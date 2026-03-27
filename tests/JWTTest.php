@@ -678,6 +678,40 @@ class JWTTest extends TestCase
         ];
     }
 
+    public function testEdDsaHandlesBase64UrlKeys()
+    {
+        if (!\extension_loaded('sodium')) {
+            $this->markTestSkipped('libsodium is not available');
+        }
+
+        // Generate a deterministic Ed25519 keypair using a specific seed. The byte "\xfb"
+        // translates to '+' and '/' in standard base64, which become '-' and '_' in Base64URL.
+        // This guarantees our keys will contain the URL-safe characters that get incorrectly
+        // stripped by base64_decode().
+        $seed = str_repeat("\xfb", 32);
+        $keyPair = sodium_crypto_sign_seed_keypair($seed);
+
+        $secretKey = sodium_crypto_sign_secretkey($keyPair);
+        $publicKey = sodium_crypto_sign_publickey($keyPair);
+
+        // Convert the raw keys to Base64URL encoded strings
+        $secretKeyB64u = JWT::urlsafeB64Encode($secretKey);
+        $publicKeyB64u = JWT::urlsafeB64Encode($publicKey);
+
+        // Ensure our test keys actually contain the characters that get
+        // incorrectly stripped by a standard base64_decode().
+        $this->assertTrue(strpos($secretKeyB64u, '-') !== false || strpos($secretKeyB64u, '_') !== false);
+        $this->assertTrue(strpos($publicKeyB64u, '-') !== false || strpos($publicKeyB64u, '_') !== false);
+
+        // Test Encoding
+        $token = JWT::encode(['issue' => 596], $secretKeyB64u, 'EdDSA');
+        $this->assertIsString($token);
+
+        // Test Decoding
+        $decoded = JWT::decode($token, new Key($publicKeyB64u, 'EdDSA'));
+        $this->assertSame(596, $decoded->issue);
+    }
+
     /** @dataProvider provideEcKeyInvalidLength */
     public function testEcKeyLengthValidationThrowsExceptionEncode(string $keyFile, string $alg): void
     {
