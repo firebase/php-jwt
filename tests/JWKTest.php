@@ -9,8 +9,15 @@ use UnexpectedValueException;
 class JWKTest extends TestCase
 {
     private static $keys;
-    private static $privKey1;
-    private static $privKey2;
+
+    public static function setUpBeforeClass(): void
+    {
+        $jwkSet = json_decode(
+            file_get_contents(__DIR__ . '/data/rsa-jwkset.json'),
+            true
+        );
+        self::$keys = JWK::parseKeySet($jwkSet);
+    }
 
     public function testMissingKty()
     {
@@ -84,16 +91,33 @@ class JWKTest extends TestCase
         $this->assertTrue(\is_array($keys));
     }
 
-    public function testParseJwkKeySet()
+    /** @dataProvider provideParseJwkKeySet */
+    public function testParseJwkKeySet($jwkFile, $keyId, $pubkeyFile)
     {
         $jwkSet = json_decode(
-            file_get_contents(__DIR__ . '/data/rsa-jwkset.json'),
+            file_get_contents(__DIR__ . '/data/' . $jwkFile),
             true
         );
         $keys = JWK::parseKeySet($jwkSet);
         $this->assertTrue(\is_array($keys));
-        $this->assertArrayHasKey('jwk1', $keys);
-        self::$keys = $keys;
+        $this->assertArrayHasKey($keyId, $keys);
+
+        // verify public key
+        $keyMaterial = $keys[$keyId]->getKeyMaterial();
+        $publicKey = openssl_pkey_get_details($keyMaterial)['key'];
+
+        $this->assertEquals(
+            file_get_contents(__DIR__ . '/data/' . $pubkeyFile),
+            $publicKey
+        );
+    }
+
+    public function provideParseJwkKeySet()
+    {
+        return [
+            ['rsa-jwkset.json', 'jwk1', 'rsa1-public.pub'],
+            ['rsa-jwkset-2.json', 'jwk2', 'rsa-jwk2-public.pub'],
+        ];
     }
 
     public function testParseJwkKey_empty()
